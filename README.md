@@ -1,9 +1,9 @@
-## GeoPackage 1.0 Conformance Test Suite
+## GeoPackage 1.2 Conformance Test Suite
 
 ### Scope
 
-This test suite verifies the structure and content of a GeoPackage 1.0 data container.
-The [GeoPackage specification](http://www.opengis.net/doc/IS/geopackage/1.0) describes how a
+This test suite verifies the structure and content of a GeoPackage 1.2 data container.
+The [GeoPackage specification](http://geopackage.org/spec) describes how a
 platform-independent [SQLite database file](https://www.sqlite.org/fileformat2.html)
 may contain various types of content, including:
 
@@ -48,7 +48,7 @@ One of the build artifacts is an "all-in-one" JAR file that includes the test
 suite and all of its dependencies; this makes it very easy to execute the test
 suite in a command shell:
 
-`java -jar ets-gpkg12-0.3-SNAPSHOT-aio.jar [-o|--outputDir $TMPDIR] [test-run-props.xml]`
+`java -jar ets-gpkg12-0.1-SNAPSHOT-aio.jar [-o|--outputDir $TMPDIR] [test-run-props.xml]`
 
 #### 3. OGC test harness
 
