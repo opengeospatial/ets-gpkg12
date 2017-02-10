@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="${ets-code}-${version}" verbose="0" configfailurepolicy="skip">
+  <parameter name="iut"  value=""/>
+  <parameter name="ics"  value=""/>
+
+  <listeners>
+    <listener class-name="org.opengis.cite.gpkg10.TestRunListener" />
+    <listener class-name="org.opengis.cite.gpkg10.SuiteFixtureListener" />
+    <listener class-name="org.opengis.cite.gpkg10.TestFailureListener" />
+  </listeners>
+
+  <test name="Core">
+    <packages>
+      <package name="org.opengis.cite.gpkg10.core" />
+    </packages>
+    <classes>
+      <class name="org.opengis.cite.gpkg10.SuitePreconditions" />
+    </classes>
+  </test>
+  <test name="Features">
+    <packages>
+      <package name="org.opengis.cite.gpkg10.features" />
+    </packages>
+  </test>
+  <test name="Tiles">
+    <packages>
+      <package name="org.opengis.cite.gpkg10.tiles" />
+    </packages>
+  </test>
+  <test name="Metadata">
+    <packages>
+      <package name="org.opengis.cite.gpkg10.metadata" />
+    </packages>
+  </test>
+</suite>
