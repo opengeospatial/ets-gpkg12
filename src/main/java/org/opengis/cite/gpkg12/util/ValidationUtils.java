@@ -30,7 +30,7 @@ import org.w3c.dom.ls.LSResourceResolver;
  */
 public class ValidationUtils {
 
-    static final String ROOT_PKG = "/org/opengis/cite/gpkg10/";
+    static final String ROOT_PKG = "/org/opengis/cite/gpkg12/";
     private static final XMLCatalogResolver SCH_RESOLVER = initCatalogResolver();
 
     private static XMLCatalogResolver initCatalogResolver() {

@@ -39,7 +39,7 @@ public class CommonFixture {
 	}
 
 	/** Root test suite package (absolute path). */
-    public static final String ROOT_PKG_PATH = "/org/opengis/cite/gpkg10/";
+    public static final String ROOT_PKG_PATH = "/org/opengis/cite/gpkg12/";
     /** A SQLite database file containing a GeoPackage. */
     protected File gpkgFile;
     /** A JDBC DataSource for accessing the SQLite database. */

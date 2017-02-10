@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ctl:package xmlns:ctl="http://www.occamlab.com/ctl"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-  xmlns:tns="http://www.opengis.net/cite/gpkg10"
+  xmlns:tns="http://www.opengis.net/cite/gpkg12"
   xmlns:saxon="http://saxon.sf.net/"
   xmlns:tec="java:com.occamlab.te.TECore"
-  xmlns:tng="java:org.opengis.cite.gpkg10.TestNGController">
+  xmlns:tng="java:org.opengis.cite.gpkg12.TestNGController">
 
-  <ctl:function name="tns:run-ets-gpkg10">
+  <ctl:function name="tns:run-ets-gpkg12">
 		<ctl:param name="testRunArgs">A Document node containing test run arguments (as XML properties).</ctl:param>
     <ctl:param name="outputDir">The directory in which the test results will be written.</ctl:param>
 		<ctl:return>The test results as a Source object (root node).</ctl:return>
-		<ctl:description>Runs the gpkg10 ${version} test suite.</ctl:description>
+		<ctl:description>Runs the gpkg12 ${version} test suite.</ctl:description>
     <ctl:code>
       <xsl:variable name="controller" select="tng:new($outputDir)" />
       <xsl:copy-of select="tng:doTestRun($controller, $testRunArgs)" />
     </ctl:code>
 	</ctl:function>
 
-   <ctl:suite name="tns:ets-gpkg10-${version}">
+   <ctl:suite name="tns:ets-gpkg12-${version}">
      <ctl:title>GeoPackage 1.0 Conformance Test Suite</ctl:title>
      <ctl:description>Verifies the structure and content of a GeoPackage 1.0 data container.</ctl:description>
      <ctl:starting-test>tns:Main</ctl:starting-test>
@@ -93,7 +93,7 @@
          <xsl:value-of select="tec:getTestRunDirectory($te:core)"/>
        </xsl:variable>
        <xsl:variable name="test-results">
-        <ctl:call-function name="tns:run-ets-gpkg10">
+        <ctl:call-function name="tns:run-ets-gpkg12">
 			    <ctl:with-param name="testRunArgs" select="$test-run-props"/>
           <ctl:with-param name="outputDir" select="$testRunDir" />
 			  </ctl:call-function>

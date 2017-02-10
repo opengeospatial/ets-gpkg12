@@ -10,7 +10,7 @@ import java.util.ResourceBundle;
 public class ErrorMessage {
 
     private static final String BASE_NAME =
-            "org.opengis.cite.gpkg10.MessageBundle";
+            "org.opengis.cite.gpkg12.MessageBundle";
     private static ResourceBundle msgResources =
             ResourceBundle.getBundle(BASE_NAME);
 

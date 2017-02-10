@@ -7,9 +7,9 @@
     <version>
       <name>${spec-version}</name>
       <suite>
-        <namespace-uri>http://www.opengis.net/cite/gpkg10</namespace-uri>
+        <namespace-uri>http://www.opengis.net/cite/gpkg12</namespace-uri>
         <prefix>tns</prefix>
-        <local-name>ets-gpkg10-${version}</local-name>
+        <local-name>ets-gpkg12-${version}</local-name>
         <title>GeoPackage 1.0 Conformance Test Suite</title>
         <description>Verifies the structure and content of a GeoPackage 1.0 data container.</description>
       </suite>
@@ -17,9 +17,9 @@
         <name>${version}</name>
         <status>Final</status>
         <sources>
-          <source>gpkg10/${spec-version}/ctl</source>
+          <source>gpkg12/${spec-version}/ctl</source>
         </sources>
-        <webdir>gpkg10/${spec-version}/site</webdir>
+        <webdir>gpkg12/${spec-version}/site</webdir>
       </revision>
     </version>
   </standard>

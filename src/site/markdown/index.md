@@ -32,7 +32,7 @@ The following conformance classes have being defined (In bold the classes that h
     - Features
     - Tiles
     
-Note: This test doesn’t support GeoPackage 1.1. To follow the issue or support the development of a 1.1 test, please  provide a comment in the [GitHub issue tracker](https://github.com/opengeospatial/ets-gpkg10/issues/4).   
+Note: This test doesn’t support GeoPackage 1.1. To follow the issue or support the development of a 1.1 test, please  provide a comment in the [GitHub issue tracker](https://github.com/opengeospatial/ets-gpkg12/issues/4).   
 
 ## Test requirements
 
@@ -50,7 +50,7 @@ suite will be marked as skipped.
 ## Test suite structure
 
 The test suite definition file (testng.xml) is located in the root package, 
-`org.opengis.cite.gpkg10`. A conformance class corresponds to a &lt;test&gt; element, each 
+`org.opengis.cite.gpkg12`. A conformance class corresponds to a &lt;test&gt; element, each 
 of which includes a set of test classes that contain the actual test methods. 
 The general structure of the test suite is shown in Table 1.
 
@@ -65,11 +65,11 @@ The general structure of the test suite is shown in Table 1.
   <tbody>
     <tr>
       <td>Core</td>
-      <td>org.opengis.cite.gpkg10.core.*</td>
+      <td>org.opengis.cite.gpkg12.core.*</td>
     </tr>
     <tr>
       <td>Tiles</td>
-      <td>org.opengis.cite.gpkg10.tiles.*</td>
+      <td>org.opengis.cite.gpkg12.tiles.*</td>
     </tr>
   </tbody>
 </table>
