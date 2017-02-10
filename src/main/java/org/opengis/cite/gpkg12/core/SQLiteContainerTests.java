@@ -15,7 +15,7 @@ import java.util.Arrays;
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
-import org.opengis.cite.gpkg12.GPKG10;
+import org.opengis.cite.gpkg12.GPKG12;
 import org.testng.annotations.Test;
 
 /**
@@ -53,11 +53,11 @@ public class SQLiteContainerTests extends CommonFixture {
      */
     @Test(description = "See OGC 12-128r12: Requirement 1")
     public void fileHeaderString() throws IOException {
-        final byte[] headerString = new byte[GPKG10.SQLITE_MAGIC_HEADER.length];
+        final byte[] headerString = new byte[GPKG12.SQLITE_MAGIC_HEADER.length];
         try (FileInputStream fileInputStream = new FileInputStream(this.gpkgFile)) {
             fileInputStream.read(headerString);
         }
-        assertTrue(Arrays.equals(headerString, GPKG10.SQLITE_MAGIC_HEADER), ErrorMessage
+        assertTrue(Arrays.equals(headerString, GPKG12.SQLITE_MAGIC_HEADER), ErrorMessage
                 .format(ErrorMessageKeys.INVALID_HEADER_STR, new String(headerString, StandardCharsets.US_ASCII)));
     }
 
@@ -78,12 +78,12 @@ public class SQLiteContainerTests extends CommonFixture {
     @Test(description = "See OGC 12-128r12: Requirement 2")
     public void applicationID() throws IOException {
         @SuppressWarnings("CheckForOutOfMemoryOnLargeArrayAllocation")
-        final byte[] headerBytes = new byte[GPKG10.DB_HEADER_LENGTH];
+        final byte[] headerBytes = new byte[GPKG12.DB_HEADER_LENGTH];
         try (FileInputStream fileInputStream = new FileInputStream(this.gpkgFile)) {
             fileInputStream.read(headerBytes);
         }
-        final byte[] appID = Arrays.copyOfRange(headerBytes, GPKG10.APP_ID_OFFSET, GPKG10.APP_ID_OFFSET + 4);
-        assertTrue(Arrays.equals(appID, GPKG10.APP_GP10),
+        final byte[] appID = Arrays.copyOfRange(headerBytes, GPKG12.APP_ID_OFFSET, GPKG12.APP_ID_OFFSET + 4);
+        assertTrue(Arrays.equals(appID, GPKG12.APP_GP10),
                 ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, new String(appID, StandardCharsets.US_ASCII)));
     }
 
@@ -97,7 +97,7 @@ public class SQLiteContainerTests extends CommonFixture {
     public void filenameExtension() {
         final String fileName = this.gpkgFile.getName();
         final String suffix = fileName.substring(fileName.lastIndexOf('.'));
-        assertEquals(suffix, GPKG10.GPKG_FILENAME_SUFFIX,
+        assertEquals(suffix, GPKG12.GPKG_FILENAME_SUFFIX,
                 ErrorMessage.format(ErrorMessageKeys.INVALID_SUFFIX, suffix));
     }
 
@@ -135,7 +135,7 @@ public class SQLiteContainerTests extends CommonFixture {
             resultSet.next();
 
             assertEquals(resultSet.getString("integrity_check").toLowerCase(),
-                         GPKG10.PRAGMA_INTEGRITY_CHECK,
+                         GPKG12.PRAGMA_INTEGRITY_CHECK,
                          ErrorMessage.format(ErrorMessageKeys.PRAGMA_INTEGRITY_CHECK_NOT_OK));
         }
     }

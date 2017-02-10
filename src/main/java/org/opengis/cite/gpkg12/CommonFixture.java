@@ -90,16 +90,16 @@ public class CommonFixture {
     
     private void setupVersion() throws SQLException, IOException{
         @SuppressWarnings("CheckForOutOfMemoryOnLargeArrayAllocation")
-        final byte[] headerBytes = new byte[GPKG10.DB_HEADER_LENGTH];
+        final byte[] headerBytes = new byte[GPKG12.DB_HEADER_LENGTH];
         try (FileInputStream fileInputStream = new FileInputStream(this.gpkgFile)) {
             fileInputStream.read(headerBytes);
         }
-        final byte[] appID = Arrays.copyOfRange(headerBytes, GPKG10.APP_ID_OFFSET, GPKG10.APP_ID_OFFSET + 4);
-    	if (Arrays.equals(appID, GPKG10.APP_GP10)){
+        final byte[] appID = Arrays.copyOfRange(headerBytes, GPKG12.APP_ID_OFFSET, GPKG12.APP_ID_OFFSET + 4);
+    	if (Arrays.equals(appID, GPKG12.APP_GP10)){
     		geopackageVersion = GeoPackageVersion.V102;
-    	} else if (Arrays.equals(appID, GPKG10.APP_GP11)){
+    	} else if (Arrays.equals(appID, GPKG12.APP_GP11)){
     		geopackageVersion = GeoPackageVersion.V110;
-    	} else if (Arrays.equals(appID, GPKG10.APP_GPKG)){
+    	} else if (Arrays.equals(appID, GPKG12.APP_GPKG)){
     		geopackageVersion = GeoPackageVersion.V120;
     	}
     }   

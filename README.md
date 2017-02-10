@@ -11,7 +11,7 @@ may contain various types of content, including:
 * tile matrix sets of imagery and raster maps at various scales
 * metadata
 
-Visit the [project documentation website](http://opengeospatial.github.io/ets-gpkg10/)
+Visit the [project documentation website](http://opengeospatial.github.io/ets-gpkg12/)
 for more information, including the API documentation.
 
 ### How to run the tests
@@ -22,7 +22,7 @@ for running the suite are summarized below.
 
 Use a Java IDE such as Eclipse, NetBeans, or IntelliJ. Clone the repository and build the project.
 
-Set the main class to run: `org.opengis.cite.gpkg10.TestNGController`
+Set the main class to run: `org.opengis.cite.gpkg12.TestNGController`
 
 Arguments: The first argument must refer to an XML properties file containing the
 required test run arguments. If not specified, the default location at `$
@@ -48,7 +48,7 @@ One of the build artifacts is an "all-in-one" JAR file that includes the test
 suite and all of its dependencies; this makes it very easy to execute the test
 suite in a command shell:
 
-`java -jar ets-gpkg10-0.3-SNAPSHOT-aio.jar [-o|--outputDir $TMPDIR] [test-run-props.xml]`
+`java -jar ets-gpkg12-0.3-SNAPSHOT-aio.jar [-o|--outputDir $TMPDIR] [test-run-props.xml]`
 
 #### 3. OGC test harness
 
@@ -62,9 +62,9 @@ harness yourself and use a local installation.
 
 If you would like to get involved, you can:
 
-* [Report an issue](https://github.com/opengeospatial/ets-gpkg10/issues) such as a defect or
+* [Report an issue](https://github.com/opengeospatial/ets-gpkg12/issues) such as a defect or
 an enhancement request
-* Help to resolve an [open issue](https://github.com/opengeospatial/ets-gpkg10/issues?q=is%3Aopen)
+* Help to resolve an [open issue](https://github.com/opengeospatial/ets-gpkg12/issues?q=is%3Aopen)
 * Fix a bug: Fork the repository, apply the fix, and create a pull request
 * Add new tests: Fork the repository, implement and verify the tests on a new topic branch,
 and create a pull request (don't forget to periodically rebase long-lived branches so

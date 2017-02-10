@@ -15,7 +15,7 @@ import java.util.Iterator;
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
-import org.opengis.cite.gpkg12.GPKG10;
+import org.opengis.cite.gpkg12.GPKG12;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -152,7 +152,7 @@ public class FeaturesTests extends CommonFixture {
 					assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));;
 				}
 		        final byte[] gp = Arrays.copyOfRange(sgbpb, 0, 2);
-		        assertTrue(Arrays.equals(gp, GPKG10.BINARY_GP), ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
+		        assertTrue(Arrays.equals(gp, GPKG12.BINARY_GP), ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
 
 		        // 3cii
 		        assertTrue(sgbpb[2] == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));

@@ -103,7 +103,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>org.opengis.cite.gpkg10.TestNGController</mainClass>
+              <mainClass>org.opengis.cite.gpkg12.TestNGController</mainClass>
             </manifest>
           </archive>
           <descriptors>

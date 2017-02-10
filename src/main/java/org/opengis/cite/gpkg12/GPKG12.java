@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Provides various constants pertaining to GeoPackage 1.0 data containers.
  */
-public class GPKG10 {
+public class GPKG12 {
 
     /** Length of SQLite database file header (bytes). */
     public static final int DB_HEADER_LENGTH = 100;

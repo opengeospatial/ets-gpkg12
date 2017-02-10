@@ -43,7 +43,7 @@ public class SuitePreconditions {
             File dataFile = File.class.cast(sutObj);
             Assert.assertTrue(dataFile.isFile(),
                     String.format("Data file not found at %s", dataFile.getAbsolutePath()));
-            final byte[] headerBytes = new byte[GPKG10.DB_HEADER_LENGTH];
+            final byte[] headerBytes = new byte[GPKG12.DB_HEADER_LENGTH];
             try (FileInputStream fileInputStream = new FileInputStream(dataFile)) {
                 fileInputStream.read(headerBytes);
             }
