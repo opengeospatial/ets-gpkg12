@@ -168,9 +168,11 @@ public class FeaturesTests extends CommonFixture {
 		        // 3ciii
 		        assertTrue((sgbpb[3] & 0b00100000) == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
 		        
-		        // 5bvii
+		        // 3civ
 		        final int envelope = (sgbpb[3] & 0b00001110) >> 1;
 		        assertTrue(envelope <= 4, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
+		        
+		        // TODO: 3cv 
 			}
 		}
 	}
