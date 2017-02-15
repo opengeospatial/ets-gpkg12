@@ -88,6 +88,8 @@ public class FeaturesTests extends CommonFixture {
 			// 2
 			assertTrue(resultSet.next(),
 					ErrorMessage.format(ErrorMessageKeys.FEATURES_TABLE_DOES_NOT_EXIST, tableName));
+			
+			String pkName = null;
 
 			boolean pass = false;
 			// 3
@@ -97,11 +99,13 @@ public class FeaturesTests extends CommonFixture {
 					if ((resultSet.getInt("pk") == 1) && (resultSet.getInt("notnull") == 1)
 							&& (resultSet.getString("type").equals("INTEGER"))) {
 						pass = true;
+						pkName = resultSet.getString("name");
 						break;
 					}
 				} else {
 					if ((resultSet.getInt("pk") == 1) && (resultSet.getString("type").equals("INTEGER"))) {
 						pass = true;
+						pkName = resultSet.getString("name");
 						break;
 					}
 				}
@@ -109,13 +113,15 @@ public class FeaturesTests extends CommonFixture {
 
 			assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURE_TABLE_NO_PK, tableName));
 			
-			// 4
-			final Statement statement2 = this.databaseConnection.createStatement();
+			if (pkName != null) {
+				// 4
+				final Statement statement2 = this.databaseConnection.createStatement();
 
-			final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct id) - COUNT(*) from %s", tableName));
-			
-			// 5
-			assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.FEATURE_TABLE_PK_NOT_UNIQUE, tableName));
+				final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct %s) - COUNT(*) from %s", pkName, tableName));
+				
+				// 5
+				assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.FEATURE_TABLE_PK_NOT_UNIQUE, tableName));
+			}
 		}
 	}
 
