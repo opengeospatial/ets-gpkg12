@@ -108,6 +108,14 @@ public class FeaturesTests extends CommonFixture {
 			} while (resultSet.next());
 
 			assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURE_TABLE_NO_PK, tableName));
+			
+			// 4
+			final Statement statement2 = this.databaseConnection.createStatement();
+
+			final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct id) - COUNT(*) from %s", tableName));
+			
+			// 5
+			assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.FEATURE_TABLE_PK_NOT_UNIQUE, tableName));
 		}
 	}
 

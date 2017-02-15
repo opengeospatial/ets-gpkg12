@@ -38,6 +38,7 @@ public class ErrorMessageKeys {
     public static final String BAD_CONTENTS_TABLE_DEFINITION = "BadContentsTableDefinition";
     public static final String FEATURES_TABLE_DOES_NOT_EXIST = "FeaturesTableDoesNotExist";
     public static final String FEATURE_TABLE_NO_PK = "FeatureTableNoPK";
+    public static final String FEATURE_TABLE_PK_NOT_UNIQUE = "FeatureTablePKNotUnique";
     public static final String FEATURES_BINARY_INVALID = "FeaturesBinaryInvalid";
     public static final String FEATURES_GEOMETRY_COLUMNS_INVALID = "FeaturesGeometryColumnsInvalid";
     public static final String FEATURES_GEOMETRY_COLUMNS_NO_FK = "FeaturesGeometryColumnsNoFK";
