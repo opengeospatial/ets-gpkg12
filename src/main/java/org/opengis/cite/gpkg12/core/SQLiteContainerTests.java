@@ -77,14 +77,10 @@ public class SQLiteContainerTests extends CommonFixture {
      */
     @Test(description = "See OGC 12-128r12: Requirement 2")
     public void applicationID() throws IOException {
-        @SuppressWarnings("CheckForOutOfMemoryOnLargeArrayAllocation")
-        final byte[] headerBytes = new byte[GPKG12.DB_HEADER_LENGTH];
-        try (FileInputStream fileInputStream = new FileInputStream(this.gpkgFile)) {
-            fileInputStream.read(headerBytes);
-        }
-        final byte[] appID = Arrays.copyOfRange(headerBytes, GPKG12.APP_ID_OFFSET, GPKG12.APP_ID_OFFSET + 4);
-        assertTrue(Arrays.equals(appID, GPKG12.APP_GP10),
-                ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, new String(appID, StandardCharsets.US_ASCII)));
+    	// Note: This is actually handled in CommonFixture::setupVersion()
+        final GeoPackageVersion version = getGeopackageVersion();
+        assertTrue(Arrays.asList(getAllowedVersions()).contains(version),
+                ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID));
     }
 
     /**

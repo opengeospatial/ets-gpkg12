@@ -1,8 +1,11 @@
 package org.opengis.cite.gpkg12;
 
+import static org.testng.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -14,6 +17,7 @@ import org.sqlite.SQLiteDataSource;
 import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
  * A supporting base class that sets up a common test fixture. These
@@ -27,11 +31,18 @@ public class CommonFixture {
 		private GeoPackageVersion(int value){
 			this.value = value;
 		}
+		
 		protected boolean equals(GeoPackageVersion right) {
 			return this.value == right.value;
 		}
 	}
 	
+	private GeoPackageVersion[] allowedVersions = {GeoPackageVersion.V102, GeoPackageVersion.V110, GeoPackageVersion.V120};
+	
+	protected GeoPackageVersion[] getAllowedVersions() {
+		return allowedVersions;
+	}
+
 	private GeoPackageVersion geopackageVersion;
 
     protected GeoPackageVersion getGeopackageVersion() {
@@ -88,8 +99,22 @@ public class CommonFixture {
         }
     }
     
+    /**
+     * A GeoPackage shall contain 0x47503130 ("GP10" in UTF-8/ASCII, [71,80,49,48]) in the
+     * "Application ID" field of the database header. The field is located at
+     * offset 64 (a 32-bit unsigned big-endian integer).
+     *
+     * @throws IOException
+     *             If an I/O error occurs while trying to read the data file.
+     *
+     * @see <a href="http://www.geopackage.org/spec/#_requirement-2" target=
+     *      "_blank">File Format - Requirement 2</a>
+     * @see <a href=
+     *      "http://www.sqlite.org/src/artifact?ci=trunk&filename=magic.txt"
+     *      target= "_blank">Assigned application IDs</a>
+     */
+    @Test(description = "See OGC 12-128r12: Requirement 2")
     private void setupVersion() throws SQLException, IOException{
-        @SuppressWarnings("CheckForOutOfMemoryOnLargeArrayAllocation")
         final byte[] headerBytes = new byte[GPKG12.DB_HEADER_LENGTH];
         try (FileInputStream fileInputStream = new FileInputStream(this.gpkgFile)) {
             fileInputStream.read(headerBytes);
@@ -101,6 +126,7 @@ public class CommonFixture {
     		geopackageVersion = GeoPackageVersion.V110;
     	} else if (Arrays.equals(appID, GPKG12.APP_GPKG)){
     		geopackageVersion = GeoPackageVersion.V120;
-    	}
+    	} 
+        assertTrue(geopackageVersion != null, ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, new String(appID, StandardCharsets.US_ASCII)));
     }   
 }
