@@ -78,7 +78,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 29")
+	@Test(description = "See OGC 12-128r13: Requirement 29")
 	public void featureTableIntegerPrimaryKey() throws SQLException {
 		for (final String tableName : this.featureTableNames) {
 			final Statement statement = this.databaseConnection.createStatement();
@@ -137,7 +137,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirements 19, 20")
+	@Test(description = "See OGC 12-128r13: Requirements 19, 20")
 	public void featureGeometryEncodingTableBlob() throws SQLException {
 		// 1
 		final Statement statement1 = this.databaseConnection.createStatement();
@@ -193,7 +193,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 21")
+	@Test(description = "See OGC 12-128r13: Requirement 21")
 	public void featureGeometryColumnsTableDef() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -252,7 +252,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 22")
+	@Test(description = "See OGC 12-128r13: Requirement 22")
 	public void featureGeometryColumnsDataValues() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -283,7 +283,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 23, 26")
+	@Test(description = "See OGC 12-128r13: Requirement 23, 26")
 	public void featureGeometryColumnsDataValuesTableName() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -320,7 +320,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 24")
+	@Test(description = "See OGC 12-128r13: Requirement 24")
 	public void featureGeometryColumnsDataValuesColumnName() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -359,7 +359,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 25")
+	@Test(description = "See OGC 12-128r13: Requirement 25")
 	public void featureGeometryColumnsDataValuesGeometryType() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -397,7 +397,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 27")
+	@Test(description = "See OGC 12-128r13: Requirement 27")
 	public void featureGeometryColumnsDataValuesZ() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -427,7 +427,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 28")
+	@Test(description = "See OGC 12-128r13: Requirement 28")
 	public void featureGeometryColumnsDataValuesM() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -457,7 +457,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 30")
+	@Test(description = "See OGC 12-128r13: Requirement 30")
 	public void featureTableOneGeometryColumn() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -487,7 +487,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 31")
+	@Test(description = "See OGC 12-128r13: Requirement 31")
 	public void featureTableGeometryColumnType() throws SQLException {
 		// We're just going to skip this test on older GeoPackages and hope for the best.
 		if (getGeopackageVersion().equals(GeoPackageVersion.V120)){
