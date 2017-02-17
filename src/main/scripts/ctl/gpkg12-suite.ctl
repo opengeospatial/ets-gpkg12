@@ -18,7 +18,7 @@
 	</ctl:function>
 
    <ctl:suite name="tns:ets-gpkg12-${version}">
-     <ctl:title>GeoPackage 1.0 Conformance Test Suite</ctl:title>
+     <ctl:title>GeoPackage 1.2 Conformance Test Suite</ctl:title>
      <ctl:description>Verifies the structure and content of a GeoPackage 1.0 data container.</ctl:description>
      <ctl:starting-test>tns:Main</ctl:starting-test>
    </ctl:suite>
@@ -32,12 +32,13 @@
              <div style="background:#F0F8FF" bgcolor="#F0F8FF">
                <p>A GeoPackage file is checked against the following specifications:</p>
                <ul>
-                 <li><a href="http://www.geopackage.org/spec/">OGC GeoPackage Encoding Standard 1.0.2</a></li>
+                 <li><a href="http://www.geopackage.org/spec/">OGC GeoPackage Encoding Standard 1.2.0</a></li>
                  <li><a href="http://sqlite.org/fileformat2.html">SQLite Database File Format</a></li>
                </ul>
-               <p>Two conformance classes are covered:</p>
+               <p>Three conformance classes are covered:</p>
                <ul>
                  <li>Core</li>
+                 <li>Features</li>
                  <li>Tiles</li>
                </ul>
              </div>
