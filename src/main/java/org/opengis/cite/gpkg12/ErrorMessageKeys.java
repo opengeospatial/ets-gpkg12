@@ -80,4 +80,6 @@ public class ErrorMessageKeys {
     public static final String INVALID_METADATA_REFERENCE_SCOPE = "InvalidMetadataReferenceScope";
     public static final String BAD_METADATA_REFERENCE_SCOPE_COLUMN_NAME_AGREEMENT = "BadMetadataReferenceScopeColumnNameAgreement";
     public static final String INVALID_METADATA_REFERENCE_TABLE = "InvalidMetadataReferenceTable";
+    public static final String COVERAGE_ANCILLARY_COLUMNS_INVALID = "CoverageAncillaryColumnsInvalid";
+    public static final String COVERAGE_ANCILLARY_NO_FK = "CoverageAncillaryNoFK";
 }
