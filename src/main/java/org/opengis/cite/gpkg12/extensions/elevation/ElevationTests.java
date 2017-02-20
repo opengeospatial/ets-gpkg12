@@ -158,7 +158,6 @@ public class ElevationTests extends CommonFixture {
 		}
 		assertTrue(foundFK, ErrorMessageKeys.COVERAGE_ANCILLARY_NO_FK);
 	}
-
 	
 	/**
 	 * Test case
@@ -296,12 +295,12 @@ public class ElevationTests extends CommonFixture {
 	 * {@code /opt/extensions/elevation/srs/required_references}
 	 *
 	 * @see <a href="requirement_feature_integer_pk" target= "_blank">Elevation 
-	 * Extension - Requirement 108</a>
+	 * Extension - Requirement 108, 109</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r13: Requirement 108")
+	@Test(description = "See OGC 12-128r13: Requirement 108, 109")
 	public void requiredSRSReferences() throws SQLException {
 		
 		for (final String tableName : this.elevationTableNames) {
@@ -314,22 +313,65 @@ public class ElevationTests extends CommonFixture {
 			assertTrue(resultSet2.next(), ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_SET_SRS_REFERENCE, srsID));
 		}
     }
+	
+	/**
+	 * Test case
+	 * {@code /opt/extensions/elevation/extension_rows}
+	 *
+	 * @see <a href="requirement_tile_ancillary" target= "_blank">Elevation 
+	 * Extension - Requirement 110</a>
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = "See OGC 12-128r13: Requirement 110")
+	public void extensionTableRows() throws SQLException {
+		
+		if (!hasExtension){
+			return;
+		}
+		
+		// 1
+		final Statement statement = this.databaseConnection.createStatement();
 
-//	/**
-//	 * Test case
-//	 * {@code /opt/extensions/elevation/table/coverage_ancillary}
-//	 *
-//	 * @see <a href="requirement_feature_integer_pk" target= "_blank">Elevation 
-//	 * Extension - Requirement 105</a>
-//	 *
-//	 * @throws SQLException
-//	 *             If an SQL query causes an error
-//	 */
-//	@Test(description = "See OGC 12-128r13: Requirement 105")
-//	public void featureTableIntegerPrimaryKey() throws SQLException {
-//		for (final String tableName : this.elevationTableNames) {
-//		}
-//	}
+		final ResultSet resultSet = statement.executeQuery("SELECT table_name, column_name, extension_name, definition, scope from gpkg_extensions");
+
+		// 2
+		long passFlag = 0;
+		final long flagMask = 0b11;
+		
+		while (resultSet.next()) {
+			// 3
+			final String name = resultSet.getString("table_name");
+			if ("gpkg_2d_gridded_coverage_ancillary".equals(name)){
+				if ((resultSet.getObject("column_name") == null) &&
+					"gpkg_elevation_tiles".equals(resultSet.getString("extension_name")) &&
+					"http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data".equals(resultSet.getString("definition")) && 
+					"read-write".equals(resultSet.getString("scope"))){
+					passFlag |= 1;
+				}
+			} else if ("gpkg_2d_gridded_tile_ancillary".equals(name)){
+				if ((resultSet.getObject("column_name") == null) &&
+					"gpkg_elevation_tiles".equals(resultSet.getString("extension_name")) &&
+					"http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data".equals(resultSet.getString("definition")) && 
+					"read-write".equals(resultSet.getString("scope"))){
+					passFlag |= (1 << 1);
+				}
+			}
+		} 
+		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.ELEVATION_EXTENSION_ROWS_MISSING, String.format("Missing column flag %d", passFlag)));
+
+		for (final String tableName : this.elevationTableNames) {
+			final Statement statement1 = this.databaseConnection.createStatement();
+			final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT column_name, extension_name, definition, scope from gpkg_extensions WHERE table_name = '%s'", tableName));
+			resultSet1.next();
+			assertTrue(/*(resultSet1.getObject("column_name") == null) && */
+					"gpkg_elevation_tiles".equals(resultSet1.getString("extension_name")) &&
+					"http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data".equals(resultSet1.getString("definition")) && 
+					"read-write".equals(resultSet1.getString("scope")), ErrorMessageKeys.ELEVATION_EXTENSION_ROWS_MISSING);
+		}
+	
+	}
 
 	private boolean hasExtension = false;
 	private final Collection<String> elevationTableNames = new ArrayList<>();
