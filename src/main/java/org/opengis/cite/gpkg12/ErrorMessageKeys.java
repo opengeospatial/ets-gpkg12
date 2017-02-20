@@ -84,4 +84,5 @@ public class ErrorMessageKeys {
     public static final String COVERAGE_ANCILLARY_NO_FK = "CoverageAncillaryNoFK";
     public static final String TILE_ANCILLARY_COLUMNS_INVALID = "TileAncillaryColumnsInvalid";
     public static final String TILE_ANCILLARY_NO_FK = "TileAncillaryNoFK";
+    public static final String NO_ELEVATION_SRS = "NoElevationSrs";
 }

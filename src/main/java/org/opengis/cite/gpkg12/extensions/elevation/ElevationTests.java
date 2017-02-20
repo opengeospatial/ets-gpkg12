@@ -273,6 +273,24 @@ public class ElevationTests extends CommonFixture {
 		assertTrue(foundFK, ErrorMessageKeys.COVERAGE_ANCILLARY_NO_FK);
 	}
 
+	/**
+	 * Test case
+	 * {@code /opt/extensions/elevation/srs/required_rows}
+	 *
+	 * @see <a href="requirement_feature_integer_pk" target= "_blank">Elevation 
+	 * Extension - Requirement 107</a>
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = "See OGC 12-128r13: Requirement 107")
+	public void requiredSRSRows() throws SQLException {
+		final Statement statement = this.databaseConnection.createStatement();
+        final ResultSet srsDefaultValue = statement.executeQuery(
+                "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE organization_coordsys_id = 4979 AND (organization = 'EPSG' OR organization = 'epsg');");
+    	assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_ELEVATION_SRS));
+    }
+
 //	/**
 //	 * Test case
 //	 * {@code /opt/extensions/elevation/table/coverage_ancillary}
