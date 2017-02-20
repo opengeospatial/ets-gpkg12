@@ -159,6 +159,120 @@ public class ElevationTests extends CommonFixture {
 		assertTrue(foundFK, ErrorMessageKeys.COVERAGE_ANCILLARY_NO_FK);
 	}
 
+	
+	/**
+	 * Test case
+	 * {@code /opt/extensions/elevation/table/tile_ancillary}
+	 *
+	 * @see <a href="requirement_tile_ancillary" target= "_blank">Elevation 
+	 * Extension - Requirement 106</a>
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = "See OGC 12-128r13: Requirement 106")
+	public void tileAncillaryTableDefinition() throws SQLException {
+		
+		if (!hasExtension){
+			return;
+		}
+		
+		// 1
+		final Statement statement = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet = statement.executeQuery("PRAGMA table_info('gpkg_2d_gridded_tile_ancillary');");
+
+		// 2
+		long passFlag = 0;
+		final long flagMask = 0b111111111;
+		
+		while (resultSet.next()) {
+			// 3
+			final String name = resultSet.getString("name");
+			if ("id".equals(name)){
+				assertTrue("INTEGER".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "id type"));
+//				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID), "id notnull");
+				assertTrue(resultSet.getInt("pk") == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "id pk"));
+				passFlag |= 1;
+			} else if ("tpudt_name".equals(name)){
+				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "tpudt_name type"));
+				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "tpudt_name notnull"));
+				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "tpudt_name pk"));
+				passFlag |= (1 << 1);
+			} else if ("tpudt_id".equals(name)){
+				assertTrue("INTEGER".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "tpudt_id type"));
+				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "tpudt_id notnull"));
+				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "tpudt_id pk"));
+				passFlag |= (1 << 2);
+			} else if ("scale".equals(name)){
+				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "scale type"));
+				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "scale notnull"));
+				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "scale pk"));
+				assertTrue(resultSet.getFloat("dflt_value") == 1.0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "scale default"));
+				passFlag |= (1 << 3);
+			} else if ("offset".equals(name)){
+				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "offset type"));
+				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "offset notnull"));
+				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "offset pk"));
+				assertTrue(resultSet.getFloat("dflt_value") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "offset default"));
+				passFlag |= (1 << 4);
+			} else if ("min".equals(name)){
+				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "precision type"));
+				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "precision type"));
+				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "precision pk"));
+				passFlag |= (1 << 5);
+			} else if ("max".equals(name)){
+				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "data_null type"));
+				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "data_null notnull"));
+				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "data_null pk"));
+				passFlag |= (1 << 6);
+			} else if ("mean".equals(name)){
+				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "mean type"));
+				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "mean type"));
+				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "mean pk"));
+				passFlag |= (1 << 7);
+			} else if ("std_dev".equals(name)){
+				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "std_dev type"));
+				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "std_dev notnull"));
+				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "std_dev pk"));
+				passFlag |= (1 << 8);
+			}
+		} 
+		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, String.format("Missing column flag %d", passFlag)));
+	}
+
+	/**
+	 * Test case
+	 * {@code /opt/extensions/elevation/table/tile_ancillary_fk}
+	 *
+	 * @see <a href="requirement_feature_integer_pk" target= "_blank">Elevation 
+	 * Extension - Requirement 106</a>
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = "See OGC 12-128r13: Requirement 106")
+	public void tileAncillaryTableForeignKey() throws SQLException {
+		// 1
+		final Statement statement = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet = statement.executeQuery("PRAGMA foreign_key_list('gpkg_2d_gridded_tile_ancillary');");
+		
+		boolean foundFK = false;
+
+		// 2
+		while (resultSet.next()){
+			// 3
+			final String table = resultSet.getString("table");
+			if ("gpkg_contents".equals(table)){
+				if ("tpudt_name".equals(resultSet.getString("from")) && "table_name".equals(resultSet.getString("to"))){
+					foundFK = true;
+				}
+			}
+		}
+		assertTrue(foundFK, ErrorMessageKeys.COVERAGE_ANCILLARY_NO_FK);
+	}
+
 //	/**
 //	 * Test case
 //	 * {@code /opt/extensions/elevation/table/coverage_ancillary}
