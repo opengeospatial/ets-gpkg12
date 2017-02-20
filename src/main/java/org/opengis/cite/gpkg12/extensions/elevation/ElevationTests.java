@@ -373,6 +373,34 @@ public class ElevationTests extends CommonFixture {
 	
 	}
 
+	/**
+	 * Test case
+	 * {@code /opt/extensions/elevation/coverage_ancillary/set_name}
+	 *
+	 * @see <a href="requirement_feature_integer_pk" target= "_blank">Elevation 
+	 * Extension - Requirement 111</a>
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = "See OGC 12-128r13: Requirement 111")
+	public void coverageAncillarySetName() throws SQLException {
+		// 1
+		final Statement statement = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet = statement.executeQuery("SELECT tile_matrix_set_name FROM 'gpkg_2d_gridded_coverage_ancillary';");
+		
+		// 2
+		while (resultSet.next()){
+			// 3
+			final String tileMatrixSetName = resultSet.getString(1);
+			final Statement statement2 = this.databaseConnection.createStatement();
+
+			final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT count(*) FROM gpkg_tile_matrix_set WHERE table_name = '%s';", tileMatrixSetName));
+			assertTrue(resultSet2.getInt(1) == 1, ErrorMessageKeys.UNREFERENCED_COVERAGE_TILE_MATRIX_SET_TABLE);
+		}
+	}
+
 	private boolean hasExtension = false;
 	private final Collection<String> elevationTableNames = new ArrayList<>();
 }
