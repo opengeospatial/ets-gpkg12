@@ -430,6 +430,37 @@ public class ElevationTests extends CommonFixture {
 			assertTrue("integer".equals(datatype) || "float".equals(datatype), ErrorMessageKeys.COVERAGE_ANCILLARY_DATATYPE_INVALID);
 		}
 	}
+	
+	//TODO: I'm not sure how to test R113. There is no reason having rogue rows in here should break anything.
+	
+
+	/**
+	 * Test case
+	 * {@code /opt/extensions/elevation/tpudt/required_references}
+	 *
+	 * @see <a href="requirement_feature_integer_pk" target= "_blank">Elevation 
+	 * Extension - Requirement 108, 109</a>
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = "See OGC 12-128r13: Requirement 114")
+	public void tpudtReferences() throws SQLException {
+		
+		for (final String tableName : this.elevationTableNames) {
+			final Statement statement1 = this.databaseConnection.createStatement();
+			final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT count(*) from %s", tableName));
+			resultSet1.next();
+			final Statement statement2 = this.databaseConnection.createStatement();
+			final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT count(*) from %s where id IN (select tpudt_id from gpkg_2d_gridded_tile_ancillary WHERE tpudt_name = '%s')", tableName, tableName));
+			resultSet2.next();
+			assertTrue(resultSet1.getInt(1) == resultSet2.getInt(1), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_REFERENCES, tableName));
+		}
+    }
+	
+	
+	//TODO: I don't know how to test R115.
+
 
 	private boolean hasExtension = false;
 	private final Collection<String> elevationTableNames = new ArrayList<>();
