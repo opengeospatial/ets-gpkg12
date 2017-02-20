@@ -291,6 +291,30 @@ public class ElevationTests extends CommonFixture {
     	assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_ELEVATION_SRS));
     }
 
+	/**
+	 * Test case
+	 * {@code /opt/extensions/elevation/srs/required_references}
+	 *
+	 * @see <a href="requirement_feature_integer_pk" target= "_blank">Elevation 
+	 * Extension - Requirement 108</a>
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = "See OGC 12-128r13: Requirement 108")
+	public void requiredSRSReferences() throws SQLException {
+		
+		for (final String tableName : this.elevationTableNames) {
+			final Statement statement1 = this.databaseConnection.createStatement();
+			final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT srs_id FROM gpkg_tile_matrix_set WHERE table_name = '%s'", tableName));
+			resultSet1.next();
+			final String srsID = resultSet1.getString(1);
+			final Statement statement2 = this.databaseConnection.createStatement();
+			final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT srs_name FROM gpkg_spatial_ref_sys WHERE srs_id = '%s'", srsID));
+			assertTrue(resultSet2.next(), ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_SET_SRS_REFERENCE, srsID));
+		}
+    }
+
 //	/**
 //	 * Test case
 //	 * {@code /opt/extensions/elevation/table/coverage_ancillary}
