@@ -401,6 +401,36 @@ public class ElevationTests extends CommonFixture {
 		}
 	}
 
+	/**
+	 * Test case
+	 * {@code /opt/extensions/elevation/coverage_ancillary/datatype}
+	 *
+	 * @see <a href="requirement_feature_integer_pk" target= "_blank">Elevation 
+	 * Extension - Requirement 111</a>
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = "See OGC 12-128r13: Requirement 112")
+	public void coverageAncillaryDatatype() throws SQLException {
+		// 1
+		final Statement statement = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet = statement.executeQuery("SELECT tile_matrix_set_name, datatype FROM 'gpkg_2d_gridded_coverage_ancillary';");
+		
+		// 2
+		while (resultSet.next()){
+			final String setName = resultSet.getString("tile_matrix_set_name");
+			// 3
+			if (!elevationTableNames.contains(setName)) {
+				continue;
+			}
+			// 4
+			final String datatype = resultSet.getString("datatype");
+			assertTrue("integer".equals(datatype) || "float".equals(datatype), ErrorMessageKeys.COVERAGE_ANCILLARY_DATATYPE_INVALID);
+		}
+	}
+
 	private boolean hasExtension = false;
 	private final Collection<String> elevationTableNames = new ArrayList<>();
 }

@@ -88,4 +88,5 @@ public class ErrorMessageKeys {
     public static final String NO_ELEVATION_SRS_REFERENCE = "NoElevationSrsReference";
     public static final String ELEVATION_EXTENSION_ROWS_MISSING = "ElevationExtensionRowsMissing";
     public static final String UNREFERENCED_COVERAGE_TILE_MATRIX_SET_TABLE = "UnreferencedCoverageTileMatrixSetTable";
+    public static final String COVERAGE_ANCILLARY_DATATYPE_INVALID = "CoverageAncillaryDatatypeInvalid";
 }
