@@ -365,7 +365,7 @@ public class ElevationTests extends CommonFixture {
 			final Statement statement1 = this.databaseConnection.createStatement();
 			final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT column_name, extension_name, definition, scope from gpkg_extensions WHERE table_name = '%s'", tableName));
 			resultSet1.next();
-			assertTrue(/*(resultSet1.getObject("column_name") == null) && */
+			assertTrue("tile_data".equals(resultSet1.getObject("column_name")) &&
 					"gpkg_elevation_tiles".equals(resultSet1.getString("extension_name")) &&
 					"http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data".equals(resultSet1.getString("definition")) && 
 					"read-write".equals(resultSet1.getString("scope")), ErrorMessageKeys.ELEVATION_EXTENSION_ROWS_MISSING);
@@ -458,9 +458,7 @@ public class ElevationTests extends CommonFixture {
 		}
     }
 	
-	
-	//TODO: I don't know how to test R115.
-
+	//TODO: I don't know how to test R115 - R125
 
 	private boolean hasExtension = false;
 	private final Collection<String> elevationTableNames = new ArrayList<>();
