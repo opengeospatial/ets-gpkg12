@@ -10,13 +10,19 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.GPKG12;
+import org.opengis.cite.gpkg12.TestRunArg;
+import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -68,6 +74,19 @@ public class FeaturesTests extends CommonFixture {
 		allowedGeometryTypes.add("GEOMETRYCOLLECTION");
 	}
 
+    @BeforeTest
+    public void validateClassEnabled(ITestContext testContext) throws IOException {
+      Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
+      final String pstr = params.get(TestRunArg.ICS.toString());
+      final String testName = testContext.getName();
+      HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
+      if (set.contains(testName)){
+        Assert.assertTrue(true);
+      } else {
+        Assert.assertTrue(false, String.format("Conformance class %s is not enabled", testName));
+      }
+    }
+    	
 	/**
 	 * Test case
 	 * {@code /opt/features/vector_features/data/feature_table_integer_primary_key}

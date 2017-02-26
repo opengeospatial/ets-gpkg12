@@ -106,14 +106,15 @@ public class TileTests extends CommonFixture
     }
 
     @BeforeTest
-    public void validateTileLevelEnabled(ITestContext testContext) throws IOException {
+    public void validateClassEnabled(ITestContext testContext) throws IOException {
       Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
       final String pstr = params.get(TestRunArg.ICS.toString());
+      final String testName = testContext.getName();
       HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
-      if (set.contains(testContext.getName())){
+      if (set.contains(testName)){
         Assert.assertTrue(true);
       } else {
-        Assert.assertTrue(false, "Tile level is not enabled");
+        Assert.assertTrue(false, String.format("Conformance class %s is not enabled", testName));
       }
     }
     

@@ -57,7 +57,7 @@ public class ElevationTests extends TileTests {
 			this.elevationTableNames.add(resultSet2.getString("table_name"));
 		}
 	}
-	
+
 	/**
 	 * Test case
 	 * {@code /opt/extensions/elevation/table/coverage_ancillary}
@@ -70,10 +70,6 @@ public class ElevationTests extends TileTests {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 105")
 	public void coverageAncillaryTableDefinition() throws SQLException {
-		
-		if (!hasExtension){
-			return;
-		}
 		
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -144,10 +140,6 @@ public class ElevationTests extends TileTests {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 105")
 	public void coverageAncillaryTableForeignKey() throws SQLException {
-		if (!hasExtension){
-			return;
-		}
-
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
@@ -180,11 +172,6 @@ public class ElevationTests extends TileTests {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 106")
 	public void tileAncillaryTableDefinition() throws SQLException {
-		
-		if (!hasExtension){
-			return;
-		}
-		
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
@@ -261,10 +248,6 @@ public class ElevationTests extends TileTests {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 106")
 	public void tileAncillaryTableForeignKey() throws SQLException {
-		if (!hasExtension){
-			return;
-		}
-
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
@@ -297,10 +280,6 @@ public class ElevationTests extends TileTests {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 107")
 	public void requiredSRSRows() throws SQLException {
-		if (!hasExtension){
-			return;
-		}
-
 		final Statement statement = this.databaseConnection.createStatement();
         final ResultSet srsDefaultValue = statement.executeQuery(
                 "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE organization_coordsys_id = 4979 AND (organization = 'EPSG' OR organization = 'epsg');");
@@ -319,10 +298,6 @@ public class ElevationTests extends TileTests {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 108, 109")
 	public void requiredSRSReferences() throws SQLException {
-		if (!hasExtension){
-			return;
-		}
-		
 		for (final String tableName : this.elevationTableNames) {
 			final Statement statement1 = this.databaseConnection.createStatement();
 			final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT srs_id FROM gpkg_tile_matrix_set WHERE table_name = '%s'", tableName));
@@ -346,11 +321,6 @@ public class ElevationTests extends TileTests {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 110")
 	public void extensionTableRows() throws SQLException {
-		
-		if (!hasExtension){
-			return;
-		}
-		
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
@@ -405,10 +375,6 @@ public class ElevationTests extends TileTests {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 111")
 	public void coverageAncillarySetName() throws SQLException {
-		if (!hasExtension){
-			return;
-		}
-
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
@@ -437,10 +403,6 @@ public class ElevationTests extends TileTests {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 112")
 	public void coverageAncillaryDatatype() throws SQLException {
-		if (!hasExtension){
-			return;
-		}
-
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
@@ -474,10 +436,6 @@ public class ElevationTests extends TileTests {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 114")
 	public void tpudtReferences() throws SQLException {
-		if (!hasExtension){
-			return;
-		}
-		
 		for (final String tableName : this.elevationTableNames) {
 			final Statement statement1 = this.databaseConnection.createStatement();
 			final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT count(*) from %s", tableName));
