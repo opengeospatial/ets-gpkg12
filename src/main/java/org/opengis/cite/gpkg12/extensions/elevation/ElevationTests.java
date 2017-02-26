@@ -140,6 +140,10 @@ public class ElevationTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 105")
 	public void coverageAncillaryTableForeignKey() throws SQLException {
+		if (!hasExtension){
+			return;
+		}
+
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
@@ -253,6 +257,10 @@ public class ElevationTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 106")
 	public void tileAncillaryTableForeignKey() throws SQLException {
+		if (!hasExtension){
+			return;
+		}
+
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
@@ -285,6 +293,10 @@ public class ElevationTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 107")
 	public void requiredSRSRows() throws SQLException {
+		if (!hasExtension){
+			return;
+		}
+
 		final Statement statement = this.databaseConnection.createStatement();
         final ResultSet srsDefaultValue = statement.executeQuery(
                 "SELECT srs_id FROM gpkg_spatial_ref_sys WHERE organization_coordsys_id = 4979 AND (organization = 'EPSG' OR organization = 'epsg');");
@@ -303,6 +315,9 @@ public class ElevationTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 108, 109")
 	public void requiredSRSReferences() throws SQLException {
+		if (!hasExtension){
+			return;
+		}
 		
 		for (final String tableName : this.elevationTableNames) {
 			final Statement statement1 = this.databaseConnection.createStatement();
@@ -386,6 +401,10 @@ public class ElevationTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 111")
 	public void coverageAncillarySetName() throws SQLException {
+		if (!hasExtension){
+			return;
+		}
+
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
@@ -414,6 +433,10 @@ public class ElevationTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 112")
 	public void coverageAncillaryDatatype() throws SQLException {
+		if (!hasExtension){
+			return;
+		}
+
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
@@ -447,6 +470,9 @@ public class ElevationTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 114")
 	public void tpudtReferences() throws SQLException {
+		if (!hasExtension){
+			return;
+		}
 		
 		for (final String tableName : this.elevationTableNames) {
 			final Statement statement1 = this.databaseConnection.createStatement();

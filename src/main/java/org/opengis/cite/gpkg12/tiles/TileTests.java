@@ -96,7 +96,7 @@ public class TileTests extends CommonFixture
         }
 
         try(final Statement statement = this.databaseConnection.createStatement();
-            final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type = 'tiles';"))
+            final ResultSet resultSet = statement.executeQuery(String.format("SELECT table_name FROM gpkg_contents WHERE data_type = '%s';", dataType)))
         {
             while(resultSet.next())
             {
@@ -465,7 +465,7 @@ public class TileTests extends CommonFixture
         if(this.hasTileMatrixTable)
         {
             try(final Statement statement = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_tile_matrix AS tm WHERE table_name NOT IN (SELECT table_name FROM gpkg_contents AS gc WHERE tm.table_name = gc.table_name AND gc.data_type = 'tiles');"))
+                final ResultSet resultSet = statement.executeQuery(String.format("SELECT table_name FROM gpkg_tile_matrix AS tm WHERE table_name NOT IN (SELECT table_name FROM gpkg_contents AS gc WHERE tm.table_name = gc.table_name AND gc.data_type = '%s');", dataType)))
             {
                 final Collection<String> unreferencedTables = new LinkedList<>();
 
@@ -1089,7 +1089,16 @@ public class TileTests extends CommonFixture
         return false;
     }
 
-    private boolean hasTileMatrixTable;
+    public String getDataType() {
+		return dataType;
+	}
+
+	public void setDataType(String dataType) {
+		this.dataType = dataType;
+	}
+
+	private String dataType = "tiles";
+	private boolean hasTileMatrixTable;
     private boolean hasTileMatrixSetTable;
 
     private final Collection<String> tileTableNames         = new ArrayList<>();
