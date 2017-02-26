@@ -108,8 +108,9 @@ public class TileTests extends CommonFixture
     @BeforeTest
     public void validateTileLevelEnabled(ITestContext testContext) throws IOException {
       Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
-      int level = Integer.parseInt(params.get(TestRunArg.ICS.toString()));
-      if (level > 1) {
+      final String pstr = params.get(TestRunArg.ICS.toString());
+      HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
+      if (set.contains(testContext.getName())){
         Assert.assertTrue(true);
       } else {
         Assert.assertTrue(false, "Tile level is not enabled");
@@ -324,17 +325,12 @@ public class TileTests extends CommonFixture
     {
         if(this.hasTileMatrixSetTable)
         {
-            try(Statement statement = this.databaseConnection.createStatement();
-                ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_tile_matrix_set;"))
-            {
-                while(resultSet.next())
-                {
-                    final String tableName = resultSet.getString("table_name");
-
-                    assertTrue(this.contentsTileTableNames.contains(tableName),
-                               ErrorMessage.format(ErrorMessageKeys.UNREFERENCED_TILE_MATRIX_SET_TABLE, tableName));
-                }
-            }
+    		for (final String tableName : this.contentsTileTableNames) {
+    			final Statement statement1 = this.databaseConnection.createStatement();
+    			final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT table_name FROM gpkg_tile_matrix_set WHERE table_name = '%s'", tableName));
+                assertTrue(resultSet1.next(),
+                        ErrorMessage.format(ErrorMessageKeys.UNREFERENCED_TILE_MATRIX_SET_TABLE, tableName));
+    		}
         }
     }
 
@@ -464,20 +460,21 @@ public class TileTests extends CommonFixture
     {
         if(this.hasTileMatrixTable)
         {
-            try(final Statement statement = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery(String.format("SELECT table_name FROM gpkg_tile_matrix AS tm WHERE table_name NOT IN (SELECT table_name FROM gpkg_contents AS gc WHERE tm.table_name = gc.table_name AND gc.data_type = '%s');", dataType)))
-            {
-                final Collection<String> unreferencedTables = new LinkedList<>();
-
-                while(resultSet.next())
-                {
-                    unreferencedTables.add(resultSet.getString("table_name"));
-                }
-
-                assertTrue(unreferencedTables.isEmpty(),
-                           ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_CONTENTS_REFERENCES,
-                                               String.join(", ", unreferencedTables)));
-            }
+        	// Commenting this test out as per https://github.com/opengeospatial/geopackage/issues/295
+//            try(final Statement statement = this.databaseConnection.createStatement();
+//                final ResultSet resultSet = statement.executeQuery(String.format("SELECT table_name FROM gpkg_tile_matrix AS tm WHERE table_name NOT IN (SELECT table_name FROM gpkg_contents AS gc WHERE tm.table_name = gc.table_name AND gc.data_type = '%s');", dataType)))
+//            {
+//                final Collection<String> unreferencedTables = new LinkedList<>();
+//
+//                while(resultSet.next())
+//                {
+//                    unreferencedTables.add(resultSet.getString("table_name"));
+//                }
+//
+//                assertTrue(unreferencedTables.isEmpty(),
+//                           ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_CONTENTS_REFERENCES,
+//                                               String.join(", ", unreferencedTables)));
+//            }
         }
     }
 

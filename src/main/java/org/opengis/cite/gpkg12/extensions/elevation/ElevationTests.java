@@ -8,9 +8,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.tiles.TileTests;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -28,7 +28,11 @@ import org.testng.annotations.Test;
  *
  * @author Jeff Yutzler
  */
-public class ElevationTests extends CommonFixture {
+public class ElevationTests extends TileTests {
+	public ElevationTests(){
+		
+		setDataType("2d-gridded-coverage");
+	}
 	/**
 	 * Sets up variables used across methods
 	 *
