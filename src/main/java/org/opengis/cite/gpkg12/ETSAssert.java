@@ -6,8 +6,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
+import javax.xml.transform.Result;
 import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Validator;
 import javax.xml.xpath.XPath;
@@ -147,9 +147,9 @@ public class ETSAssert {
             msg.append(e.getMessage());
             throw new AssertionError(msg);
         }
-        DOMResult result = validator.validate(xmlSource);
+        Result result = validator.validate(xmlSource);
         Assert.assertFalse(validator.ruleViolationsDetected(), ErrorMessage.format(ErrorMessageKeys.NOT_SCHEMA_VALID,
-                validator.getRuleViolationCount(), XMLUtils.writeNodeToString(result.getNode())));
+                validator.getRuleViolationCount(), XMLUtils.resultToString(result)));
     }
 
     /**
