@@ -1066,7 +1066,7 @@ public class TileTests extends CommonFixture
         }
     }
 
-    private static boolean canReadImage(final Iterable<ImageReader> imageReaders, final ImageInputStream image) throws IOException
+    protected static boolean canReadImage(final Iterable<ImageReader> imageReaders, final ImageInputStream image) throws IOException
     {
         for(final ImageReader imageReader : imageReaders)
         {
@@ -1105,7 +1105,7 @@ public class TileTests extends CommonFixture
     private static final double EPSILON = 0.0001;   // TODO should this be made configurable?
 
     private static final Collection<ImageReader> jpegImageReaders;
-    private static final Collection<ImageReader> pngImageReaders;
+    protected static final Collection<ImageReader> pngImageReaders;
 
     private static final Map<String, ColumnDefinition> TileTableExpectedColumns;
     private static final Set<ForeignKeyDefinition>     TileTableExpectedForeignKeys;

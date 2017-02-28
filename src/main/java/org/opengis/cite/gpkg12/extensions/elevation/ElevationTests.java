@@ -2,16 +2,34 @@ package org.opengis.cite.gpkg12.extensions.elevation;
 
 import static org.testng.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.TestRunArg;
 import org.opengis.cite.gpkg12.tiles.TileTests;
+import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -33,6 +51,26 @@ public class ElevationTests extends TileTests {
 		
 		setDataType("2d-gridded-coverage");
 	}
+    @BeforeTest
+    public void validateClassEnabled(ITestContext testContext) throws IOException {
+	  Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
+	  final String pstr = params.get(TestRunArg.ICS.toString());
+	  final String testName = testContext.getName();
+	  HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
+	  Assert.assertTrue(set.contains(testName), String.format("Conformance class %s is not enabled", testName));
+    }
+
+    @BeforeClass
+    public void a_ValidateExtensionPresent(ITestContext testContext) throws SQLException {
+  		
+		final Statement statement1 = this.databaseConnection.createStatement();
+		ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = 'gpkg_2d_gridded_coverage_ancillary';");
+		resultSet1.next();
+		hasExtension = resultSet1.getInt(1) > 0;
+		
+	    Assert.assertTrue(hasExtension, "The Elevation Extension is not in use in this GeoPackage.");
+    }
+
 	/**
 	 * Sets up variables used across methods
 	 *
@@ -41,12 +79,6 @@ public class ElevationTests extends TileTests {
 	 */
 	@BeforeClass
 	public void setUp() throws SQLException {
-		
-		final Statement statement1 = this.databaseConnection.createStatement();
-		ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = 'gpkg_2d_gridded_coverage_ancillary';");
-		resultSet1.next();
-		hasExtension = resultSet1.getInt(1) > 0;
-		
 		if (!hasExtension){
 			return;
 		}
@@ -58,7 +90,7 @@ public class ElevationTests extends TileTests {
 		}
 	}
 
-	/**
+    /**
 	 * Test case
 	 * {@code /opt/extensions/elevation/table/coverage_ancillary}
 	 *
@@ -396,7 +428,7 @@ public class ElevationTests extends TileTests {
 	 * {@code /opt/extensions/elevation/coverage_ancillary/datatype}
 	 *
 	 * @see <a href="requirement_feature_integer_pk" target= "_blank">Elevation 
-	 * Extension - Requirement 111</a>
+	 * Extension - Requirement 112</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
@@ -420,16 +452,44 @@ public class ElevationTests extends TileTests {
 			assertTrue("integer".equals(datatype) || "float".equals(datatype), ErrorMessageKeys.COVERAGE_ANCILLARY_DATATYPE_INVALID);
 		}
 	}
-	
-	//TODO: I'm not sure how to test R113. There is no reason having rogue rows in here should break anything.
-	
 
+	/**
+	 * Test case
+	 * {@code /opt/extensions/elevation/tile_ancillary/table_reference}
+	 *
+	 * @see <a href="requirement_feature_integer_pk" target= "_blank">Elevation 
+	 * Extension - Requirement 113</a>
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = "See OGC 12-128r13: Requirement 113")
+	public void tileAncillaryTableRef() throws SQLException {
+		// 1
+		final Statement statement = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet = statement.executeQuery("SELECT DISTINCT tpudt_name FROM 'gpkg_2d_gridded_tile_ancillary';");
+		
+		// 2
+		while (resultSet.next()){
+			// 3
+			final String tableName = resultSet.getString("tpudt_name");
+			
+			final Statement statement2 = this.databaseConnection.createStatement();
+			
+			final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT type, name FROM sqlite_master WHERE type IN ('table','view') AND name = '%s'",
+					 tableName));
+			// 4
+			assertTrue(resultSet2.next(), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_TABLE_REF_INVALID, tableName));
+		}
+	}
+	
 	/**
 	 * Test case
 	 * {@code /opt/extensions/elevation/tpudt/required_references}
 	 *
 	 * @see <a href="requirement_feature_integer_pk" target= "_blank">Elevation 
-	 * Extension - Requirement 108, 109</a>
+	 * Extension - Requirement 114</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
@@ -447,8 +507,97 @@ public class ElevationTests extends TileTests {
 		}
     }
 	
-	//TODO: I don't know how to test R115 - R125
+    /**
+     * For data where the datatype column of the corresponding row in the 
+     * gpkg_2d_gridded_coverage_ancillary table is integer, 
+     * the tile_data BLOB in the tile pyramid user data table containing tiled, 
+     * gridded elevation data SHALL be of MIME type image/png and the data SHALL 
+     * be 16-bit unsigned integer (single channel - "greyscale").
+     * For data where the datatype column of the corresponding row in the 
+     * gpkg_2d_gridded_coverage_ancillary table is float, 
+     * the tile_data BLOB in the tile pyramid user data table containing tiled, 
+     * gridded elevation data SHALL be of MIME type image/tiff and the data SHALL 
+     * be 32-bit floating point as described by the TIFF Encoding (Requirement 120).
+     * 
+     * @see <a href="http://www.geopackage.org/spec/#_requirement-115" target=
+     *      "_blank">MIME Type PNG or TIFF - Requirement 115/116</a>
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     * @throws IOException
+     *             If the bytes of an image cause an error when read
+     */
+    @Test(description = "See OGC 12-128r12: Requirement 115/116")
+    public void imageFormat() throws SQLException, IOException
+    {
+    	// 1
+        for(final String tableName : this.elevationTableNames)
+        {
+        	//TODO: Since we don't currently have a working check for TIFF files, 
+        	// check for float and continue if we have one
+        	final Statement statement1 = this.databaseConnection.createStatement();
+        	
+        	final ResultSet rs1 = statement1.executeQuery(String.format("SELECT datatype FROM gpkg_2d_gridded_coverage_ancillary WHERE tile_matrix_set_name = '%s'", tableName));
+        	
+        	final String datatype = rs1.getString("datatype");
+        	
+        	if ("float".equals(datatype)) {
+        		continue;
+        	}
+        	////
+        	
+            try(final Statement statement = this.databaseConnection.createStatement();
+                final ResultSet resultSet = statement.executeQuery(String.format("SELECT tile_data, id FROM %s;", tableName)))
+            {
+                final Collection<Integer> failedTileIds = new LinkedList<>();
 
-	private boolean hasExtension = false;
+                while(resultSet.next())
+                {
+                    final byte[] tileData = resultSet.getBytes("tile_data");
+
+                    if(!isAcceptedImageFormat(tileData))
+                    {
+                        failedTileIds.add(resultSet.getInt("id"));
+                    }
+                }
+
+                // TODO If this assert fails, subsequent tables won't be tested or reported
+                assertTrue(failedTileIds.isEmpty(),
+                           ErrorMessage.format(ErrorMessageKeys.INVALID_IMAGE_FORMAT,
+                                               tableName,
+                                               failedTileIds.stream()
+                                                            .map(Object::toString)
+                                                            .collect(Collectors.joining(", "))));
+            }
+        }
+    }
+
+    //TODO: I don't know how to test R117 - R122
+
+    protected static final Collection<ImageReader> tiffImageReaders;
+    static
+    {
+    	tiffImageReaders = StreamSupport.stream(Spliterators.spliteratorUnknownSize(ImageIO.getImageReadersByMIMEType("image/tiff"),
+                                                                                    Spliterator.ORDERED),
+                                                false)
+                                        .collect(Collectors.toCollection(ArrayList::new));
+
+    }
+
+    private static boolean isAcceptedImageFormat(final byte[] image) throws IOException
+    {
+        if(image == null)
+        {
+            return false;
+        }
+
+        try(final ByteArrayInputStream        byteArray  = new ByteArrayInputStream(image);
+            final MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(byteArray))
+        {
+            return canReadImage(pngImageReaders, cacheImage) || canReadImage(tiffImageReaders, cacheImage);
+        }
+    }
+
+    private boolean hasExtension = false;
 	private final Collection<String> elevationTableNames = new ArrayList<>();
 }

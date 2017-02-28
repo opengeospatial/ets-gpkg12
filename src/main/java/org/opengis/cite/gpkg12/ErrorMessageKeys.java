@@ -90,4 +90,5 @@ public class ErrorMessageKeys {
     public static final String UNREFERENCED_COVERAGE_TILE_MATRIX_SET_TABLE = "UnreferencedCoverageTileMatrixSetTable";
     public static final String COVERAGE_ANCILLARY_DATATYPE_INVALID = "CoverageAncillaryDatatypeInvalid";
     public static final String TILE_ANCILLARY_REFERENCES = "TileAncillaryReferences";
+    public static final String TILE_ANCILLARY_TABLE_REF_INVALID = "TileAncillaryTableRefInvalid";
 }
