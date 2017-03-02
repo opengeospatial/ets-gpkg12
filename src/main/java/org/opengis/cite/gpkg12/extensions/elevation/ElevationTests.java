@@ -438,7 +438,7 @@ public class ElevationTests extends TileTests {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("SELECT tile_matrix_set_name, datatype FROM 'gpkg_2d_gridded_coverage_ancillary';");
+		final ResultSet resultSet = statement.executeQuery("SELECT tile_matrix_set_name, datatype, scale, offset FROM 'gpkg_2d_gridded_coverage_ancillary';");
 		
 		// 2
 		while (resultSet.next()){
@@ -450,6 +450,11 @@ public class ElevationTests extends TileTests {
 			// 4
 			final String datatype = resultSet.getString("datatype");
 			assertTrue("integer".equals(datatype) || "float".equals(datatype), ErrorMessageKeys.COVERAGE_ANCILLARY_DATATYPE_INVALID);
+			
+			// 5
+			if ("float".equals(datatype)){
+				assertTrue((resultSet.getObject("scale") == null) && (resultSet.getObject("offset") == null), ErrorMessageKeys.COVERAGE_ANCILLARY_FLOAT_SCALE_OFFSET);
+			}
 		}
 	}
 
