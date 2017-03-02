@@ -538,35 +538,25 @@ public class ElevationTests extends TileTests {
     	// 1
         for(final String tableName : this.elevationTableNames)
         {
-        	//TODO: Since we don't currently have a working check for TIFF files, 
-        	// check for float and continue if we have one
-        	final Statement statement1 = this.databaseConnection.createStatement();
-        	
-        	final ResultSet rs1 = statement1.executeQuery(String.format("SELECT datatype FROM gpkg_2d_gridded_coverage_ancillary WHERE tile_matrix_set_name = '%s'", tableName));
-        	
-        	final String datatype = rs1.getString("datatype");
-        	
-        	if ("float".equals(datatype)) {
-        		continue;
-        	}
-        	////
-        	
+        	// 2
             try(final Statement statement = this.databaseConnection.createStatement();
                 final ResultSet resultSet = statement.executeQuery(String.format("SELECT tile_data, id FROM %s;", tableName)))
             {
                 final Collection<Integer> failedTileIds = new LinkedList<>();
 
+                // 3
                 while(resultSet.next())
                 {
                     final byte[] tileData = resultSet.getBytes("tile_data");
 
+                    // 4
                     if(!isAcceptedImageFormat(tileData))
                     {
                         failedTileIds.add(resultSet.getInt("id"));
                     }
                 }
 
-                // TODO If this assert fails, subsequent tables won't be tested or reported
+                // 5
                 assertTrue(failedTileIds.isEmpty(),
                            ErrorMessage.format(ErrorMessageKeys.INVALID_IMAGE_FORMAT,
                                                tableName,
