@@ -71,6 +71,8 @@ public class CommonFixture {
      *            run, including suite attributes.
      * @throws SQLException
      *             If a database access error occurs.
+     * @throws IOException
+     *             If attempts to detect the database version fail
      */
     @BeforeClass
     public void initCommonFixture(final ITestContext testContext) throws SQLException, IOException {
