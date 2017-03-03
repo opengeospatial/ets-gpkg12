@@ -62,12 +62,20 @@ public class SQLiteContainerTests extends CommonFixture {
     }
 
     /**
-     * A GeoPackage shall contain 0x47503130 ("GP10" in UTF-8/ASCII, [71,80,49,48]) in the
-     * "Application ID" field of the database header. The field is located at
-     * offset 64 (a 32-bit unsigned big-endian integer).
+     * A GeoPackage SHALL contain a value of 0x47504B47 ("GPKG" in ASCII) in 
+     * the "application_id" field of the SQLite database header to indicate 
+     * that it is a GeoPackage. A GeoPackage SHALL contain an appropriate 
+     * value in "user_version" field of the SQLite database header to 
+     * indicate its version. The value SHALL be in integer with a major 
+     * version, two-digit minor version, and two-digit bug-fix. For 
+     * GeoPackage Version 1.2 this value is 0x000027D8 (the hexadecimal value 
+     * for 10200). 
      *
      * @throws IOException
      *             If an I/O error occurs while trying to read the data file.
+     *             
+     * @throws SQLException
+     *             If an SQL query causes an error
      *
      * @see <a href="http://www.geopackage.org/spec/#_requirement-2" target=
      *      "_blank">File Format - Requirement 2</a>
@@ -76,11 +84,26 @@ public class SQLiteContainerTests extends CommonFixture {
      *      target= "_blank">Assigned application IDs</a>
      */
     @Test(description = "See OGC 12-128r12: Requirement 2")
-    public void applicationID() throws IOException {
-    	// Note: This is actually handled in CommonFixture::setupVersion()
+    public void applicationID() throws IOException, SQLException {
+    	// Note: Most of this is actually handled in CommonFixture::setupVersion()
         final GeoPackageVersion version = getGeopackageVersion();
         assertTrue(Arrays.asList(getAllowedVersions()).contains(version),
                 ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID));
+        if (version.equals(GeoPackageVersion.V120)){
+        	final Statement statement = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("PRAGMA user_version");
+            final int versionNumber;
+            final String versionStr;
+            if (resultSet.next()) {
+            	versionStr = resultSet.getString(1);
+            	versionNumber = Integer.parseInt(versionStr);
+            } else {
+            	versionNumber = 0;
+            	versionStr = "";
+            }
+
+            assertTrue(versionNumber >= 10200, ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, versionStr));
+        }
     }
 
     /**

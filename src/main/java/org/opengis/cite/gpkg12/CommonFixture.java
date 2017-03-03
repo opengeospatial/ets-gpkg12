@@ -102,9 +102,14 @@ public class CommonFixture {
     }
     
     /**
-     * A GeoPackage shall contain 0x47503130 ("GP10" in UTF-8/ASCII, [71,80,49,48]) in the
-     * "Application ID" field of the database header. The field is located at
-     * offset 64 (a 32-bit unsigned big-endian integer).
+     * A GeoPackage SHALL contain a value of 0x47504B47 ("GPKG" in ASCII) in 
+     * the "application_id" field of the SQLite database header to indicate 
+     * that it is a GeoPackage. A GeoPackage SHALL contain an appropriate 
+     * value in "user_version" field of the SQLite database header to 
+     * indicate its version. The value SHALL be in integer with a major 
+     * version, two-digit minor version, and two-digit bug-fix. For 
+     * GeoPackage Version 1.2 this value is 0x000027D8 (the hexadecimal value 
+     * for 10200). 
      *
      * @throws IOException
      *             If an I/O error occurs while trying to read the data file.
