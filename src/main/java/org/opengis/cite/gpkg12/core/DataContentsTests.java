@@ -155,20 +155,22 @@ public class DataContentsTests extends CommonFixture
                              "FROM  gpkg_contents " +
                              "WHERE table_name NOT IN (SELECT name FROM sqlite_master);";
 
-            try(final Statement statement   = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery(query))
+        // 1
+        try(final Statement statement   = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery(query))
+        {
+            final Collection<String> invalidContentsTableNames = new LinkedList<>();
+
+            // 2
+            while(resultSet.next())
             {
-                final Collection<String> invalidContentsTableNames = new LinkedList<>();
-
-                while(resultSet.next())
-                {
-                    invalidContentsTableNames.add(resultSet.getString(1));
-                }
-
-                assertTrue(invalidContentsTableNames.isEmpty(),
-                           ErrorMessage.format(ErrorMessageKeys.CONTENT_TABLE_DOES_NOT_EXIST,
-                                               String.join(", ", invalidContentsTableNames)));
+                invalidContentsTableNames.add(resultSet.getString(1));
             }
+
+            assertTrue(invalidContentsTableNames.isEmpty(),
+                       ErrorMessage.format(ErrorMessageKeys.CONTENT_TABLE_DOES_NOT_EXIST,
+                                           String.join(", ", invalidContentsTableNames)));
+        }
     }
 
     /**
@@ -188,23 +190,31 @@ public class DataContentsTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 15")
     public void timestampFormat() throws SQLException
     {
+    	// 1
         try(final Statement statement = this.databaseConnection.createStatement();
             final ResultSet resultSet = statement.executeQuery("SELECT last_change, table_name FROM gpkg_contents;"))
         {
+            final Collection<String> invalidDateTableNames = new LinkedList<>();
+        	// 2
             while(resultSet.next())
             {
+            	// 3
                 final String lastChange = resultSet.getString("last_change");
 
                 try
                 {
+                	// 3a
                     new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.'SS'Z'").parse(lastChange);
                 }
                 catch(final ParseException ignore)
                 {
-                   fail(ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_ENTRY_LAST_CHANGE_FORMAT,
-                                            resultSet.getString("table_name")));
+                	invalidDateTableNames.add(resultSet.getString("table_name"));
                 }
             }
+            // 4
+            assertTrue(invalidDateTableNames.isEmpty(),
+                    ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_ENTRY_LAST_CHANGE_FORMAT,
+                                        String.join(", ", invalidDateTableNames)));
         }
     }
 
