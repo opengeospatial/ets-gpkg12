@@ -240,6 +240,28 @@ public class DataContentsTests extends CommonFixture
         }
     }
 
+    /**
+     * Verify that a GeoPackage contains a features or tiles table and 
+     * gpkg_contents table row describing it.
+     *
+     * @see <a href="http://www.geopackage.org/spec/#_requirement-17" target=
+     *      "_blank">Options - Requirement 17</a>
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = "See OGC 12-128r12: Requirement 17")
+    public void optValidGeoPackage() throws SQLException
+    {
+        try(final Statement statement  = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM gpkg_contents WHERE data_type IN ('tiles', 'features')"))
+        {
+        	resultSet.next();
+            assertTrue(resultSet.getInt(1) > 0,
+                       ErrorMessage.format(ErrorMessageKeys.OPTIONS_NO_FEATURES_OR_TILES));
+        }
+    }
+
 
     private static final Pattern TEXT_TYPE = Pattern.compile("TEXT\\([0-9]+\\)");
     private static final Pattern BLOB_TYPE = Pattern.compile("BLOB\\([0-9]+\\)");

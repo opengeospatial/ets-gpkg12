@@ -36,6 +36,7 @@ public class ErrorMessageKeys {
     public static final String BAD_CONTENTS_ENTRY_LAST_CHANGE_FORMAT = "BadContentsEntryLastChangeFormat";
     public static final String BAD_CONTENTS_TABLE_SRS_FOREIGN_KEY = "BadContentsTableSrsForeignKey";
     public static final String BAD_CONTENTS_TABLE_DEFINITION = "BadContentsTableDefinition";
+    public static final String OPTIONS_NO_FEATURES_OR_TILES = "OptionsNoFeaturesOrTiles";
     public static final String FEATURES_TABLE_DOES_NOT_EXIST = "FeaturesTableDoesNotExist";
     public static final String FEATURE_TABLE_NO_PK = "FeatureTableNoPK";
     public static final String FEATURE_TABLE_PK_NOT_UNIQUE = "FeatureTablePKNotUnique";
