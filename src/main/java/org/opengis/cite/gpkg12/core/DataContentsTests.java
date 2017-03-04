@@ -59,18 +59,23 @@ public class DataContentsTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 5")
     public void columnDataTypes() throws SQLException
     {
+    	// 1
         try(final Statement statement = this.databaseConnection.createStatement();
             final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents;"))
         {
+        	// 2
             while(resultSet.next())
             {
+            	// 3
                 final String tableName = resultSet.getString("table_name");
 
                 if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, tableName))
                 {
+                	// 3a
                     try(final Statement preparedStatement = this.databaseConnection.createStatement();
                         final ResultSet pragmaTableInfo   = preparedStatement.executeQuery(String.format("PRAGMA table_info('%s');", tableName)))
                     {
+                    	//3b
                         while(pragmaTableInfo.next())
                         {
                             final String dataType = pragmaTableInfo.getString("type");
@@ -78,6 +83,7 @@ public class DataContentsTests extends CommonFixture
                                                             TEXT_TYPE.matcher(dataType).matches() ||
                                                             BLOB_TYPE.matcher(dataType).matches();
 
+                            // 3bi
                             assertTrue(correctDataType,
                                        ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE,
                                                            dataType,

@@ -126,14 +126,19 @@ public class CommonFixture {
         try (FileInputStream fileInputStream = new FileInputStream(this.gpkgFile)) {
             fileInputStream.read(headerBytes);
         }
+        // 1
         final byte[] appID = Arrays.copyOfRange(headerBytes, GPKG12.APP_ID_OFFSET, GPKG12.APP_ID_OFFSET + 4);
+        // 2
     	if (Arrays.equals(appID, GPKG12.APP_GP10)){
     		geopackageVersion = GeoPackageVersion.V102;
+    		// 3
     	} else if (Arrays.equals(appID, GPKG12.APP_GP11)){
     		geopackageVersion = GeoPackageVersion.V110;
+    		// 4
     	} else if (Arrays.equals(appID, GPKG12.APP_GPKG)){
     		geopackageVersion = GeoPackageVersion.V120;
     	} 
+    	// 5
         assertTrue(geopackageVersion != null, ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, new String(appID, StandardCharsets.US_ASCII)));
     }   
 }

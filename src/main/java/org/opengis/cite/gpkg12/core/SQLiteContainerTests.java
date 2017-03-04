@@ -91,6 +91,7 @@ public class SQLiteContainerTests extends CommonFixture {
                 ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID));
         if (version.equals(GeoPackageVersion.V120)){
         	final Statement statement = this.databaseConnection.createStatement();
+        	// 4a
             final ResultSet resultSet = statement.executeQuery("PRAGMA user_version");
             final int versionNumber;
             final String versionStr;
@@ -102,6 +103,7 @@ public class SQLiteContainerTests extends CommonFixture {
             	versionStr = "";
             }
 
+            // 4b
             assertTrue(versionNumber >= 10200, ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, versionStr));
         }
     }
@@ -131,11 +133,13 @@ public class SQLiteContainerTests extends CommonFixture {
     @Test(description = "See OGC 12-128r12: Requirement 4")
     public void fileContents()
     {
-        // TODO: Look for tables, columns, data types, etc. NOT allowed by spec
-        // Ignore tables and columns called out in extensions?
+        // TODO: Look for tables, columns, data types, etc. NOT allowed by 
+    	// standard? Ignore tables and columns called out in extensions?
+    	// This is informational only - there is nothing non-compliant about 
+    	// an extended GeoPackage.
     }
 
-        /**
+    /**
      * The SQLite PRAGMA integrity_check SQL command SHALL return "ok" for a
      * GeoPackage file.
      *
@@ -226,10 +230,11 @@ public class SQLiteContainerTests extends CommonFixture {
         try(final Statement statement = this.databaseConnection.createStatement();
             final ResultSet resultSet = statement.executeQuery("SELECT sqlite_compileoption_used('SQLITE_OMIT_*')"))
         {
-            assertEquals(resultSet.getInt(1),
-                         0,
-                         ErrorMessage.format(ErrorMessageKeys.SQLITE_OMIT_OPTIONS));
-
+        	while(resultSet.next()){
+	            assertEquals(resultSet.getInt(1),
+	                         0,
+	                         ErrorMessage.format(ErrorMessageKeys.SQLITE_OMIT_OPTIONS));
+        	}
         }
     }
 }
