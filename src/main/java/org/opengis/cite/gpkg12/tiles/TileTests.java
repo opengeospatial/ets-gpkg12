@@ -459,23 +459,19 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 43")
     public void tileMatrixTableContentsReferences() throws SQLException
     {
-        if(this.hasTileMatrixTable)
+        try(final Statement statement = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_tile_matrix AS tm WHERE table_name NOT IN (SELECT table_name FROM gpkg_contents AS gc WHERE tm.table_name = gc.table_name);"))
         {
-        	// Commenting this test out as per https://github.com/opengeospatial/geopackage/issues/295
-//            try(final Statement statement = this.databaseConnection.createStatement();
-//                final ResultSet resultSet = statement.executeQuery(String.format("SELECT table_name FROM gpkg_tile_matrix AS tm WHERE table_name NOT IN (SELECT table_name FROM gpkg_contents AS gc WHERE tm.table_name = gc.table_name AND gc.data_type = '%s');", dataType)))
-//            {
-//                final Collection<String> unreferencedTables = new LinkedList<>();
-//
-//                while(resultSet.next())
-//                {
-//                    unreferencedTables.add(resultSet.getString("table_name"));
-//                }
-//
-//                assertTrue(unreferencedTables.isEmpty(),
-//                           ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_CONTENTS_REFERENCES,
-//                                               String.join(", ", unreferencedTables)));
-//            }
+            final Collection<String> unreferencedTables = new LinkedList<>();
+
+            while(resultSet.next())
+            {
+                unreferencedTables.add(resultSet.getString("table_name"));
+            }
+
+            assertTrue(unreferencedTables.isEmpty(),
+                       ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_CONTENTS_REFERENCES,
+                                           String.join(", ", unreferencedTables)));
         }
     }
 
