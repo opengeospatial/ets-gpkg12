@@ -59,18 +59,23 @@ public class DataContentsTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 5")
     public void columnDataTypes() throws SQLException
     {
+    	// 1
         try(final Statement statement = this.databaseConnection.createStatement();
             final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents;"))
         {
+        	// 2
             while(resultSet.next())
             {
+            	// 3
                 final String tableName = resultSet.getString("table_name");
 
                 if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, tableName))
                 {
+                	// 3a
                     try(final Statement preparedStatement = this.databaseConnection.createStatement();
                         final ResultSet pragmaTableInfo   = preparedStatement.executeQuery(String.format("PRAGMA table_info('%s');", tableName)))
                     {
+                    	//3b
                         while(pragmaTableInfo.next())
                         {
                             final String dataType = pragmaTableInfo.getString("type");
@@ -78,6 +83,7 @@ public class DataContentsTests extends CommonFixture
                                                             TEXT_TYPE.matcher(dataType).matches() ||
                                                             BLOB_TYPE.matcher(dataType).matches();
 
+                            // 3bi
                             assertTrue(correctDataType,
                                        ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE,
                                                            dataType,
@@ -149,20 +155,22 @@ public class DataContentsTests extends CommonFixture
                              "FROM  gpkg_contents " +
                              "WHERE table_name NOT IN (SELECT name FROM sqlite_master);";
 
-            try(final Statement statement   = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery(query))
+        // 1
+        try(final Statement statement   = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery(query))
+        {
+            final Collection<String> invalidContentsTableNames = new LinkedList<>();
+
+            // 2
+            while(resultSet.next())
             {
-                final Collection<String> invalidContentsTableNames = new LinkedList<>();
-
-                while(resultSet.next())
-                {
-                    invalidContentsTableNames.add(resultSet.getString(1));
-                }
-
-                assertTrue(invalidContentsTableNames.isEmpty(),
-                           ErrorMessage.format(ErrorMessageKeys.CONTENT_TABLE_DOES_NOT_EXIST,
-                                               String.join(", ", invalidContentsTableNames)));
+                invalidContentsTableNames.add(resultSet.getString(1));
             }
+
+            assertTrue(invalidContentsTableNames.isEmpty(),
+                       ErrorMessage.format(ErrorMessageKeys.CONTENT_TABLE_DOES_NOT_EXIST,
+                                           String.join(", ", invalidContentsTableNames)));
+        }
     }
 
     /**
@@ -182,23 +190,31 @@ public class DataContentsTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 15")
     public void timestampFormat() throws SQLException
     {
+    	// 1
         try(final Statement statement = this.databaseConnection.createStatement();
             final ResultSet resultSet = statement.executeQuery("SELECT last_change, table_name FROM gpkg_contents;"))
         {
+            final Collection<String> invalidDateTableNames = new LinkedList<>();
+        	// 2
             while(resultSet.next())
             {
+            	// 3
                 final String lastChange = resultSet.getString("last_change");
 
                 try
                 {
+                	// 3a
                     new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'.'SS'Z'").parse(lastChange);
                 }
                 catch(final ParseException ignore)
                 {
-                   fail(ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_ENTRY_LAST_CHANGE_FORMAT,
-                                            resultSet.getString("table_name")));
+                	invalidDateTableNames.add(resultSet.getString("table_name"));
                 }
             }
+            // 4
+            assertTrue(invalidDateTableNames.isEmpty(),
+                    ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_ENTRY_LAST_CHANGE_FORMAT,
+                                        String.join(", ", invalidDateTableNames)));
         }
     }
 
@@ -221,6 +237,28 @@ public class DataContentsTests extends CommonFixture
         {
             assertTrue(!resultSet.next(),
                        ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_TABLE_SRS_FOREIGN_KEY));
+        }
+    }
+
+    /**
+     * Verify that a GeoPackage contains a features or tiles table and 
+     * gpkg_contents table row describing it.
+     *
+     * @see <a href="http://www.geopackage.org/spec/#_requirement-17" target=
+     *      "_blank">Options - Requirement 17</a>
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = "See OGC 12-128r12: Requirement 17")
+    public void optValidGeoPackage() throws SQLException
+    {
+        try(final Statement statement  = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM gpkg_contents WHERE data_type IN ('tiles', 'features')"))
+        {
+        	resultSet.next();
+            assertTrue(resultSet.getInt(1) > 0,
+                       ErrorMessage.format(ErrorMessageKeys.OPTIONS_NO_FEATURES_OR_TILES));
         }
     }
 

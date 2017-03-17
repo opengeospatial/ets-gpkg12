@@ -1,8 +1,11 @@
 package org.opengis.cite.gpkg12;
 
+import static org.testng.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -14,6 +17,7 @@ import org.sqlite.SQLiteDataSource;
 import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 /**
  * A supporting base class that sets up a common test fixture. These
@@ -27,11 +31,18 @@ public class CommonFixture {
 		private GeoPackageVersion(int value){
 			this.value = value;
 		}
+		
 		protected boolean equals(GeoPackageVersion right) {
 			return this.value == right.value;
 		}
 	}
 	
+	private GeoPackageVersion[] allowedVersions = {GeoPackageVersion.V102, GeoPackageVersion.V110, GeoPackageVersion.V120};
+	
+	protected GeoPackageVersion[] getAllowedVersions() {
+		return allowedVersions;
+	}
+
 	private GeoPackageVersion geopackageVersion;
 
     protected GeoPackageVersion getGeopackageVersion() {
@@ -60,6 +71,8 @@ public class CommonFixture {
      *            run, including suite attributes.
      * @throws SQLException
      *             If a database access error occurs.
+     * @throws IOException
+     *             If attempts to detect the database version fail
      */
     @BeforeClass
     public void initCommonFixture(final ITestContext testContext) throws SQLException, IOException {
@@ -88,19 +101,44 @@ public class CommonFixture {
         }
     }
     
+    /**
+     * A GeoPackage SHALL contain a value of 0x47504B47 ("GPKG" in ASCII) in 
+     * the "application_id" field of the SQLite database header to indicate 
+     * that it is a GeoPackage. A GeoPackage SHALL contain an appropriate 
+     * value in "user_version" field of the SQLite database header to 
+     * indicate its version. The value SHALL be in integer with a major 
+     * version, two-digit minor version, and two-digit bug-fix. For 
+     * GeoPackage Version 1.2 this value is 0x000027D8 (the hexadecimal value 
+     * for 10200). 
+     *
+     * @throws IOException
+     *             If an I/O error occurs while trying to read the data file.
+     *
+     * @see <a href="http://www.geopackage.org/spec/#_requirement-2" target=
+     *      "_blank">File Format - Requirement 2</a>
+     * @see <a href=
+     *      "http://www.sqlite.org/src/artifact?ci=trunk&filename=magic.txt"
+     *      target= "_blank">Assigned application IDs</a>
+     */
+    @Test(description = "See OGC 12-128r12: Requirement 2")
     private void setupVersion() throws SQLException, IOException{
-        @SuppressWarnings("CheckForOutOfMemoryOnLargeArrayAllocation")
         final byte[] headerBytes = new byte[GPKG12.DB_HEADER_LENGTH];
         try (FileInputStream fileInputStream = new FileInputStream(this.gpkgFile)) {
             fileInputStream.read(headerBytes);
         }
+        // 1
         final byte[] appID = Arrays.copyOfRange(headerBytes, GPKG12.APP_ID_OFFSET, GPKG12.APP_ID_OFFSET + 4);
+        // 2
     	if (Arrays.equals(appID, GPKG12.APP_GP10)){
     		geopackageVersion = GeoPackageVersion.V102;
+    		// 3
     	} else if (Arrays.equals(appID, GPKG12.APP_GP11)){
     		geopackageVersion = GeoPackageVersion.V110;
+    		// 4
     	} else if (Arrays.equals(appID, GPKG12.APP_GPKG)){
     		geopackageVersion = GeoPackageVersion.V120;
-    	}
+    	} 
+    	// 5
+        assertTrue(geopackageVersion != null, ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, new String(appID, StandardCharsets.US_ASCII)));
     }   
 }

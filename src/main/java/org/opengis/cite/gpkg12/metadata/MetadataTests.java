@@ -93,13 +93,15 @@ public class MetadataTests extends CommonFixture
     }
 
     @BeforeTest
-    public void validateMetadataLevelEnabled(ITestContext testContext) throws IOException {
+    public void validateClassEnabled(ITestContext testContext) throws IOException {
       Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
-      int level = Integer.parseInt(params.get(TestRunArg.ICS.toString()));
-      if (level > 2) {
+      final String pstr = params.get(TestRunArg.ICS.toString());
+      final String testName = testContext.getName();
+      HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
+      if (set.contains(testName)){
         Assert.assertTrue(true);
       } else {
-        Assert.assertTrue(false, "Metadata level is not enabled");
+        Assert.assertTrue(false, String.format("Conformance class %s is not enabled", testName));
       }
     }
     

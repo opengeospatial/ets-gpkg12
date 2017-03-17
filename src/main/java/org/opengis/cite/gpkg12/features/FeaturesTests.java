@@ -10,13 +10,19 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.GPKG12;
+import org.opengis.cite.gpkg12.TestRunArg;
+import org.testng.Assert;
+import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -68,6 +74,19 @@ public class FeaturesTests extends CommonFixture {
 		allowedGeometryTypes.add("GEOMETRYCOLLECTION");
 	}
 
+    @BeforeTest
+    public void validateClassEnabled(ITestContext testContext) throws IOException {
+      Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
+      final String pstr = params.get(TestRunArg.ICS.toString());
+      final String testName = testContext.getName();
+      HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
+      if (set.contains(testName)){
+        Assert.assertTrue(true);
+      } else {
+        Assert.assertTrue(false, String.format("Conformance class %s is not enabled", testName));
+      }
+    }
+    	
 	/**
 	 * Test case
 	 * {@code /opt/features/vector_features/data/feature_table_integer_primary_key}
@@ -78,7 +97,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 29")
+	@Test(description = "See OGC 12-128r13: Requirement 29")
 	public void featureTableIntegerPrimaryKey() throws SQLException {
 		for (final String tableName : this.featureTableNames) {
 			final Statement statement = this.databaseConnection.createStatement();
@@ -88,6 +107,8 @@ public class FeaturesTests extends CommonFixture {
 			// 2
 			assertTrue(resultSet.next(),
 					ErrorMessage.format(ErrorMessageKeys.FEATURES_TABLE_DOES_NOT_EXIST, tableName));
+			
+			String pkName = null;
 
 			boolean pass = false;
 			// 3
@@ -97,17 +118,29 @@ public class FeaturesTests extends CommonFixture {
 					if ((resultSet.getInt("pk") == 1) && (resultSet.getInt("notnull") == 1)
 							&& (resultSet.getString("type").equals("INTEGER"))) {
 						pass = true;
+						pkName = resultSet.getString("name");
 						break;
 					}
 				} else {
 					if ((resultSet.getInt("pk") == 1) && (resultSet.getString("type").equals("INTEGER"))) {
 						pass = true;
+						pkName = resultSet.getString("name");
 						break;
 					}
 				}
 			} while (resultSet.next());
 
 			assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURE_TABLE_NO_PK, tableName));
+			
+			if (pkName != null) {
+				// 4
+				final Statement statement2 = this.databaseConnection.createStatement();
+
+				final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct %s) - COUNT(*) from %s", pkName, tableName));
+				
+				// 5
+				assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.FEATURE_TABLE_PK_NOT_UNIQUE, tableName));
+			}
 		}
 	}
 
@@ -123,7 +156,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirements 19, 20")
+	@Test(description = "See OGC 12-128r13: Requirements 19, 20")
 	public void featureGeometryEncodingTableBlob() throws SQLException {
 		// 1
 		final Statement statement1 = this.databaseConnection.createStatement();
@@ -160,9 +193,11 @@ public class FeaturesTests extends CommonFixture {
 		        // 3ciii
 		        assertTrue((sgbpb[3] & 0b00100000) == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
 		        
-		        // 5bvii
+		        // 3civ
 		        final int envelope = (sgbpb[3] & 0b00001110) >> 1;
 		        assertTrue(envelope <= 4, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
+		        
+		        // TODO: 3cv 
 			}
 		}
 	}
@@ -177,7 +212,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 21")
+	@Test(description = "See OGC 12-128r13: Requirement 21")
 	public void featureGeometryColumnsTableDef() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -185,35 +220,45 @@ public class FeaturesTests extends CommonFixture {
 		final ResultSet resultSet = statement.executeQuery("PRAGMA table_info('gpkg_geometry_columns');");
 
 		// 2
-		while (resultSet.next()){
+		int passFlag = 0;
+		final int flagMask = 0b00111111;
+		
+		while (resultSet.next()) {
 			// 3
 			final String name = resultSet.getString("name");
 			if ("geometry_type_name".equals(name)){
 				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
 				assertTrue(resultSet.getInt("pk") == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+				passFlag |= 1;
 			} else if ("table_name".equals(name)){
 				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
 				assertTrue(resultSet.getInt("pk") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+				passFlag |= (1 << 1);
 			} else if ("m".equals(name)){
 				assertTrue("TINYINT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
 				assertTrue(resultSet.getInt("pk") == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+				passFlag |= (1 << 2);
 			} else if ("z".equals(name)){
 				assertTrue("TINYINT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
 				assertTrue(resultSet.getInt("pk") == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+				passFlag |= (1 << 3);
 			} else if ("srs_id".equals(name)){
 				assertTrue("INTEGER".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
 				assertTrue(resultSet.getInt("pk") == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+				passFlag |= (1 << 4);
 			} else if ("column_name".equals(name)){
 				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
 				assertTrue(resultSet.getInt("pk") == 2, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+				passFlag |= (1 << 5);
 			}
-		}
+		} 
+		assertTrue((passFlag & flagMask) == flagMask, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
 	}
 
 	/**
@@ -226,7 +271,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 22")
+	@Test(description = "See OGC 12-128r13: Requirement 22")
 	public void featureGeometryColumnsDataValues() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -257,7 +302,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 23, 26")
+	@Test(description = "See OGC 12-128r13: Requirement 23, 26")
 	public void featureGeometryColumnsDataValuesTableName() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -294,7 +339,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 24")
+	@Test(description = "See OGC 12-128r13: Requirement 24")
 	public void featureGeometryColumnsDataValuesColumnName() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -333,7 +378,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 25")
+	@Test(description = "See OGC 12-128r13: Requirement 25")
 	public void featureGeometryColumnsDataValuesGeometryType() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -371,7 +416,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 27")
+	@Test(description = "See OGC 12-128r13: Requirement 27")
 	public void featureGeometryColumnsDataValuesZ() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -401,7 +446,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 28")
+	@Test(description = "See OGC 12-128r13: Requirement 28")
 	public void featureGeometryColumnsDataValuesM() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -431,7 +476,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 30")
+	@Test(description = "See OGC 12-128r13: Requirement 30")
 	public void featureTableOneGeometryColumn() throws SQLException {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
@@ -461,7 +506,7 @@ public class FeaturesTests extends CommonFixture {
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 31")
+	@Test(description = "See OGC 12-128r13: Requirement 31")
 	public void featureTableGeometryColumnType() throws SQLException {
 		// We're just going to skip this test on older GeoPackages and hope for the best.
 		if (getGeopackageVersion().equals(GeoPackageVersion.V120)){

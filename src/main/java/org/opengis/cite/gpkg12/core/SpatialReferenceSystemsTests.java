@@ -136,15 +136,22 @@ public class SpatialReferenceSystemsTests extends CommonFixture {
      */
     @Test(description = "See OGC 12-128r12: Requirement 12")
     public void checkContentSrs() throws SQLException {
-        final String query = "SELECT DISTINCT srs_id as srsContents " + "FROM gpkg_contents " + "WHERE srsContents "
-                + "NOT IN (SELECT srs_id FROM gpkg_spatial_ref_sys);";
-
+    	checkContentSrs("'tiles','features'");
+    }
+    
+    // Tests for extensions can call this instead of checkContentSrs()
+    protected void checkContentSrs(String types) throws SQLException {
+    	// 1
+        final String query = "SELECT DISTINCT gc.srs_id, srs.srs_id FROM gpkg_contents AS gc LEFT OUTER JOIN gpkg_spatial_ref_sys AS srs ON srs.srs_id = gc.srs_id WHERE gc.data_type IN(" + types + ")";
         try (final Statement statement = this.databaseConnection.createStatement();
                 final ResultSet srsDefined = statement.executeQuery(query)) {
             final Collection<String> invalidSrsIds = new LinkedList<>();
 
             while (srsDefined.next()) {
-                invalidSrsIds.add(srsDefined.getString("srsContents"));
+            	// 2
+            	if (srsDefined.getString(2) == null){
+                    invalidSrsIds.add(srsDefined.getString(1));
+            	}
             }
 
             assertTrue(invalidSrsIds.isEmpty(), ErrorMessage.format(ErrorMessageKeys.UNDEFINED_SRS,

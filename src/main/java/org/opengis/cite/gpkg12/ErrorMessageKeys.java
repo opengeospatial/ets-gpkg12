@@ -36,8 +36,10 @@ public class ErrorMessageKeys {
     public static final String BAD_CONTENTS_ENTRY_LAST_CHANGE_FORMAT = "BadContentsEntryLastChangeFormat";
     public static final String BAD_CONTENTS_TABLE_SRS_FOREIGN_KEY = "BadContentsTableSrsForeignKey";
     public static final String BAD_CONTENTS_TABLE_DEFINITION = "BadContentsTableDefinition";
+    public static final String OPTIONS_NO_FEATURES_OR_TILES = "OptionsNoFeaturesOrTiles";
     public static final String FEATURES_TABLE_DOES_NOT_EXIST = "FeaturesTableDoesNotExist";
     public static final String FEATURE_TABLE_NO_PK = "FeatureTableNoPK";
+    public static final String FEATURE_TABLE_PK_NOT_UNIQUE = "FeatureTablePKNotUnique";
     public static final String FEATURES_BINARY_INVALID = "FeaturesBinaryInvalid";
     public static final String FEATURES_GEOMETRY_COLUMNS_INVALID = "FeaturesGeometryColumnsInvalid";
     public static final String FEATURES_GEOMETRY_COLUMNS_NO_FK = "FeaturesGeometryColumnsNoFK";
@@ -79,4 +81,16 @@ public class ErrorMessageKeys {
     public static final String INVALID_METADATA_REFERENCE_SCOPE = "InvalidMetadataReferenceScope";
     public static final String BAD_METADATA_REFERENCE_SCOPE_COLUMN_NAME_AGREEMENT = "BadMetadataReferenceScopeColumnNameAgreement";
     public static final String INVALID_METADATA_REFERENCE_TABLE = "InvalidMetadataReferenceTable";
+    public static final String COVERAGE_ANCILLARY_COLUMNS_INVALID = "CoverageAncillaryColumnsInvalid";
+    public static final String COVERAGE_ANCILLARY_NO_FK = "CoverageAncillaryNoFK";
+    public static final String TILE_ANCILLARY_COLUMNS_INVALID = "TileAncillaryColumnsInvalid";
+    public static final String TILE_ANCILLARY_NO_FK = "TileAncillaryNoFK";
+    public static final String NO_ELEVATION_SRS = "NoElevationSrs";
+    public static final String NO_ELEVATION_SRS_REFERENCE = "NoElevationSrsReference";
+    public static final String ELEVATION_EXTENSION_ROWS_MISSING = "ElevationExtensionRowsMissing";
+    public static final String UNREFERENCED_COVERAGE_TILE_MATRIX_SET_TABLE = "UnreferencedCoverageTileMatrixSetTable";
+    public static final String COVERAGE_ANCILLARY_DATATYPE_INVALID = "CoverageAncillaryDatatypeInvalid";
+    public static final String COVERAGE_ANCILLARY_FLOAT_SCALE_OFFSET = "CoverageAncillaryFloatScaleOffset";
+    public static final String TILE_ANCILLARY_REFERENCES = "TileAncillaryReferences";
+    public static final String TILE_ANCILLARY_TABLE_REF_INVALID = "TileAncillaryTableRefInvalid";
 }

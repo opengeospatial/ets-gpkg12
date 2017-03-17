@@ -39,7 +39,7 @@ Note: This test doesn’t support GeoPackage 1.1. To follow the issue or support
 The documents listed below stipulate requirements that must be satisfied by a 
 conforming implementation.
 
-1. [OGC GeoPackage Encoding Standard 1.0.2](http://www.geopackage.org/spec/)
+1. [OGC GeoPackage Encoding Standard 1.2.0](http://www.geopackage.org/spec/)
 2. [SQLite Database File Format](http://sqlite.org/fileformat2.html)
 
 If any of the following preconditions are not satisfied then all tests in the 

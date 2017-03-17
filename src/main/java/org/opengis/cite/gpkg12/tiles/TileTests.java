@@ -96,7 +96,7 @@ public class TileTests extends CommonFixture
         }
 
         try(final Statement statement = this.databaseConnection.createStatement();
-            final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type = 'tiles';"))
+            final ResultSet resultSet = statement.executeQuery(String.format("SELECT table_name FROM gpkg_contents WHERE data_type = '%s';", dataType)))
         {
             while(resultSet.next())
             {
@@ -106,13 +106,15 @@ public class TileTests extends CommonFixture
     }
 
     @BeforeTest
-    public void validateTileLevelEnabled(ITestContext testContext) throws IOException {
+    public void validateClassEnabled(ITestContext testContext) throws IOException {
       Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
-      int level = Integer.parseInt(params.get(TestRunArg.ICS.toString()));
-      if (level > 1) {
+      final String pstr = params.get(TestRunArg.ICS.toString());
+      final String testName = testContext.getName();
+      HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
+      if (set.contains(testName)){
         Assert.assertTrue(true);
       } else {
-        Assert.assertTrue(false, "Tile level is not enabled");
+        Assert.assertTrue(false, String.format("Conformance class %s is not enabled", testName));
       }
     }
     
@@ -324,17 +326,12 @@ public class TileTests extends CommonFixture
     {
         if(this.hasTileMatrixSetTable)
         {
-            try(Statement statement = this.databaseConnection.createStatement();
-                ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_tile_matrix_set;"))
-            {
-                while(resultSet.next())
-                {
-                    final String tableName = resultSet.getString("table_name");
-
-                    assertTrue(this.contentsTileTableNames.contains(tableName),
-                               ErrorMessage.format(ErrorMessageKeys.UNREFERENCED_TILE_MATRIX_SET_TABLE, tableName));
-                }
-            }
+    		for (final String tableName : this.contentsTileTableNames) {
+    			final Statement statement1 = this.databaseConnection.createStatement();
+    			final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT table_name FROM gpkg_tile_matrix_set WHERE table_name = '%s'", tableName));
+                assertTrue(resultSet1.next(),
+                        ErrorMessage.format(ErrorMessageKeys.UNREFERENCED_TILE_MATRIX_SET_TABLE, tableName));
+    		}
         }
     }
 
@@ -462,22 +459,19 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 43")
     public void tileMatrixTableContentsReferences() throws SQLException
     {
-        if(this.hasTileMatrixTable)
+        try(final Statement statement = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_tile_matrix AS tm WHERE table_name NOT IN (SELECT table_name FROM gpkg_contents AS gc WHERE tm.table_name = gc.table_name);"))
         {
-            try(final Statement statement = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_tile_matrix AS tm WHERE table_name NOT IN (SELECT table_name FROM gpkg_contents AS gc WHERE tm.table_name = gc.table_name AND gc.data_type = 'tiles');"))
+            final Collection<String> unreferencedTables = new LinkedList<>();
+
+            while(resultSet.next())
             {
-                final Collection<String> unreferencedTables = new LinkedList<>();
-
-                while(resultSet.next())
-                {
-                    unreferencedTables.add(resultSet.getString("table_name"));
-                }
-
-                assertTrue(unreferencedTables.isEmpty(),
-                           ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_CONTENTS_REFERENCES,
-                                               String.join(", ", unreferencedTables)));
+                unreferencedTables.add(resultSet.getString("table_name"));
             }
+
+            assertTrue(unreferencedTables.isEmpty(),
+                       ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_CONTENTS_REFERENCES,
+                                           String.join(", ", unreferencedTables)));
         }
     }
 
@@ -1068,7 +1062,7 @@ public class TileTests extends CommonFixture
         }
     }
 
-    private static boolean canReadImage(final Iterable<ImageReader> imageReaders, final ImageInputStream image) throws IOException
+    protected static boolean canReadImage(final Iterable<ImageReader> imageReaders, final ImageInputStream image) throws IOException
     {
         for(final ImageReader imageReader : imageReaders)
         {
@@ -1089,7 +1083,16 @@ public class TileTests extends CommonFixture
         return false;
     }
 
-    private boolean hasTileMatrixTable;
+    public String getDataType() {
+		return dataType;
+	}
+
+	public void setDataType(String dataType) {
+		this.dataType = dataType;
+	}
+
+	private String dataType = "tiles";
+	private boolean hasTileMatrixTable;
     private boolean hasTileMatrixSetTable;
 
     private final Collection<String> tileTableNames         = new ArrayList<>();
@@ -1098,7 +1101,7 @@ public class TileTests extends CommonFixture
     private static final double EPSILON = 0.0001;   // TODO should this be made configurable?
 
     private static final Collection<ImageReader> jpegImageReaders;
-    private static final Collection<ImageReader> pngImageReaders;
+    protected static final Collection<ImageReader> pngImageReaders;
 
     private static final Map<String, ColumnDefinition> TileTableExpectedColumns;
     private static final Set<ForeignKeyDefinition>     TileTableExpectedForeignKeys;
