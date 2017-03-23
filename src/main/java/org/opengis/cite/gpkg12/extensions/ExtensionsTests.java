@@ -122,4 +122,59 @@ public class ExtensionsTests extends CommonFixture
 		} 
 		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_extensions", "missing column(s)"));
     }
+    
+    /**
+     * Values of the `gpkg_extensions` `table_name` column SHALL reference 
+     * values in the `gpkg_contents` `table_name` column or be NULL.They 
+     * SHALL NOT be NULL for rows where the `column_name` value is not NULL.
+     *
+     * /opt/extension_metchanism/extensions/data/data_values_table_name
+     * 
+     * @see <a href="http://www.geopackage.org/spec/#_r60" target=
+     *      "_blank">2.3.2.1.2. Extensions Table Data Values - Requirement 60</a>
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+   @Test(description = "See OGC 12-128r13: Requirement 60")
+   public void extensionsTableValues() throws SQLException
+   {
+		// 1
+		final Statement statement = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet = statement.executeQuery("SELECT table_name, column_name FROM gpkg_extensions;");
+
+		// 2
+		while (resultSet.next()) {
+			// 3a
+			final String tableName = resultSet.getString("table_name");
+			final String columnName = resultSet.getString("column_name");
+			if (columnName != null) {
+				// 3b
+				assertTrue(!((columnName != null) && (tableName == null)), ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_COLUMN, columnName));
+				
+				// 3c
+				final Statement statement1 = this.databaseConnection.createStatement();
+	
+				try {
+					// 3ci
+					statement1.executeQuery(String.format("SELECT COUNT(%s) from %s;", columnName, tableName));
+				} catch (SQLException exc) {
+					Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_COLUMN, columnName));
+				}
+			}
+		}
+
+		// 4
+		final Statement statement2 = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet2 = statement2.executeQuery("SELECT DISTINCT ge.table_name AS ge_table, sm.tbl_name FROM gpkg_extensions AS ge LEFT OUTER JOIN sqlite_master AS sm ON ge.table_name = sm.tbl_name;");
+
+		while (resultSet2.next()) {
+			// 4a
+			final String geTable = resultSet2.getString("ge_table");
+			final String tableName = resultSet2.getString("tbl_name");
+			assertTrue(((geTable == null) && (tableName == null)) || tableName.equals(geTable), ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_TABLE, geTable));
+		}
+   }   
 }

@@ -21,6 +21,7 @@ public class ErrorMessageKeys {
     public static final String MISSING_ENTITY = "MissingEntity";
     public static final String INVALID_HEADER_STR = "InvalidHeaderString";
     public static final String UNKNOWN_APP_ID = "UnknownApplicationId";
+    public static final String UNKNOWN_USER_VERSION = "UnknownUserVersion";
     public static final String INVALID_SUFFIX = "InvalidSuffix";
     public static final String INVALID_DATA_TYPE = "InvalidDataType";
     public static final String PRAGMA_INTEGRITY_CHECK_NOT_OK = "PragmaIntegrityCheckNotOk";
@@ -28,7 +29,7 @@ public class ErrorMessageKeys {
     public static final String NO_SQL_ACCESS = "NoSqlAccess";
     public static final String SQLITE_OMIT_OPTIONS = "SqliteOmitOptions";
     public static final String TABLE_DEFINITION_INVALID = "TableDefinitionInvalid";
-    public static final String BAD_SRS_TABLE_DEFINITION = "BadSrsTableDefinition";
+    public static final String MISSING_TABLE = "MissingTable";
     public static final String NO_GEOGRAPHIC_SRS = "NoGeographicSrs";
     public static final String NO_UNDEFINED_CARTESIAN_SRS = "NoUndefinedCartesianSrs";
     public static final String NO_UNDEFINED_GEOGRAPHIC_SRS = "NoUndefinedGeographicSrs";
@@ -75,9 +76,9 @@ public class ErrorMessageKeys {
     public static final String UNDEFINED_ZOOM_LEVEL = "UndefinedZoomLevel";
     public static final String TILE_COLUMN_OUT_OF_RANGE = "TileColumnOutOfRange";
     public static final String TILE_ROW_OUT_OF_RANGE = "TileRowOutOfRange";
-    public static final String BAD_METADATA_TABLE_DEFINITION = "BadMetadataTableDefinition";
+    public static final String INVALID_EXTENSION_DATA_COLUMN = "InvalidExtensionDataColumn";
+    public static final String INVALID_EXTENSION_DATA_TABLE = "InvalidExtensionDataTable";
     public static final String INVALID_METADATA_SCOPE = "InvalidMetadataScope";
-    public static final String MISSING_METADATA_REFERENCE_TABLE = "MissingMetadataReferenceTable";
     public static final String BAD_METADATA_REFERENCE_TABLE_DEFINITION = "BadMetadataReferenceTableDefinition";
     public static final String INVALID_METADATA_REFERENCE_SCOPE = "InvalidMetadataReferenceScope";
     public static final String BAD_METADATA_REFERENCE_SCOPE_COLUMN_NAME_AGREEMENT = "BadMetadataReferenceScopeColumnNameAgreement";
