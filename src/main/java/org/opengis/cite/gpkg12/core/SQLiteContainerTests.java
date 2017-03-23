@@ -211,30 +211,4 @@ public class SQLiteContainerTests extends CommonFixture {
 
         fail(ErrorMessage.format(ErrorMessageKeys.NO_SQL_ACCESS));
     }
-
-    /**
-     * Every GeoPackage SQLite Configuration SHALL have the SQLite library
-     * compile and run time options specified in table <a href=
-     * "http://www.geopackage.org/spec/#every_gpkg_sqlite_config_table"> Every
-     * GeoPackage SQLite Configuration</a>.
-     *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-9" target=
-     *      "_blank">Every GPKG SQLite Configuration - Requirement 9</a>
-     *
-     * @throws SQLException
-     *             If an SQL query causes an error
-     */
-    @Test(description = "See OGC 12-128r12: Requirement 9")
-    public void sqliteOptions() throws SQLException
-    {
-        try(final Statement statement = this.databaseConnection.createStatement();
-            final ResultSet resultSet = statement.executeQuery("SELECT sqlite_compileoption_used('SQLITE_OMIT_*')"))
-        {
-        	while(resultSet.next()){
-	            assertEquals(resultSet.getInt(1),
-	                         0,
-	                         ErrorMessage.format(ErrorMessageKeys.SQLITE_OMIT_OPTIONS));
-        	}
-        }
-    }
 }

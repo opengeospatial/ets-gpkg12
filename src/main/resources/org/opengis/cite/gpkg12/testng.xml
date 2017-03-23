@@ -27,9 +27,14 @@
       <package name="org.opengis.cite.gpkg12.tiles" />
     </packages>
   </test>
+  <test name="Extensions">
+    <packages>
+      <package name="org.opengis.cite.gpkg12.extensions" />
+    </packages>
+  </test>
   <test name="Metadata">
     <packages>
-      <package name="org.opengis.cite.gpkg12.metadata" />
+      <package name="org.opengis.cite.gpkg12.extensions.metadata" />
     </packages>
   </test>
   <test name="Tiled Gridded Elevation Data">

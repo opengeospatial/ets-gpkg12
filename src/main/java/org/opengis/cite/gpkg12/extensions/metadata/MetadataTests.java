@@ -1,4 +1,4 @@
-package org.opengis.cite.gpkg12.metadata;
+package org.opengis.cite.gpkg12.extensions.metadata;
 
 import static org.testng.Assert.assertTrue;
 import static org.testng.AssertJUnit.fail;
@@ -124,29 +124,44 @@ public class MetadataTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 93")
     public void metadataTableDefinition() throws SQLException
     {
-        if(this.hasMetadataTable)
-        {
-            final Map<String, ColumnDefinition> metadataTableColumns = new HashMap<>();
+		// 1
+		final Statement statement = this.databaseConnection.createStatement();
 
-            metadataTableColumns.put("id",              new ColumnDefinition("INTEGER", true, true,  false, null));
-            metadataTableColumns.put("md_scope",        new ColumnDefinition("TEXT",    true, false, false, "'dataset'"));
-            metadataTableColumns.put("md_standard_uri", new ColumnDefinition("TEXT",    true, false, false, null));
-            metadataTableColumns.put("mime_type",       new ColumnDefinition("TEXT",    true, false, false, "'text/xml'"));
-            metadataTableColumns.put("metadata",        new ColumnDefinition("TEXT",    true, false, false, "''"));
+		final ResultSet resultSet = statement.executeQuery("PRAGMA table_info('gpkg_metadata');");
 
-            try
-            {
-                TableVerifier.verifyTable(this.databaseConnection,
-                                          "gpkg_metadata",
-                                          metadataTableColumns,
-                                          Collections.emptySet(),
-                                          Collections.emptyList());
-            }
-            catch(final Throwable th)
-            {
-                fail(ErrorMessage.format(ErrorMessageKeys.BAD_METADATA_TABLE_DEFINITION, th.getMessage()));
-            }
-        }
+		// 2
+		int passFlag = 0;
+		final int flagMask = 0b00011111;
+		
+		while (resultSet.next()) {
+			// 3
+			final String name = resultSet.getString("name");
+			if ("id".equals(name)){
+				assertTrue("INTEGER".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "id type"));
+				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "id notnull"));
+				assertTrue(resultSet.getInt("pk") > 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "id pk"));
+				passFlag |= 1;
+			} else if ("md_scope".equals(name)){
+				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "md_scope type"));
+				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "md_scope notnull"));
+				final String def = resultSet.getString("dflt_value");
+				assertTrue((def != null) && def.contains("dataset"), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "md_scope default"));
+				passFlag |= (1 << 1);
+			} else if ("md_standard_uri".equals(name)){
+				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "md_standard_uri type"));
+				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "md_standard_uri notnull"));
+				passFlag |= (1 << 2);
+			} else if ("mime_type".equals(name)){
+				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "mime_type type"));
+				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "mime_type notnull"));
+				passFlag |= (1 << 3);
+			} else if ("metadata".equals(name)){
+				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "metadata type"));
+				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "metadata notnull"));
+				passFlag |= (1 << 4);
+			}
+		} 
+		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "missing column(s)"));
     }
 
     /**
@@ -321,14 +336,14 @@ public class MetadataTests extends CommonFixture
         Metadata(final int id,
                  final String mdScope)
         {
-            this.id      = id;
+//            this.id      = id;
             this.mdScope = mdScope;
         }
 
-        public int getId()
-        {
-            return this.id;
-        }
+//        public int getId()
+//        {
+//            return this.id;
+//        }
 
         public String getMdScope()
         {
@@ -340,7 +355,7 @@ public class MetadataTests extends CommonFixture
             return !validScopes.contains(this.mdScope.toLowerCase());
         }
 
-        private final int    id;
+//        private final int    id;
         private final String mdScope;
 
         private static final Collection<String> validScopes = Arrays.asList("undefined",
@@ -380,7 +395,7 @@ public class MetadataTests extends CommonFixture
             this.rowIdValue     = rowIdValue;
             this.timestamp      = timestamp;
             this.mdFileId       = mdFileId;
-            this.mdParentId     = mdParentId;
+//            this.mdParentId     = mdParentId;
         }
 
         @Override
@@ -411,26 +426,26 @@ public class MetadataTests extends CommonFixture
             return this.columnName;
         }
 
-        public Integer getRowIdValue()
-        {
-            return this.rowIdValue;
-        }
-
-        public String getTimestamp()
-        {
-            return this.timestamp;
-        }
-
-        public int getMdFileId()
-        {
-            return this.mdFileId;
-        }
-
-        public Integer getMdParentId()
-        {
-            return this.mdParentId;
-        }
-
+//        public Integer getRowIdValue()
+//        {
+//            return this.rowIdValue;
+//        }
+//
+//        public String getTimestamp()
+//        {
+//            return this.timestamp;
+//        }
+//
+//        public int getMdFileId()
+//        {
+//            return this.mdFileId;
+//        }
+//
+//        public Integer getMdParentId()
+//        {
+//            return this.mdParentId;
+//        }
+//
         public boolean hasInvalidScope()
         {
             return !validScopes.contains(this.referenceScope.toLowerCase());
@@ -448,7 +463,7 @@ public class MetadataTests extends CommonFixture
         private final Integer rowIdValue;
         private final String  timestamp;
         private final int     mdFileId;
-        private final Integer mdParentId;
+//        private final Integer mdParentId;
     }
 
     private boolean                               hasMetadataTable;
