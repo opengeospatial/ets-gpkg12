@@ -128,7 +128,7 @@ public class ExtensionsTests extends CommonFixture
      * values in the `gpkg_contents` `table_name` column or be NULL.They 
      * SHALL NOT be NULL for rows where the `column_name` value is not NULL.
      *
-     * /opt/extension_metchanism/extensions/data/data_values_table_name
+     * /opt/extension_mechanism/extensions/data/data_values_table_name
      * 
      * @see <a href="http://www.geopackage.org/spec/#_r60" target=
      *      "_blank">2.3.2.1.2. Extensions Table Data Values - Requirement 60</a>
@@ -136,9 +136,9 @@ public class ExtensionsTests extends CommonFixture
      * @throws SQLException
      *             If an SQL query causes an error
      */
-   @Test(description = "See OGC 12-128r13: Requirement 60")
-   public void extensionsTableValues() throws SQLException
-   {
+    @Test(description = "See OGC 12-128r13: Requirement 60")
+    public void extensionsTableValues() throws SQLException
+    {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
@@ -149,20 +149,9 @@ public class ExtensionsTests extends CommonFixture
 			// 3a
 			final String tableName = resultSet.getString("table_name");
 			final String columnName = resultSet.getString("column_name");
-			if (columnName != null) {
-				// 3b
-				assertTrue(!((columnName != null) && (tableName == null)), ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_COLUMN, columnName));
-				
-				// 3c
-				final Statement statement1 = this.databaseConnection.createStatement();
-	
-				try {
-					// 3ci
-					statement1.executeQuery(String.format("SELECT COUNT(%s) from %s;", columnName, tableName));
-				} catch (SQLException exc) {
-					Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_COLUMN, columnName));
-				}
-			}
+
+			// 3b
+			assertTrue(!((columnName != null) && (tableName == null)), ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_COLUMN, columnName));
 		}
 
 		// 4
@@ -176,5 +165,44 @@ public class ExtensionsTests extends CommonFixture
 			final String tableName = resultSet2.getString("tbl_name");
 			assertTrue(((geTable == null) && (tableName == null)) || tableName.equals(geTable), ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_TABLE, geTable));
 		}
-   }   
+    }   
+   
+   /**
+    * The `column_name` column value in a `gpkg_extensions` row SHALL be the 
+    * name of a column in the table specified by the `table_name` column 
+    * value for that row, or be NULL.
+    *
+    * /opt/extension_mechanism/extensions/data/data_values_column_name
+    * 
+    * @see <a href="http://www.geopackage.org/spec/#_r61" target=
+    *      "_blank">2.3.2.1.2. Extensions Table Data Values - Requirement 61</a>
+    *
+    * @throws SQLException
+    *             If an SQL query causes an error
+    */
+    @Test(description = "See OGC 12-128r13: Requirement 61")
+    public void extensionsColumnValues() throws SQLException
+    {
+		// 1
+		final Statement statement = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet = statement.executeQuery("SELECT table_name, column_name FROM gpkg_extensions WHERE column_name IS NOT NULL;");
+
+		// 2
+		while (resultSet.next()) {
+			// 3a
+			final String tableName = resultSet.getString("table_name");
+			final String columnName = resultSet.getString("column_name");
+
+			// 3b
+			final Statement statement1 = this.databaseConnection.createStatement();
+
+			try {
+				// 3bi
+				statement1.executeQuery(String.format("SELECT COUNT(%s) from %s;", columnName, tableName));
+			} catch (SQLException exc) {
+				Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_COLUMN, columnName));
+			}
+		}
+    }  
 }
