@@ -76,6 +76,7 @@ public class ErrorMessageKeys {
     public static final String UNDEFINED_ZOOM_LEVEL = "UndefinedZoomLevel";
     public static final String TILE_COLUMN_OUT_OF_RANGE = "TileColumnOutOfRange";
     public static final String TILE_ROW_OUT_OF_RANGE = "TileRowOutOfRange";
+    public static final String EXTENSION_MISSING = "ExtensionMissing";
     public static final String INVALID_EXTENSION_DATA_COLUMN = "InvalidExtensionDataColumn";
     public static final String INVALID_EXTENSION_DATA_TABLE = "InvalidExtensionDataTable";
     public static final String INVALID_EXTENSION_DATA_SCOPE = "InvalidExtensionDataScope";
