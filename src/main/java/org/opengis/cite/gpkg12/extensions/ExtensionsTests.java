@@ -130,7 +130,7 @@ public class ExtensionsTests extends CommonFixture
      *
      * /opt/extension_mechanism/extensions/data/data_values_table_name
      * 
-     * @see <a href="http://www.geopackage.org/spec/#_r60" target=
+     * @see <a href="http://www.geopackage.org/spec/#r60" target=
      *      "_blank">2.3.2.1.2. Extensions Table Data Values - Requirement 60</a>
      *
      * @throws SQLException
@@ -174,7 +174,7 @@ public class ExtensionsTests extends CommonFixture
     *
     * /opt/extension_mechanism/extensions/data/data_values_column_name
     * 
-    * @see <a href="http://www.geopackage.org/spec/#_r61" target=
+    * @see <a href="http://www.geopackage.org/spec/#r61" target=
     *      "_blank">2.3.2.1.2. Extensions Table Data Values - Requirement 61</a>
     *
     * @throws SQLException
@@ -204,5 +204,35 @@ public class ExtensionsTests extends CommonFixture
 				Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_COLUMN, columnName));
 			}
 		}
+    }  
+    
+    /**
+     * The scope column value in a gpkg_extensions row SHALL be lowercase 
+     * "read-write" for an extension that affects both readers and writers, 
+     * or "write-only" for an extension that affects only writers.
+     *
+     * /opt/extension_mechanism/extensions/data/data_values_scope
+     * 
+     * @see <a href="http://www.geopackage.org/spec/#r64" target=
+     *      "_blank">2.3.2.1.2. Extensions Table Data Values - Requirement 64</a>
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = "See OGC 12-128r13: Requirement 64")
+    public void extensionsColumnScope() throws SQLException
+    {
+ 		// 1
+ 		final Statement statement = this.databaseConnection.createStatement();
+
+ 		final ResultSet resultSet = statement.executeQuery("SELECT scope FROM gpkg_extensions;");
+
+ 		// 2
+ 		while (resultSet.next()) {
+ 			// 3
+ 			final String scope = resultSet.getString("scope");
+
+			assertTrue("read-write".equals(scope) || "write-only".equals(scope), ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_SCOPE, scope));
+ 		}
     }  
 }
