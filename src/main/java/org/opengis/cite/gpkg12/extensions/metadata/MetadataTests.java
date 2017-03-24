@@ -43,7 +43,7 @@ import org.testng.annotations.Test;
  * GeoPackage Encoding Standard - F.8. Metadata</a> (OGC 12-128r13)</li>
  * </ul>
  *
- * @author Luke Lambert
+ * @author Luke Lambert, Jeff Yutzler
  */
 public class MetadataTests extends CommonFixture
 {
@@ -104,7 +104,7 @@ public class MetadataTests extends CommonFixture
     }
     
     @BeforeClass
-    public void validateExtensionActive(ITestContext testContext) throws SQLException {
+    public void activeExtension(ITestContext testContext) throws SQLException {
     	// Starting with GPKG 1.2, this is a proper extension.
     	if (getGeopackageVersion() == GeoPackageVersion.V120) {
 			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
@@ -250,11 +250,11 @@ public class MetadataTests extends CommonFixture
      *
      * /opt/metadata/extensions/data_values_scope
      *
-     * @see <a href="http://www.geopackage.org/spec/#r120" target=
-     *      "_blank">F.8. Metadata - Requirement 120</a>
+     * @see <a href="http://www.geopackage.org/spec/#r140" target=
+     *      "_blank">F.8. Metadata - Requirement 140</a>
      *
      */
-    @Test(description = "See OGC 12-128r13: Requirement 120")
+    @Test(description = "See OGC 12-128r13: Requirement 140")
     public void metadataExtensionTableValues() throws SQLException
     {
  		// 1
@@ -363,14 +363,8 @@ public class MetadataTests extends CommonFixture
         Metadata(final int id,
                  final String mdScope)
         {
-//            this.id      = id;
             this.mdScope = mdScope;
         }
-
-//        public int getId()
-//        {
-//            return this.id;
-//        }
 
         public String getMdScope()
         {
@@ -382,7 +376,6 @@ public class MetadataTests extends CommonFixture
             return !validScopes.contains(this.mdScope.toLowerCase());
         }
 
-//        private final int    id;
         private final String mdScope;
 
         private static final Collection<String> validScopes = Arrays.asList("undefined",
@@ -422,7 +415,6 @@ public class MetadataTests extends CommonFixture
             this.rowIdValue     = rowIdValue;
             this.timestamp      = timestamp;
             this.mdFileId       = mdFileId;
-//            this.mdParentId     = mdParentId;
         }
 
         @Override
@@ -453,26 +445,6 @@ public class MetadataTests extends CommonFixture
             return this.columnName;
         }
 
-//        public Integer getRowIdValue()
-//        {
-//            return this.rowIdValue;
-//        }
-//
-//        public String getTimestamp()
-//        {
-//            return this.timestamp;
-//        }
-//
-//        public int getMdFileId()
-//        {
-//            return this.mdFileId;
-//        }
-//
-//        public Integer getMdParentId()
-//        {
-//            return this.mdParentId;
-//        }
-//
         public boolean hasInvalidScope()
         {
             return !validScopes.contains(this.referenceScope.toLowerCase());
@@ -490,7 +462,6 @@ public class MetadataTests extends CommonFixture
         private final Integer rowIdValue;
         private final String  timestamp;
         private final int     mdFileId;
-//        private final Integer mdParentId;
     }
 
     private List<MetadataTests.Metadata>          metadataValues;
