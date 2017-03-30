@@ -112,7 +112,7 @@ public class MetadataTests extends CommonFixture
 			
 			final Statement statement = this.databaseConnection.createStatement();
 		
-			final ResultSet resultSet = statement.executeQuery("SELECT count(*) from gpkg_extensions WHERE extension_name = 'gpkg_metadata');");
+			final ResultSet resultSet = statement.executeQuery("SELECT count(*) from gpkg_extensions WHERE extension_name = 'gpkg_metadata';");
 		
 			resultSet.next();
 		
