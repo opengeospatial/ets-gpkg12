@@ -117,30 +117,6 @@ public class TileTests extends CommonFixture
         Assert.assertTrue(false, String.format("Conformance class %s is not enabled", testName));
       }
     }
-    
-    /**
-     * The {@code gpkg_contents} table SHALL contain a row with a {@code
-     * data_type} column value of "tiles" for each tile pyramid user data
-     * table or view.
-     *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-34" target=
-     *      "_blank">Tiles Contents - Requirement 34</a>
-     *
-     * @throws SQLException
-     *             If an SQL query causes an error
-     */
-    @Test(description = "See OGC 12-128r12: Requirement 34")
-    public void tilesTablesAreReferenced() throws SQLException
-    {
-        final Collection<String> missingTileTableNames = this.tileTableNames
-                                                             .stream()
-                                                             .filter(tableName -> !this.contentsTileTableNames.contains(tableName))
-                                                             .collect(Collectors.toList());
-
-        assertTrue(missingTileTableNames.isEmpty(),
-                   ErrorMessage.format(ErrorMessageKeys.TILES_TABLES_NOT_REFERENCED_IN_CONTENTS,
-                                       String.join(", ", missingTileTableNames)));
-    }
 
     /**
      * In a GeoPackage that contains a tile pyramid user data table that
