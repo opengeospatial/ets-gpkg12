@@ -218,7 +218,7 @@ public class ElevationTests extends TileTests {
 			final String name = resultSet.getString("name");
 			if ("id".equals(name)){
 				assertTrue("INTEGER".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "id type"));
-//				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID), "id notnull");
+				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "id notnull"));
 				assertTrue(resultSet.getInt("pk") == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "id pk"));
 				passFlag |= 1;
 			} else if ("tpudt_name".equals(name)){
