@@ -7,7 +7,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 
 import javax.sql.DataSource;
@@ -141,4 +143,55 @@ public class CommonFixture {
     	// 5
         assertTrue(geopackageVersion != null, ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, new String(appID, StandardCharsets.US_ASCII)));
     }   
+    
+    /**
+     * This function checks to determine whether the primary key is valid.
+     * Checking the notnull column of PRAGMA table_info is insufficient. 
+     * See https://github.com/opengeospatial/geopackage/issues/282 for more details. 
+     * @param tableName
+     * @param pkName the name of the required primary key (may be null, in which case it is detected)
+     * @throws SQLException
+     */
+    protected void checkPrimaryKey(String tableName, String pkName) throws SQLException {
+		final Statement statement = this.databaseConnection.createStatement();
+		// 1
+		final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName));
+
+		// 2
+		assertTrue(resultSet.next(),
+				ErrorMessage.format(ErrorMessageKeys.FEATURES_TABLE_DOES_NOT_EXIST, tableName));
+		
+		boolean pass = false;
+		// 3
+		do {
+			final int pk = resultSet.getInt("pk");
+			final String name = resultSet.getString("name");
+			final String type = resultSet.getString("type");
+			if (pk > 0) {
+				assertTrue(pk == 1, 
+						ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, 
+								String.format("%s is a primary key of %d", name, pk)));
+				assertTrue("INTEGER".equals(type), 
+						ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));
+				if (pkName == null){
+					pkName = name;
+				} else {
+					assertTrue(pkName.equals(name),
+							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName,
+									"pk " + name));
+				}
+				pass = true;
+			}
+		} while (resultSet.next());
+
+		assertTrue(pass && (pkName != null), ErrorMessage.format(ErrorMessageKeys.FEATURE_TABLE_NO_PK, tableName));
+		
+		// 4
+		final Statement statement2 = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct %s) - COUNT(*) from %s", pkName, tableName));
+		
+		// 5
+		assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.FEATURE_TABLE_PK_NOT_UNIQUE, tableName));
+    }
 }

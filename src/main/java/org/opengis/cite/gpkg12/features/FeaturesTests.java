@@ -88,6 +88,12 @@ public class FeaturesTests extends CommonFixture {
     }
     	
 	/**
+	 * A GeoPackage MAY contain tables or updateable views containing vector 
+	 * features. Every such feature table or view in a GeoPackage SHALL have 
+	 * a column with column type INTEGER and PRIMARY KEY AUTOINCREMENT column 
+	 * constraints per EXAMPLE : Sample Feature Table or View Definition and 
+	 * sample_feature_table Table Definition SQL (Informative).
+	 *
 	 * Test case
 	 * {@code /opt/features/vector_features/data/feature_table_integer_primary_key}
 	 *
@@ -108,39 +114,8 @@ public class FeaturesTests extends CommonFixture {
 			assertTrue(resultSet.next(),
 					ErrorMessage.format(ErrorMessageKeys.FEATURES_TABLE_DOES_NOT_EXIST, tableName));
 			
-			String pkName = null;
-
-			boolean pass = false;
 			// 3
-			do {
-				// While the spec requires "notnull", the DDL before V1.2 doesn't set it
-				if (getGeopackageVersion().equals(GeoPackageVersion.V120)){
-					if ((resultSet.getInt("pk") == 1) && (resultSet.getInt("notnull") == 1)
-							&& (resultSet.getString("type").equals("INTEGER"))) {
-						pass = true;
-						pkName = resultSet.getString("name");
-						break;
-					}
-				} else {
-					if ((resultSet.getInt("pk") == 1) && (resultSet.getString("type").equals("INTEGER"))) {
-						pass = true;
-						pkName = resultSet.getString("name");
-						break;
-					}
-				}
-			} while (resultSet.next());
-
-			assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURE_TABLE_NO_PK, tableName));
-			
-			if (pkName != null) {
-				// 4
-				final Statement statement2 = this.databaseConnection.createStatement();
-
-				final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct %s) - COUNT(*) from %s", pkName, tableName));
-				
-				// 5
-				assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.FEATURE_TABLE_PK_NOT_UNIQUE, tableName));
-			}
+			checkPrimaryKey(tableName, null);
 		}
 	}
 
