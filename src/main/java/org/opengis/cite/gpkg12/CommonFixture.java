@@ -148,9 +148,9 @@ public class CommonFixture {
      * This function checks to determine whether the primary key is valid.
      * Checking the notnull column of PRAGMA table_info is insufficient. 
      * See https://github.com/opengeospatial/geopackage/issues/282 for more details. 
-     * @param tableName
+     * @param tableName the name of the table (required)
      * @param pkName the name of the required primary key (may be null, in which case it is detected)
-     * @throws SQLException
+     * @throws SQLException on any error
      */
     protected void checkPrimaryKey(String tableName, String pkName) throws SQLException {
 		final Statement statement = this.databaseConnection.createStatement();
