@@ -59,7 +59,7 @@ public class VerifyTestNGController {
         runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/sample1_1.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/sample1_2.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/sample1_2F10.gpkg"), 0);
+        runTests(ClassLoader.getSystemResource("gpkg/sample1_2F10.gpkg"), 1); // Default "undefined"
     }
     private void runTests(URL testSubject, int fails) throws Exception {
         this.testRunProps.setProperty(TestRunArg.IUT.toString(), testSubject.toURI().toString());
