@@ -55,8 +55,8 @@ public class VerifyTestNGController {
 
         runTests(ClassLoader.getSystemResource("gpkg/elevation.gpkg"), 0); // These two are the id notnull thing
         runTests(ClassLoader.getSystemResource("gpkg/empty.gpkg"), 1); // Failing on R17 which is silly because it is empty
-        runTests(ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg"), 1); // This is an invalid 1.0 or 1.1 GPKG - it has an invalid metadata table (md_standard_URI instead of md_standard_uri)
-        runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 0);
+        runTests(ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg"), 1); // This is an invalid 1.0 or 1.1 GPKG - it has an invalid metadata table (md_standard_URI instead of md_standard_uri) 
+        runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 1); // and MinIsInclusive/MaxIsInclusive
         runTests(ClassLoader.getSystemResource("gpkg/sample1_1.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/sample1_2.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/sample1_2F10.gpkg"), 1); // Default "undefined"

@@ -151,7 +151,7 @@ public class ExtensionsTests extends CommonFixture
 			final String columnName = resultSet.getString("column_name");
 
 			// 3b
-			assertTrue(!((columnName != null) && (tableName == null)), ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_COLUMN, columnName));
+			assertTrue(!((columnName != null) && (tableName == null)), ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_COLUMN, "gpkg_extensions", tableName, columnName));
 		}
 
 		// 4
@@ -163,7 +163,7 @@ public class ExtensionsTests extends CommonFixture
 			// 4a
 			final String geTable = resultSet2.getString("ge_table");
 			final String tableName = resultSet2.getString("tbl_name");
-			assertTrue(((geTable == null) && (tableName == null)) || tableName.equals(geTable), ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_TABLE, geTable));
+			assertTrue(((geTable == null) && (tableName == null)) || tableName.equals(geTable), ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TABLE, "gpkg_extensions", geTable));
 		}
     }   
    
@@ -201,7 +201,7 @@ public class ExtensionsTests extends CommonFixture
 				// 3bi
 				statement1.executeQuery(String.format("SELECT COUNT(%s) from %s;", columnName, tableName));
 			} catch (SQLException exc) {
-				Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_COLUMN, columnName));
+				Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_COLUMN, "gpkg_extensions", columnName, tableName));
 			}
 		}
     }  

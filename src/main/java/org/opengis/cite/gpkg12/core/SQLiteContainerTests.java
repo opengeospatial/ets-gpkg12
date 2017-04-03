@@ -11,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -168,6 +167,17 @@ public class SQLiteContainerTests extends CommonFixture {
 				// If it isn't, some other test will catch it.
 			}
 		}
+		// 1
+		final Statement statement3 = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet3 = statement3.executeQuery("SELECT DISTINCT data_type FROM gpkg_contents;");
+
+		// 2
+		while (resultSet3.next()){
+			final String dataType = resultSet3.getString("data_type");
+			assertTrue(SQLiteContainerTests.CoreDataTypes.contains(dataType),
+					ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, dataType, "gpkg_contents"));
+		}
     }
 
     /**
@@ -242,6 +252,7 @@ public class SQLiteContainerTests extends CommonFixture {
 
         fail(ErrorMessage.format(ErrorMessageKeys.NO_SQL_ACCESS));
     }
+    private static final Set<String> CoreDataTypes = new HashSet<String>();
     private static final Map<String, Set<String>> CoreTables = new HashMap<String, Set<String>>();
     static {
         final Set<String> contentsColumns = new HashSet<String>();
@@ -297,5 +308,8 @@ public class SQLiteContainerTests extends CommonFixture {
     	extensionsColumns.add("definition");
     	extensionsColumns.add("scope");
     	CoreTables.put("gpkg_extensions", extensionsColumns);
+    	CoreDataTypes.add("tiles");
+    	CoreDataTypes.add("features");
+    	CoreDataTypes.add("attributes");
     }
 }
