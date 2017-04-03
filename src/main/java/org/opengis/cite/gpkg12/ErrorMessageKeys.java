@@ -24,6 +24,7 @@ public class ErrorMessageKeys {
     public static final String UNKNOWN_USER_VERSION = "UnknownUserVersion";
     public static final String INVALID_SUFFIX = "InvalidSuffix";
     public static final String INVALID_DATA_TYPE = "InvalidDataType";
+    public static final String UNEXPECTED_COLUMN = "UnexpectedColumn";
     public static final String PRAGMA_INTEGRITY_CHECK_NOT_OK = "PragmaIntegrityCheckNotOk";
     public static final String INVALID_FOREIGN_KEY = "InvalidForeignKey";
     public static final String NO_SQL_ACCESS = "NoSqlAccess";
