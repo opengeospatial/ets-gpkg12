@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.opengis.cite.gpkg12.CommonFixture;
@@ -292,5 +293,35 @@ public class SchemaTests extends CommonFixture
 		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "missing column(s)"));
     }
 
+    
+    /**
+     * The gpkg_data_column_constraints table MAY be empty. If it contains 
+     * data, the lowercase constraint_type column values SHALL be one of 
+     * "range", "enum", or "glob".
+     * 
+     * @see <a href="http://www.geopackage.org/spec/#r108" target=
+     *      "_blank">F.9. Schema - Requirement 108</a>
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = "See OGC 12-128r13: Requirement 108")
+    public void dataColumnConstraintsType() throws SQLException
+    {
+    	// 1
+		final Statement statement1 = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet1 = statement1.executeQuery("SELECT DISTINCT constraint_type FROM gpkg_data_column_constraints");
+		
+		// 2
+		while (resultSet1.next()) {
+			// 3
+			final String constraintType = resultSet1.getString("column_name");
+
+			Assert.assertTrue(AllowedConstraintTypes.contains(constraintType), 
+					ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_VALUE, constraintType, "constraint_type", "gpkg_data_column_constraints"));
+		}
+    }
+    static private List<String> AllowedConstraintTypes = Arrays.asList("range", "enum", "glob");
 
 }
