@@ -293,7 +293,6 @@ public class SchemaTests extends CommonFixture
 		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "missing column(s)"));
     }
 
-    
     /**
      * The gpkg_data_column_constraints table MAY be empty. If it contains 
      * data, the lowercase constraint_type column values SHALL be one of 
@@ -316,10 +315,42 @@ public class SchemaTests extends CommonFixture
 		// 2
 		while (resultSet1.next()) {
 			// 3
-			final String constraintType = resultSet1.getString("column_name");
+			final String constraintType = resultSet1.getString("constraint_type");
 
 			Assert.assertTrue(AllowedConstraintTypes.contains(constraintType), 
 					ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_VALUE, constraintType, "constraint_type", "gpkg_data_column_constraints"));
+		}
+    }
+
+    /**
+     * gpkg_data_column_constraint constraint_name values for rows with 
+     * constraint_type values of "range" and "glob" SHALL be unique.
+     * 
+     * @see <a href="http://www.geopackage.org/spec/#r10" target=
+     *      "_blank">F.9. Schema - Requirement 109</a>
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = "See OGC 12-128r13: Requirement 109")
+    public void dataColumnConstraintsName() throws SQLException
+    {
+    	// 1
+		final Statement statement1 = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet1 = statement1.executeQuery("SELECT DISTINCT constraint_name FROM gpkg_data_column_constraints WHERE constraint_type IN ('range', 'glob')");
+		
+		// 2
+		while (resultSet1.next()) {
+			// 3
+			final String constraintName = resultSet1.getString("constraint_name");
+
+			final Statement statement2 = this.databaseConnection.createStatement();
+
+			final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_data_column_constraints WHERE constraint_name = %s", constraintName));
+			
+			Assert.assertTrue(resultSet2.getInt("1") <= 1, 
+					ErrorMessage.format(ErrorMessageKeys.NON_UNIQUE_VALUE, "constraint_name", "gpkg_data_column_constraints", constraintName));
 		}
     }
     static private List<String> AllowedConstraintTypes = Arrays.asList("range", "enum", "glob");
