@@ -326,7 +326,7 @@ public class SchemaTests extends CommonFixture
      * gpkg_data_column_constraint constraint_name values for rows with 
      * constraint_type values of "range" and "glob" SHALL be unique.
      * 
-     * @see <a href="http://www.geopackage.org/spec/#r10" target=
+     * @see <a href="http://www.geopackage.org/spec/#r109" target=
      *      "_blank">F.9. Schema - Requirement 109</a>
      *
      * @throws SQLException
@@ -351,6 +351,36 @@ public class SchemaTests extends CommonFixture
 			
 			Assert.assertTrue(resultSet2.getInt("1") <= 1, 
 					ErrorMessage.format(ErrorMessageKeys.NON_UNIQUE_VALUE, "constraint_name", "gpkg_data_column_constraints", constraintName));
+		}
+    }
+
+    /**
+     * The gpkg_data_column_constraints table MAY be empty. If it contains 
+     * rows with constraint_type column values of "range", the value column 
+     * values for those rows SHALL be NULL.
+     * 
+     * @see <a href="http://www.geopackage.org/spec/#r110" target=
+     *      "_blank">F.9. Schema - Requirement 110</a>
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = "See OGC 12-128r13: Requirement 110")
+    public void dataColumnConstraintsValue() throws SQLException
+    {
+    	// 1
+		final Statement statement1 = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet1 = statement1.executeQuery("SELECT constraint_name, value FROM gpkg_data_column_constraints WHERE constraint_type = 'range'");
+		
+		// 2
+		while (resultSet1.next()) {
+			// 3
+			final String constraintName = resultSet1.getString("constraint_name");
+			final String value = resultSet1.getString("value");
+
+			Assert.assertTrue(value == null, 
+					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, value, constraintName));
 		}
     }
     static private List<String> AllowedConstraintTypes = Arrays.asList("range", "enum", "glob");
