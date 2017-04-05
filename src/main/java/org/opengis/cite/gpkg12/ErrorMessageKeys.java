@@ -97,6 +97,8 @@ public class ErrorMessageKeys {
     public static final String ELEVATION_EXTENSION_ROWS_MISSING = "ElevationExtensionRowsMissing";
     public static final String UNREFERENCED_COVERAGE_TILE_MATRIX_SET_TABLE = "UnreferencedCoverageTileMatrixSetTable";
     public static final String CONSTRAINT_NON_NULL_VALUE = "ConstraintNonNullValue";
+    public static final String CONSTRAINT_MINMAX_INVALID = "ConstraintMinMaxInvalid";
+    public static final String CONSTRAINT_INCLUSIVE_INVALID = "ConstraintInclusiveInvalid";
     public static final String COVERAGE_ANCILLARY_DATATYPE_INVALID = "CoverageAncillaryDatatypeInvalid";
     public static final String COVERAGE_ANCILLARY_FLOAT_SCALE_OFFSET = "CoverageAncillaryFloatScaleOffset";
     public static final String TILE_ANCILLARY_REFERENCES = "TileAncillaryReferences";

@@ -75,7 +75,15 @@ public class SchemaTests extends CommonFixture
 			resultSet.next();
 		
 			Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.EXTENSION_MISSING, "gpkg_schema"));
-    	}		
+    	}
+    	
+    	if (getGeopackageVersion() == GeoPackageVersion.V102){
+    		minIsInclusive = "minIsInclusive";
+    		maxIsInclusive = "maxIsInclusive";
+    	} else {
+    		minIsInclusive = "min_is_inclusive";
+    		maxIsInclusive = "max_is_inclusive";
+    	}
     }
 
     /**
@@ -256,34 +264,18 @@ public class SchemaTests extends CommonFixture
 				assertTrue("NUMERIC".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min notnull"));
 				passFlag |= (1 << 3);
-			} else if ("min_is_inclusive".equals(name)){
-				if (getGeopackageVersion().equals(GeoPackageVersion.V110) || getGeopackageVersion().equals(GeoPackageVersion.V120)){
-					assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min_is_inclusive type"));
-					assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min_is_inclusive notnull"));
-					passFlag |= (1 << 4);
-				}
-			} else if ("minIsInclusive".equals(name)){
-				if (getGeopackageVersion().equals(GeoPackageVersion.V102)){
-					assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min_is_inclusive type"));
-					assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min_is_inclusive notnull"));
-					passFlag |= (1 << 4);
-				}
+			} else if (minIsInclusive.equals(name)){
+				assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", minIsInclusive + " type"));
+				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", minIsInclusive + " notnull"));
+				passFlag |= (1 << 4);
 			} else if ("max".equals(name)){
 				assertTrue("NUMERIC".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max notnull"));
 				passFlag |= (1 << 5);
-			} else if ("max_is_inclusive".equals(name)){
-				if (getGeopackageVersion().equals(GeoPackageVersion.V110) || getGeopackageVersion().equals(GeoPackageVersion.V120)){
-					assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max_is_inclusive type"));
-					assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max_is_inclusive notnull"));
-					passFlag |= (1 << 6);
-				}
-			} else if ("maxIsInclusive".equals(name)){
-				if (getGeopackageVersion().equals(GeoPackageVersion.V102)){
-					assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max_is_inclusive type"));
-					assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max_is_inclusive notnull"));
-					passFlag |= (1 << 6);
-				}
+			} else if (maxIsInclusive.equals(name)){
+				assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", maxIsInclusive + " type"));
+				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", maxIsInclusive + " notnull"));
+				passFlag |= (1 << 6);
 			} else if ("description".equals(name)){
 				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "description type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "description notnull"));
@@ -380,9 +372,146 @@ public class SchemaTests extends CommonFixture
 			final String value = resultSet1.getString("value");
 
 			Assert.assertTrue(value == null, 
-					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, value, constraintName));
+					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName));
+		}
+    }
+
+    /**
+     * If the `gpkg_data_column_constraints` table contains rows with 
+     * `constraint_type` column values of "range", the `min` column values 
+     * for those rows SHALL be NOT NULL and less than the `max` column value 
+     * which shall be NOT NULL.
+     * 
+     * @see <a href="http://www.geopackage.org/spec/#r111" target=
+     *      "_blank">F.9. Schema - Requirement 111</a>
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = "See OGC 12-128r13: Requirement 111")
+    public void dataColumnConstraintsMinMax() throws SQLException
+    {
+    	// 1
+		final Statement statement1 = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet1 = statement1.executeQuery("SELECT constraint_name, min, max FROM gpkg_data_column_constraints WHERE constraint_type = 'range'");
+		
+		// 2
+		while (resultSet1.next()) {
+			final String constraintName = resultSet1.getString("constraint_name");
+			// 3a
+			final double min = resultSet1.getDouble("min");
+			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
+			// 3b
+			final double max = resultSet1.getDouble("max");
+			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
+			// 3c
+			Assert.assertTrue(min <= max, ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
+		}
+    }
+
+    /**
+     * If the `gpkg_data_column_constraints` table contains rows with 
+     * `constraint_type` column values of "range", the `min_is_inclusive` and 
+     * `max_is_inclusive` column values for those rows SHALL be 0 or 1.
+     * 
+     * @see <a href="http://www.geopackage.org/spec/#r112" target=
+     *      "_blank">F.9. Schema - Requirement 112</a>
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = "See OGC 12-128r13: Requirement 112")
+    public void dataColumnConstraintsInclusive() throws SQLException
+    {
+    	// 1
+		final Statement statement1 = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT constraint_name, %s, %s FROM gpkg_data_column_constraints WHERE constraint_type = 'range'", minIsInclusive, maxIsInclusive));
+		
+		// 2
+		while (resultSet1.next()) {
+			final String constraintName = resultSet1.getString("constraint_name");
+			// 3
+			resultSet1.getBoolean(minIsInclusive);
+			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));
+			resultSet1.getBoolean(maxIsInclusive);
+			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));
+		}
+    }
+
+    /**
+     * If the `gpkg_data_column_constraints` table contains rows with 
+     * `constraint_type` column values of "enum" or "glob", the `min`, `max`, 
+     * `min_is_inclusive` and `max_is_inclusive` column values for those rows 
+     * SHALL be NULL.
+     * 
+     * @see <a href="http://www.geopackage.org/spec/#r113" target=
+     *      "_blank">F.9. Schema - Requirement 113</a>
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = "See OGC 12-128r13: Requirement 113")
+    public void dataColumnConstraintsGlobMinMax() throws SQLException
+    {
+    	// 1
+		final Statement statement1 = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT constraint_name, min, max, %s, %s FROM gpkg_data_column_constraints WHERE constraint_type IN ('enum','glob')", minIsInclusive, maxIsInclusive));
+		
+		// 2
+		while (resultSet1.next()) {
+			final String constraintName = resultSet1.getString("constraint_name");
+			// 3a
+			resultSet1.getDouble("min");
+			Assert.assertTrue(resultSet1.wasNull(), 
+					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
+			// 3b
+			resultSet1.getDouble("max");
+			Assert.assertTrue(resultSet1.wasNull(), 
+					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
+			// 3c
+			resultSet1.getDouble(minIsInclusive);
+			Assert.assertTrue(resultSet1.wasNull(), 
+					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));
+			// 3d
+			resultSet1.getDouble(maxIsInclusive);
+			Assert.assertTrue(resultSet1.wasNull(), 
+					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));
+		}
+    }
+
+    /**
+     * If the `gpkg_data_column_constraints` table contains rows with 
+     * `constraint_type` column values of "enum" or "glob", the `value` 
+     * column SHALL NOT be NULL.
+     * 
+     * @see <a href="http://www.geopackage.org/spec/#r114" target=
+     *      "_blank">F.9. Schema - Requirement 114</a>
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = "See OGC 12-128r13: Requirement 114")
+    public void dataColumnConstraintsGlobValue() throws SQLException
+    {
+    	// 1
+		final Statement statement1 = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet1 = statement1.executeQuery("SELECT constraint_name, value FROM gpkg_data_column_constraints WHERE constraint_type IN ('enum','glob')");
+		
+		// 2
+		while (resultSet1.next()) {
+			// 3
+			final String constraintName = resultSet1.getString("constraint_name");
+			resultSet1.getString("value");
+
+			Assert.assertTrue(!resultSet1.wasNull(), 
+					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName, "not"));
 		}
     }
     static private List<String> AllowedConstraintTypes = Arrays.asList("range", "enum", "glob");
-
+    private String maxIsInclusive;
+    private String minIsInclusive;
 }
