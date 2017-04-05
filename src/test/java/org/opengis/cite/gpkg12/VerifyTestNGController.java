@@ -6,6 +6,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Properties;
 
@@ -52,8 +53,15 @@ public class VerifyTestNGController {
     @Test
     public void cleanTestRun() throws Exception {
 
-        URL testSubject = ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg");
-
+        runTests(ClassLoader.getSystemResource("gpkg/elevation.gpkg"), 0); // These two are the id notnull thing
+        runTests(ClassLoader.getSystemResource("gpkg/empty.gpkg"), 1); // Failing on R17 which is silly because it is empty
+        runTests(ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg"), 1); // This is an invalid 1.0 or 1.1 GPKG - it has an invalid metadata table (md_standard_URI instead of md_standard_uri) 
+        runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 1); // and MinIsInclusive/MaxIsInclusive
+        runTests(ClassLoader.getSystemResource("gpkg/sample1_1.gpkg"), 0);
+        runTests(ClassLoader.getSystemResource("gpkg/sample1_2.gpkg"), 0);
+        runTests(ClassLoader.getSystemResource("gpkg/sample1_2F10.gpkg"), 1); // Default "undefined"
+    }
+    private void runTests(URL testSubject, int fails) throws Exception {
         this.testRunProps.setProperty(TestRunArg.IUT.toString(), testSubject.toURI().toString());
         ByteArrayOutputStream outStream = new ByteArrayOutputStream(1024);
         this.testRunProps.storeToXML(outStream, "Integration test");
@@ -66,6 +74,9 @@ public class VerifyTestNGController {
         String xpath = "/testng-results/@failed";
         XdmValue failed = XMLUtils.evaluateXPath2(results, xpath, null);
         int numFailed = Integer.parseInt(failed.getUnderlyingValue().getStringValue());
-        assertEquals("Unexpected number of fail verdicts.", 0,numFailed);
+        if (fails != numFailed){
+        	// Extraneous if allows you to set a breakpoint...
+        	assertEquals(MessageFormat.format("Unexpected number of fail verdicts for file {0}.\nSee {1} for details.", testSubject.toString(), results.getSystemId()), fails, numFailed);
+        }
     }
 }

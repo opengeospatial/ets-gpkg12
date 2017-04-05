@@ -112,48 +112,42 @@ public class ElevationTests extends TileTests {
 		int passFlag = 0;
 		final int flagMask = 0b01111111;
 		
+		checkPrimaryKey("gpkg_2d_gridded_coverage_ancillary", "id");
+
 		while (resultSet.next()) {
 			// 3
 			final String name = resultSet.getString("name");
 			if ("id".equals(name)){
-				assertTrue("INTEGER".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "id type"));
-//				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID), "id notnull");
-				assertTrue(resultSet.getInt("pk") == 1, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "id pk"));
+				// handled with checkPrimaryKey...
 				passFlag |= 1;
 			} else if ("tile_matrix_set_name".equals(name)){
 				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "tile_matrix_set_name type"));
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "tile_matrix_set_name notnull"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "tile_matrix_set_name pk"));
 				passFlag |= (1 << 1);
 			} else if ("datatype".equals(name)){
 				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "datatype type"));
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "datatype notnull"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "datatype pk"));
 				final String def = resultSet.getString("dflt_value");
 				assertTrue("integer".equals(def) || "'integer'".equals(def), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "datatype default"));
 				passFlag |= (1 << 2);
 			} else if ("scale".equals(name)){
 				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "scale type"));
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "scale notnull"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "scale pk"));
 				assertTrue(resultSet.getFloat("dflt_value") == 1.0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "scale default"));
 				passFlag |= (1 << 3);
 			} else if ("offset".equals(name)){
 				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "offset type"));
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "offset notnull"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "offset pk"));
 				assertTrue(resultSet.getFloat("dflt_value") == 0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "offset default"));
 				passFlag |= (1 << 4);
 			} else if ("precision".equals(name)){
 				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "precision type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "precision type"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "precision pk"));
 				assertTrue(resultSet.getFloat("dflt_value") == 1.0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "precision default"));
 				passFlag |= (1 << 5);
 			} else if ("data_null".equals(name)){
 				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "data_null type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "data_null notnull"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, "data_null pk"));
 				passFlag |= (1 << 6);
 			}
 		} 
@@ -214,54 +208,45 @@ public class ElevationTests extends TileTests {
 		final long flagMask = 0b111111111;
 		
 		while (resultSet.next()) {
+			checkPrimaryKey("gpkg_2d_gridded_tile_ancillary", "id");
 			// 3
 			final String name = resultSet.getString("name");
 			if ("id".equals(name)){
-				assertTrue("INTEGER".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "id type"));
-//				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID), "id notnull");
-				assertTrue(resultSet.getInt("pk") == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "id pk"));
+				// handled with checkPrimaryKey...
 				passFlag |= 1;
 			} else if ("tpudt_name".equals(name)){
 				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "tpudt_name type"));
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "tpudt_name notnull"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "tpudt_name pk"));
 				passFlag |= (1 << 1);
 			} else if ("tpudt_id".equals(name)){
 				assertTrue("INTEGER".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "tpudt_id type"));
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "tpudt_id notnull"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "tpudt_id pk"));
 				passFlag |= (1 << 2);
 			} else if ("scale".equals(name)){
 				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "scale type"));
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "scale notnull"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "scale pk"));
 				assertTrue(resultSet.getFloat("dflt_value") == 1.0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "scale default"));
 				passFlag |= (1 << 3);
 			} else if ("offset".equals(name)){
 				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "offset type"));
 				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "offset notnull"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "offset pk"));
 				assertTrue(resultSet.getFloat("dflt_value") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "offset default"));
 				passFlag |= (1 << 4);
 			} else if ("min".equals(name)){
 				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "precision type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "precision type"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "precision pk"));
 				passFlag |= (1 << 5);
 			} else if ("max".equals(name)){
 				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "data_null type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "data_null notnull"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "data_null pk"));
 				passFlag |= (1 << 6);
 			} else if ("mean".equals(name)){
 				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "mean type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "mean type"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "mean pk"));
 				passFlag |= (1 << 7);
 			} else if ("std_dev".equals(name)){
 				assertTrue("REAL".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "std_dev type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "std_dev notnull"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, "std_dev pk"));
 				passFlag |= (1 << 8);
 			}
 		} 

@@ -11,6 +11,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
@@ -131,12 +136,48 @@ public class SQLiteContainerTests extends CommonFixture {
      *      "_blank">File Contents - Requirement 4</a>
      */
     @Test(description = "See OGC 12-128r12: Requirement 4")
-    public void fileContents()
+    public void fileContents() throws SQLException
     {
-        // TODO: Look for tables, columns, data types, etc. NOT allowed by 
-    	// standard? Ignore tables and columns called out in extensions?
-    	// This is informational only - there is nothing non-compliant about 
-    	// an extended GeoPackage.
+		// 1
+		final Statement statement1 = this.databaseConnection.createStatement();
+
+		try {
+			final ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions;");
+			if(resultSet1.getInt(1) > 0){
+				// NOOP: this is an Extended GeoPackage so the test does not apply
+				return;
+			}
+		} catch (SQLException e1) {
+			// NOOP: this is a GeoPackage with no extensions
+		}
+
+		final Iterator<String> iterator = SQLiteContainerTests.CoreTables.keySet().iterator();
+		while (iterator.hasNext()) {
+			final String tableName = iterator.next();
+			try {
+				final Statement statement2 = this.databaseConnection.createStatement();
+				final ResultSet resultSet2 = statement2.executeQuery(String.format("PRAGMA table_info(%s)", tableName));
+				while (resultSet2.next()){
+					final String columnName = resultSet2.getString("name");
+					assertTrue(SQLiteContainerTests.CoreTables.get(tableName).contains(columnName), 
+							ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_COLUMN, columnName, tableName));
+				}
+			} catch (SQLException e2) {
+				// NOOP: This table doesn't exist, which may be allowed.
+				// If it isn't, some other test will catch it.
+			}
+		}
+		// 1
+		final Statement statement3 = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet3 = statement3.executeQuery("SELECT DISTINCT data_type FROM gpkg_contents;");
+
+		// 2
+		while (resultSet3.next()){
+			final String dataType = resultSet3.getString("data_type");
+			assertTrue(SQLiteContainerTests.CoreDataTypes.contains(dataType),
+					ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, dataType, "gpkg_contents"));
+		}
     }
 
     /**
@@ -211,30 +252,64 @@ public class SQLiteContainerTests extends CommonFixture {
 
         fail(ErrorMessage.format(ErrorMessageKeys.NO_SQL_ACCESS));
     }
-
-    /**
-     * Every GeoPackage SQLite Configuration SHALL have the SQLite library
-     * compile and run time options specified in table <a href=
-     * "http://www.geopackage.org/spec/#every_gpkg_sqlite_config_table"> Every
-     * GeoPackage SQLite Configuration</a>.
-     *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-9" target=
-     *      "_blank">Every GPKG SQLite Configuration - Requirement 9</a>
-     *
-     * @throws SQLException
-     *             If an SQL query causes an error
-     */
-    @Test(description = "See OGC 12-128r12: Requirement 9")
-    public void sqliteOptions() throws SQLException
-    {
-        try(final Statement statement = this.databaseConnection.createStatement();
-            final ResultSet resultSet = statement.executeQuery("SELECT sqlite_compileoption_used('SQLITE_OMIT_*')"))
-        {
-        	while(resultSet.next()){
-	            assertEquals(resultSet.getInt(1),
-	                         0,
-	                         ErrorMessage.format(ErrorMessageKeys.SQLITE_OMIT_OPTIONS));
-        	}
-        }
+    private static final Set<String> CoreDataTypes = new HashSet<String>();
+    private static final Map<String, Set<String>> CoreTables = new HashMap<String, Set<String>>();
+    static {
+        final Set<String> contentsColumns = new HashSet<String>();
+    	contentsColumns.add("table_name");
+    	contentsColumns.add("data_type");
+    	contentsColumns.add("identifier");
+    	contentsColumns.add("description");
+    	contentsColumns.add("last_change");
+    	contentsColumns.add("min_x");
+    	contentsColumns.add("min_y");
+    	contentsColumns.add("max_x");
+    	contentsColumns.add("max_y");
+    	contentsColumns.add("srs_id");
+    	CoreTables.put("gpkg_contents", contentsColumns);
+    	final Set<String> srsColumns = new HashSet<String>();
+    	srsColumns.add("srs_name");
+    	srsColumns.add("srs_id");
+    	srsColumns.add("organization");
+    	srsColumns.add("description");
+    	srsColumns.add("organization_coordsys_id");
+    	srsColumns.add("definition");
+    	CoreTables.put("gpkg_spatial_ref_sys", srsColumns);
+    	final Set<String> geometryColumns = new HashSet<String>();
+    	geometryColumns.add("table_name");
+    	geometryColumns.add("column_name");
+    	geometryColumns.add("geometry_type_name");
+    	geometryColumns.add("srs_id");
+    	geometryColumns.add("z");
+    	geometryColumns.add("m");
+    	CoreTables.put("gpkg_geometry_columns", geometryColumns);
+    	final Set<String> tileMatrixSetColumns = new HashSet<String>();
+    	tileMatrixSetColumns.add("table_name");
+    	tileMatrixSetColumns.add("srs_id");
+    	tileMatrixSetColumns.add("min_x");
+    	tileMatrixSetColumns.add("min_y");
+    	tileMatrixSetColumns.add("max_x");
+    	tileMatrixSetColumns.add("max_y");
+    	CoreTables.put("gpkg_tile_matrix_set", tileMatrixSetColumns);
+    	final Set<String> tileMatrixColumns = new HashSet<String>();
+    	tileMatrixColumns.add("table_name");
+    	tileMatrixColumns.add("zoom_level");
+    	tileMatrixColumns.add("matrix_width");
+    	tileMatrixColumns.add("matrix_height");
+    	tileMatrixColumns.add("tile_width");
+    	tileMatrixColumns.add("tile_height");
+    	tileMatrixColumns.add("pixel_x_size");
+    	tileMatrixColumns.add("pixel_y_size");
+    	CoreTables.put("gpkg_tile_matrix", tileMatrixColumns);
+    	final Set<String> extensionsColumns = new HashSet<String>();
+    	extensionsColumns.add("table_name");
+    	extensionsColumns.add("column_name");
+    	extensionsColumns.add("extension_name");
+    	extensionsColumns.add("definition");
+    	extensionsColumns.add("scope");
+    	CoreTables.put("gpkg_extensions", extensionsColumns);
+    	CoreDataTypes.add("tiles");
+    	CoreDataTypes.add("features");
+    	CoreDataTypes.add("attributes");
     }
 }

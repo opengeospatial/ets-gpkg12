@@ -1,4 +1,4 @@
-package org.opengis.cite.gpkg12.metadata;
+package org.opengis.cite.gpkg12.extensions.metadata;
 
 import static org.testng.Assert.assertTrue;
 import static org.testng.AssertJUnit.fail;
@@ -40,10 +40,10 @@ import org.testng.annotations.Test;
  * </p>
  * <ul>
  * <li><a href="http://www.geopackage.org/spec/#extension_metadata" target= "_blank">
- * GeoPackage Encoding Standard - F.8. Metadata</a> (OGC 12-128r12)</li>
+ * GeoPackage Encoding Standard - F.8. Metadata</a> (OGC 12-128r13)</li>
  * </ul>
  *
- * @author Luke Lambert
+ * @author Luke Lambert, Jeff Yutzler
  */
 public class MetadataTests extends CommonFixture
 {
@@ -55,8 +55,6 @@ public class MetadataTests extends CommonFixture
     @BeforeClass
     public void setUp() throws SQLException
     {
-        this.hasMetadataTable          = DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_metadata");
-        this.hasMetadataReferenceTable = DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_metadata_reference");
 
         this.metadataValues = new LinkedList<>();
 
@@ -105,48 +103,80 @@ public class MetadataTests extends CommonFixture
       }
     }
     
+    @BeforeClass
+    public void activeExtension(ITestContext testContext) throws SQLException {
+    	// Starting with GPKG 1.2, this is a proper extension.
+    	if (getGeopackageVersion() == GeoPackageVersion.V120) {
+			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
+					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, "gpkg_extensions"));
+			
+			final Statement statement = this.databaseConnection.createStatement();
+		
+			final ResultSet resultSet = statement.executeQuery("SELECT count(*) from gpkg_extensions WHERE extension_name = 'gpkg_metadata';");
+		
+			resultSet.next();
+		
+			Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.EXTENSION_MISSING, "gpkg_metadata"));
+    	}		
+    }
+
     /**
      * A GeoPackage MAY contain a table named gpkg_metadata. If present it
-     * SHALL be defined per clause 2.4.2.1.1 <a href=
+     * SHALL be defined per clauses <a href=
      * "http://www.geopackage.org/spec/#metadata_table_table_definition">Table
      * Definition</a>, <a href=
      * "http://www.geopackage.org/spec/#gpkg_metadata_cols">Metadata Table
-     * Definition</a> and <a href=
+     * Definition</a>, and <a href=
      * "http://www.geopackage.org/spec/#gpkg_metadata_sql">gpkg_metadata Table
      * Definition SQL</a>.
      *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-93" target=
+     * @see <a href="http://www.geopackage.org/spec/#r93" target=
      *      "_blank">F.8. Metadata - Requirement 93</a>
      *
      * @throws SQLException
      *             If an SQL query causes an error
      */
-    @Test(description = "See OGC 12-128r12: Requirement 93")
+    @Test(description = "See OGC 12-128r13: Requirement 93")
     public void metadataTableDefinition() throws SQLException
     {
-        if(this.hasMetadataTable)
-        {
-            final Map<String, ColumnDefinition> metadataTableColumns = new HashMap<>();
+		// 1
+		final Statement statement = this.databaseConnection.createStatement();
 
-            metadataTableColumns.put("id",              new ColumnDefinition("INTEGER", true, true,  false, null));
-            metadataTableColumns.put("md_scope",        new ColumnDefinition("TEXT",    true, false, false, "'dataset'"));
-            metadataTableColumns.put("md_standard_uri", new ColumnDefinition("TEXT",    true, false, false, null));
-            metadataTableColumns.put("mime_type",       new ColumnDefinition("TEXT",    true, false, false, "'text/xml'"));
-            metadataTableColumns.put("metadata",        new ColumnDefinition("TEXT",    true, false, false, "''"));
+		final ResultSet resultSet = statement.executeQuery("PRAGMA table_info('gpkg_metadata');");
 
-            try
-            {
-                TableVerifier.verifyTable(this.databaseConnection,
-                                          "gpkg_metadata",
-                                          metadataTableColumns,
-                                          Collections.emptySet(),
-                                          Collections.emptyList());
-            }
-            catch(final Throwable th)
-            {
-                fail(ErrorMessage.format(ErrorMessageKeys.BAD_METADATA_TABLE_DEFINITION, th.getMessage()));
-            }
-        }
+		// 2
+		int passFlag = 0;
+		final int flagMask = 0b00011111;
+		
+		while (resultSet.next()) {
+			// 3
+			final String name = resultSet.getString("name");
+			if ("id".equals(name)){
+				assertTrue("INTEGER".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "id type"));
+				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "id notnull"));
+				assertTrue(resultSet.getInt("pk") > 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "id pk"));
+				passFlag |= 1;
+			} else if ("md_scope".equals(name)){
+				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "md_scope type"));
+				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "md_scope notnull"));
+				final String def = resultSet.getString("dflt_value");
+				assertTrue((def != null) && def.contains("dataset"), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "md_scope default"));
+				passFlag |= (1 << 1);
+			} else if ("md_standard_uri".equals(name)){
+				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "md_standard_uri type"));
+				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "md_standard_uri notnull"));
+				passFlag |= (1 << 2);
+			} else if ("mime_type".equals(name)){
+				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "mime_type type"));
+				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "mime_type notnull"));
+				passFlag |= (1 << 3);
+			} else if ("metadata".equals(name)){
+				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "metadata type"));
+				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "metadata notnull"));
+				passFlag |= (1 << 4);
+			}
+		} 
+		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata", "missing column(s)"));
     }
 
     /**
@@ -154,24 +184,21 @@ public class MetadataTests extends CommonFixture
      * updateable view SHALL be one of the name column values from <a href=
      * "http://www.geopackage.org/spec/#metadata_scopes">Metadata Scopes</a>.
      *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-94" target=
+     * @see <a href="http://www.geopackage.org/spec/#r94" target=
      *      "_blank">F.8. Metadata - Requirement 94</a>
      *
      */
-    @Test(description = "See OGC 12-128r12: Requirement 94")
+    @Test(description = "See OGC 12-128r13: Requirement 94")
     public void metadataScopeValues()
     {
-        if(this.hasMetadataTable)
-        {
-            final List<String> invalidScopeValues = this.metadataValues.stream()
-                                                        .filter(MetadataTests.Metadata::hasInvalidScope)
-                                                        .map(MetadataTests.Metadata::getMdScope)
-                                                        .collect(Collectors.toList());
+        final List<String> invalidScopeValues = this.metadataValues.stream()
+                                                    .filter(MetadataTests.Metadata::hasInvalidScope)
+                                                    .map(MetadataTests.Metadata::getMdScope)
+                                                    .collect(Collectors.toList());
 
-            assertTrue(invalidScopeValues.isEmpty(),
-                       ErrorMessage.format(ErrorMessageKeys.INVALID_METADATA_SCOPE,
-                                           String.join(", ", invalidScopeValues)));
-        }
+        assertTrue(invalidScopeValues.isEmpty(),
+                   ErrorMessage.format(ErrorMessageKeys.INVALID_METADATA_SCOPE,
+                                       String.join(", ", invalidScopeValues)));
     }
 
     /**
@@ -184,42 +211,64 @@ public class MetadataTests extends CommonFixture
      * <a href="http://www.geopackage.org/spec/#gpkg_metadata_reference_sql">
      * gpkg_metadata_reference Table Definition SQL</a>.
      *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-95" target=
+     * @see <a href="http://www.geopackage.org/spec/#r95" target=
      *      "_blank">F.8. Metadata - Requirement 95</a>
      *
      */
-    @Test(description = "See OGC 12-128r12: Requirement 95")
+    @Test(description = "See OGC 12-128r13: Requirement 95")
     public void metadataReferencesTableDefinition()
     {
-        if(this.hasMetadataTable)
+        final Map<String, ColumnDefinition> metadataReferenceTableColumns = new HashMap<>();
+
+        metadataReferenceTableColumns.put("reference_scope", new ColumnDefinition("TEXT",     true,  false, false, null));
+        metadataReferenceTableColumns.put("table_name",      new ColumnDefinition("TEXT",     false, false, false, null));
+        metadataReferenceTableColumns.put("column_name",     new ColumnDefinition("TEXT",     false, false, false, null));
+        metadataReferenceTableColumns.put("row_id_value",    new ColumnDefinition("INTEGER",  false, false, false, null));
+        metadataReferenceTableColumns.put("timestamp",       new ColumnDefinition("DATETIME", true,  false, false, "strftime('%Y-%m-%dT%H:%M:%fZ', 'now')"));
+        metadataReferenceTableColumns.put("md_file_id",      new ColumnDefinition("INTEGER",  true,  false, false, null));
+        metadataReferenceTableColumns.put("md_parent_id",    new ColumnDefinition("INTEGER",  false, false, false, null));
+
+        try
         {
-            assertTrue(this.hasMetadataReferenceTable,
-                       ErrorMessageKeys.MISSING_METADATA_REFERENCE_TABLE);
-
-            final Map<String, ColumnDefinition> metadataReferenceTableColumns = new HashMap<>();
-
-            metadataReferenceTableColumns.put("reference_scope", new ColumnDefinition("TEXT",     true,  false, false, null));
-            metadataReferenceTableColumns.put("table_name",      new ColumnDefinition("TEXT",     false, false, false, null));
-            metadataReferenceTableColumns.put("column_name",     new ColumnDefinition("TEXT",     false, false, false, null));
-            metadataReferenceTableColumns.put("row_id_value",    new ColumnDefinition("INTEGER",  false, false, false, null));
-            metadataReferenceTableColumns.put("timestamp",       new ColumnDefinition("DATETIME", true,  false, false, "strftime('%Y-%m-%dT%H:%M:%fZ', 'now')"));
-            metadataReferenceTableColumns.put("md_file_id",      new ColumnDefinition("INTEGER",  true,  false, false, null));
-            metadataReferenceTableColumns.put("md_parent_id",    new ColumnDefinition("INTEGER",  false, false, false, null));
-
-            try
-            {
-                TableVerifier.verifyTable(this.databaseConnection,
-                                          "gpkg_metadata_reference",
-                                          metadataReferenceTableColumns,
-                                          new HashSet<>(Arrays.asList(new ForeignKeyDefinition("gpkg_metadata", "md_parent_id", "id"),
-                                                                      new ForeignKeyDefinition("gpkg_metadata", "md_file_id",   "id"))),
-                                          Collections.emptyList());
-            }
-            catch(final Throwable th)
-            {
-                fail(ErrorMessage.format(ErrorMessageKeys.BAD_METADATA_REFERENCE_TABLE_DEFINITION, th.getMessage()));
-            }
+            TableVerifier.verifyTable(this.databaseConnection,
+                                      "gpkg_metadata_reference",
+                                      metadataReferenceTableColumns,
+                                      new HashSet<>(Arrays.asList(new ForeignKeyDefinition("gpkg_metadata", "md_parent_id", "id"),
+                                                                  new ForeignKeyDefinition("gpkg_metadata", "md_file_id",   "id"))),
+                                      Collections.emptyList());
         }
+        catch(final Throwable th)
+        {
+            fail(ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_metadata_reference", th.getMessage()));
+        }
+    }
+
+    /**
+     * GeoPackages with a row in the `gpkg_extensions` table with an 
+     * `extension_name` of "gpkg_metadata" SHALL comply with this extension. 
+     * The row SHALL have a `scope` of "read-write".
+     *
+     * /opt/metadata/extensions/data_values_scope
+     *
+     * @see <a href="http://www.geopackage.org/spec/#r140" target=
+     *      "_blank">F.8. Metadata - Requirement 140</a>
+     *
+     */
+    @Test(description = "See OGC 12-128r13: Requirement 140")
+    public void metadataExtensionTableValues() throws SQLException
+    {
+ 		// 1
+ 		final Statement statement = this.databaseConnection.createStatement();
+
+ 		final ResultSet resultSet = statement.executeQuery("SELECT scope FROM gpkg_extensions WHERE extension_name = 'gpkg_metadata'");
+
+ 		// 2
+ 		while (resultSet.next()) {
+ 			// 3
+ 			final String scope = resultSet.getString("scope");
+
+			assertTrue("read-write".equals(scope), ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_SCOPE, scope));
+ 		}
     }
 
     /**
@@ -227,25 +276,22 @@ public class MetadataTests extends CommonFixture
      * SHALL be one of 'geopackage', 'table', 'column', 'row', 'row/col' in
      * lowercase.
      *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-96" target=
+     * @see <a href="http://www.geopackage.org/spec/#r96" target=
      *      "_blank">F.8. Metadata - Requirement 96</a>
      *
      */
-    @Test(description = "See OGC 12-128r12: Requirement 96")
+    @Test(description = "See OGC 12-128r13: Requirement 96")
     public void metadataReferencesScopeValues()
     {
-        if(this.hasMetadataReferenceTable)
-        {
-            final Collection<String> invalidScopeValues = this.metadataReferenceValues
-                                                              .stream()
-                                                              .filter(MetadataTests.MetadataReference::hasInvalidScope)
-                                                              .map(MetadataTests.MetadataReference::getReferenceScope)
-                                                              .collect(Collectors.toList());
+        final Collection<String> invalidScopeValues = this.metadataReferenceValues
+                                                          .stream()
+                                                          .filter(MetadataTests.MetadataReference::hasInvalidScope)
+                                                          .map(MetadataTests.MetadataReference::getReferenceScope)
+                                                          .collect(Collectors.toList());
 
-            assertTrue(invalidScopeValues.isEmpty(),
-                       ErrorMessage.format(ErrorMessageKeys.INVALID_METADATA_REFERENCE_SCOPE,
-                                           String.join(", ", invalidScopeValues)));
-        }
+        assertTrue(invalidScopeValues.isEmpty(),
+                   ErrorMessage.format(ErrorMessageKeys.INVALID_METADATA_REFERENCE_SCOPE,
+                                       String.join(", ", invalidScopeValues)));
     }
 
     /**
@@ -256,56 +302,52 @@ public class MetadataTests extends CommonFixture
      * column value that references a value in the {@code gpkg_contents}
      * {@code table_name} column.
      *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-97" target=
+     * @see <a href="http://www.geopackage.org/spec/#r97" target=
      *      "_blank">F.8. Metadata - Requirement 97</a>
      *
      * @throws SQLException
      *             If an SQL query causes an error
      */
-    @Test(description = "See OGC 12-128r12: Requirement 97")
+    @Test(description = "See OGC 12-128r13: Requirement 97")
     public void metadataReferenceScopeAgreement() throws SQLException
     {
-        if(this.hasMetadataReferenceTable)
+        // Check reference_scope column that has 'geopackage'
+        final List<MetadataTests.MetadataReference> invalidGeoPackageValue = this.metadataReferenceValues
+                                                                                 .stream()
+                                                                                 .filter(columnValue -> columnValue.getReferenceScope().equalsIgnoreCase("geopackage"))
+                                                                                 .filter(columnValue -> columnValue.getColumnName() != null)
+                                                                                 .collect(Collectors.toList());
+
+        assertTrue(invalidGeoPackageValue.isEmpty(),
+                   ErrorMessage.format(ErrorMessageKeys.BAD_METADATA_REFERENCE_SCOPE_COLUMN_NAME_AGREEMENT,
+                                       invalidGeoPackageValue.stream()
+                                                             .map(Object::toString)
+                                                             .collect(Collectors.joining("\n"))));
+
+        final Collection<String> contentsTableNames = new LinkedList<>();
+
+        // Get table_name values from the gpkg_contents table
+        try(final Statement statement = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents;"))
         {
-            // Check reference_scope column that has 'geopackage'
-            final List<MetadataTests.MetadataReference> invalidGeoPackageValue = this.metadataReferenceValues
-                                                                                     .stream()
-                                                                                     .filter(columnValue -> columnValue.getReferenceScope().equalsIgnoreCase("geopackage"))
-                                                                                     .filter(columnValue -> columnValue.getColumnName() != null)
-                                                                                     .collect(Collectors.toList());
-
-            assertTrue(invalidGeoPackageValue.isEmpty(),
-                       ErrorMessage.format(ErrorMessageKeys.BAD_METADATA_REFERENCE_SCOPE_COLUMN_NAME_AGREEMENT,
-                                           invalidGeoPackageValue.stream()
-                                                                 .map(Object::toString)
-                                                                 .collect(Collectors.joining("\n"))));
-
-            final Collection<String> contentsTableNames = new LinkedList<>();
-
-            // Get table_name values from the gpkg_contents table
-            try(final Statement statement = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents;"))
+            while(resultSet.next())
             {
-                while(resultSet.next())
-                {
-                    contentsTableNames.add(resultSet.getString("table_name"));
-                }
+                contentsTableNames.add(resultSet.getString("table_name"));
             }
-
-            //check other records that does not have 'geopackage' as a value
-            final List<MetadataTests.MetadataReference> badMetadataReferences = this.metadataReferenceValues
-                                                                                    .stream()
-                                                                                    .filter(metadataReference -> !metadataReference.getReferenceScope().equalsIgnoreCase("geopackage"))
-                                                                                    .filter(metadataReference -> !contentsTableNames.contains(metadataReference.getTableName()))
-                                                                                    .collect(Collectors.toList());
-
-            assertTrue(badMetadataReferences.isEmpty(),
-                       ErrorMessage.format(ErrorMessageKeys.INVALID_METADATA_REFERENCE_TABLE,
-                                           badMetadataReferences.stream()
-                                                                .map(Object::toString)
-                                                                .collect(Collectors.joining("\n"))));
-
         }
+
+        //check other records that does not have 'geopackage' as a value
+        final List<MetadataTests.MetadataReference> badMetadataReferences = this.metadataReferenceValues
+                                                                                .stream()
+                                                                                .filter(metadataReference -> !metadataReference.getReferenceScope().equalsIgnoreCase("geopackage"))
+                                                                                .filter(metadataReference -> !contentsTableNames.contains(metadataReference.getTableName()))
+                                                                                .collect(Collectors.toList());
+
+        assertTrue(badMetadataReferences.isEmpty(),
+                   ErrorMessage.format(ErrorMessageKeys.INVALID_METADATA_REFERENCE_TABLE,
+                                       badMetadataReferences.stream()
+                                                            .map(Object::toString)
+                                                            .collect(Collectors.joining("\n"))));
     }
 
     private static Integer nullSafeGet(final ResultSet resultSet, final String columnLabel) throws SQLException
@@ -321,13 +363,7 @@ public class MetadataTests extends CommonFixture
         Metadata(final int id,
                  final String mdScope)
         {
-            this.id      = id;
             this.mdScope = mdScope;
-        }
-
-        public int getId()
-        {
-            return this.id;
         }
 
         public String getMdScope()
@@ -340,7 +376,6 @@ public class MetadataTests extends CommonFixture
             return !validScopes.contains(this.mdScope.toLowerCase());
         }
 
-        private final int    id;
         private final String mdScope;
 
         private static final Collection<String> validScopes = Arrays.asList("undefined",
@@ -380,7 +415,6 @@ public class MetadataTests extends CommonFixture
             this.rowIdValue     = rowIdValue;
             this.timestamp      = timestamp;
             this.mdFileId       = mdFileId;
-            this.mdParentId     = mdParentId;
         }
 
         @Override
@@ -411,26 +445,6 @@ public class MetadataTests extends CommonFixture
             return this.columnName;
         }
 
-        public Integer getRowIdValue()
-        {
-            return this.rowIdValue;
-        }
-
-        public String getTimestamp()
-        {
-            return this.timestamp;
-        }
-
-        public int getMdFileId()
-        {
-            return this.mdFileId;
-        }
-
-        public Integer getMdParentId()
-        {
-            return this.mdParentId;
-        }
-
         public boolean hasInvalidScope()
         {
             return !validScopes.contains(this.referenceScope.toLowerCase());
@@ -448,11 +462,8 @@ public class MetadataTests extends CommonFixture
         private final Integer rowIdValue;
         private final String  timestamp;
         private final int     mdFileId;
-        private final Integer mdParentId;
     }
 
-    private boolean                               hasMetadataTable;
-    private boolean                               hasMetadataReferenceTable;
     private List<MetadataTests.Metadata>          metadataValues;
     private List<MetadataTests.MetadataReference> metadataReferenceValues;
 }

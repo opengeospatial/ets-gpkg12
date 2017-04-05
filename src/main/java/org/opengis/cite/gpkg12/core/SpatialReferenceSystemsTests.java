@@ -77,7 +77,7 @@ public class SpatialReferenceSystemsTests extends CommonFixture {
         }
         catch(final Throwable th)
         {
-            fail(ErrorMessage.format(ErrorMessageKeys.BAD_SRS_TABLE_DEFINITION, th.getMessage()));
+            fail(ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", th.getMessage()));
         }
     }
 
