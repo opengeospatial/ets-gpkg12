@@ -10,19 +10,14 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.GPKG12;
-import org.opengis.cite.gpkg12.TestRunArg;
 import org.testng.Assert;
-import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -48,23 +43,15 @@ public class FeaturesTests extends CommonFixture {
 	 */
 	@BeforeClass
 	public void setUp() throws SQLException {
-		try (Statement statement = this.databaseConnection.createStatement();
-				ResultSet resultSet = statement.executeQuery(
-						"SELECT table_name FROM gpkg_contents WHERE data_type = 'features';")) {
-			while (resultSet.next()) {
-				this.featureTableNames.add(resultSet.getString("table_name"));
-			}
-		}
-
-		try (final Statement statement = this.databaseConnection.createStatement();
-				final ResultSet resultSet = statement
-						.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type = 'features';")) {
-			while (resultSet.next()) {
-				this.contentsFeatureTableNames.add(resultSet.getString(1));
-			}
+		final Statement statement = this.databaseConnection.createStatement();
+		final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type = 'features';");
+		while (resultSet.next()) {
+			this.featureTableNames.add(resultSet.getString(1));
 		}
 		
-		allowedGeometryTypes.add("GEOMETRY");
+        Assert.assertTrue(!this.featureTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));
+
+        allowedGeometryTypes.add("GEOMETRY");
 		allowedGeometryTypes.add("POINT");
 		allowedGeometryTypes.add("LINESTRING");
 		allowedGeometryTypes.add("POLYGON");
@@ -73,19 +60,6 @@ public class FeaturesTests extends CommonFixture {
 		allowedGeometryTypes.add("MULTIPOLYGON");
 		allowedGeometryTypes.add("GEOMETRYCOLLECTION");
 	}
-
-    @BeforeTest
-    public void validateClassEnabled(ITestContext testContext) throws IOException {
-      Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
-      final String pstr = params.get(TestRunArg.ICS.toString());
-      final String testName = testContext.getName();
-      HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
-      if (set.contains(testName)){
-        Assert.assertTrue(true);
-      } else {
-        Assert.assertTrue(false, String.format("Conformance class %s is not enabled", testName));
-      }
-    }
     	
 	/**
 	 * A GeoPackage MAY contain tables or updateable views containing vector 
@@ -515,5 +489,4 @@ public class FeaturesTests extends CommonFixture {
 	
 	private final Collection<String> allowedGeometryTypes = new ArrayList<>();
 	private final Collection<String> featureTableNames = new ArrayList<>();
-	private final Collection<String> contentsFeatureTableNames = new ArrayList<>();
 }

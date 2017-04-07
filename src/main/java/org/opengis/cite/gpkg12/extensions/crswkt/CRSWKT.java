@@ -1,34 +1,18 @@
 package org.opengis.cite.gpkg12.extensions.crswkt;
 
 import static org.testng.Assert.assertTrue;
-import static org.testng.AssertJUnit.fail;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
-import org.opengis.cite.gpkg12.ColumnDefinition;
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
-import org.opengis.cite.gpkg12.ForeignKeyDefinition;
-import org.opengis.cite.gpkg12.TableVerifier;
-import org.opengis.cite.gpkg12.TestRunArg;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -47,30 +31,6 @@ import org.testng.annotations.Test;
  */
 public class CRSWKT extends CommonFixture
 {
-    /**
-     * Sets up variables used across methods
-     *
-     * @throws SQLException if there is a database error
-     */
-    @BeforeClass
-    public void setUp() throws SQLException
-    {
-
-    }
-
-    @BeforeTest
-    public void validateClassEnabled(ITestContext testContext) throws IOException {
-      Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
-      final String pstr = params.get(TestRunArg.ICS.toString());
-      final String testName = testContext.getName();
-      HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
-      if (set.contains(testName)){
-        Assert.assertTrue(true);
-      } else {
-        Assert.assertTrue(false, String.format("Conformance class %s is not enabled", testName));
-      }
-    }
-    
     @BeforeClass
     public void activeExtension(ITestContext testContext) throws SQLException {
 		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
@@ -82,7 +42,7 @@ public class CRSWKT extends CommonFixture
 	
 		resultSet.next();
 	
-		Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.EXTENSION_MISSING, "gpkg_crs_wkt"));
+		Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "CRS WKT Extension"));
     }
 
     /**

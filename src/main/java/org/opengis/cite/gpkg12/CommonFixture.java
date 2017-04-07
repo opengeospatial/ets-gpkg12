@@ -11,14 +11,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteDataSource;
+import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -101,6 +105,16 @@ public class CommonFixture {
         if (this.databaseConnection != null && !this.databaseConnection.isClosed()) {
             this.databaseConnection.close();
         }
+    }
+    
+    @BeforeTest
+    public void validateClassEnabled(ITestContext testContext) throws IOException {
+      Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
+      final String pstr = params.get(TestRunArg.ICS.toString());
+      final String testName = testContext.getName();
+      setTestName(testName);
+      HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
+      Assert.assertTrue(set.contains(testName), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, testName));
     }
     
     /**
@@ -194,4 +208,14 @@ public class CommonFixture {
 		// 5
 		assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.FEATURE_TABLE_PK_NOT_UNIQUE, tableName));
     }
+
+    public String getTestName() {
+		return testName;
+	}
+
+	public void setTestName(String testName) {
+		this.testName = testName;
+	}
+
+	private String testName;
 }
