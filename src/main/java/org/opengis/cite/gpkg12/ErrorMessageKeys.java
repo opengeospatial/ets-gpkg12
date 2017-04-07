@@ -19,6 +19,8 @@ public class ErrorMessageKeys {
     public static final String UNEXPECTED_STATUS = "UnexpectedStatus";
     public static final String UNEXPECTED_MEDIA_TYPE = "UnexpectedMediaType";
     public static final String MISSING_ENTITY = "MissingEntity";
+    public static final String CONFORMANCE_CLASS_DISABLED = "ConformanceClassDisabled";
+    public static final String CONFORMANCE_CLASS_NOT_USED = "ConformanceClassNotUsed";
     public static final String INVALID_HEADER_STR = "InvalidHeaderString";
     public static final String UNKNOWN_APP_ID = "UnknownApplicationId";
     public static final String UNKNOWN_USER_VERSION = "UnknownUserVersion";
@@ -42,7 +44,7 @@ public class ErrorMessageKeys {
     public static final String BAD_CONTENTS_TABLE_SRS_FOREIGN_KEY = "BadContentsTableSrsForeignKey";
     public static final String BAD_CONTENTS_TABLE_DEFINITION = "BadContentsTableDefinition";
     public static final String OPTIONS_NO_FEATURES_OR_TILES = "OptionsNoFeaturesOrTiles";
-    public static final String FEATURES_TABLE_DOES_NOT_EXIST = "FeaturesTableDoesNotExist";
+    public static final String FEATURES_TABLE_DOES_NOT_EXIST = "FeaturesTableDoesNotExist";// TODO: Get rid of this key
     public static final String FEATURE_TABLE_NO_PK = "FeatureTableNoPK";
     public static final String FEATURE_TABLE_PK_NOT_UNIQUE = "FeatureTablePKNotUnique";
     public static final String FEATURES_BINARY_INVALID = "FeaturesBinaryInvalid";
@@ -57,12 +59,10 @@ public class ErrorMessageKeys {
     public static final String TILES_TABLES_NOT_REFERENCED_IN_CONTENTS = "TilesTablesNotReferencedInContents";
     public static final String VALUES_DO_NOT_VARY_BY_FACTOR_OF_TWO = "ValuesDoNotVaryByFactorOfTwo";
     public static final String INVALID_IMAGE_FORMAT = "InvalidImageFormat";
-    public static final String TILE_MATRIX_SET_TABLE_DOES_NOT_EXIST = "TileMatrixSetTableDoesNotExist";
     public static final String BAD_TILE_MATRIX_SET_TABLE_DEFINITION = "BadTileMatrixSetTableDefinition";
     public static final String UNREFERENCED_TILE_MATRIX_SET_TABLE = "UnreferencedTileMatrixSetTable";
     public static final String UNREFERENCED_TILES_CONTENT_TABLE_NAME = "UnreferencedTilesContentTableName";
     public static final String BAD_MATRIX_SET_SRS_REFERENCE = "BadMatrixSetSrsReference";
-    public static final String TILE_MATRIX_TABLE_DOES_NOT_EXIST = "TileMatrixTableDoesNotExist";
     public static final String BAD_TILE_MATRIX_TABLE_DEFINITION = "BadTileMatrixTableDefinition";
     public static final String BAD_MATRIX_CONTENTS_REFERENCES = "BadMatrixContentsReferences";
     public static final String MISSING_TILE_MATRIX_ENTRY = "MissingTileMatrixEntry";
@@ -79,7 +79,6 @@ public class ErrorMessageKeys {
     public static final String UNDEFINED_ZOOM_LEVEL = "UndefinedZoomLevel";
     public static final String TILE_COLUMN_OUT_OF_RANGE = "TileColumnOutOfRange";
     public static final String TILE_ROW_OUT_OF_RANGE = "TileRowOutOfRange";
-    public static final String EXTENSION_MISSING = "ExtensionMissing";
     public static final String INVALID_DATA_COLUMN = "InvalidDataColumn";
     public static final String INVALID_DATA_TABLE = "InvalidDataTable";
     public static final String INVALID_EXTENSION_DATA_SCOPE = "InvalidExtensionDataScope";

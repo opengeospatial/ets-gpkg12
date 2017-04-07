@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
@@ -34,13 +33,10 @@ import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.ForeignKeyDefinition;
 import org.opengis.cite.gpkg12.TableVerifier;
-import org.opengis.cite.gpkg12.TestRunArg;
 import org.opengis.cite.gpkg12.UniqueDefinition;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
-import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -55,7 +51,7 @@ import org.testng.annotations.Test;
  * GeoPackage Encoding Standard - 2.2. Tiles</a> (OGC 12-128r12)</li>
  * </ul>
  *
- * @author Luke Lambert
+ * @author Luke Lambert, Jeff Yutzler
  */
 public class TileTests extends CommonFixture
 {
@@ -67,55 +63,14 @@ public class TileTests extends CommonFixture
     @BeforeClass
     public void setUp() throws SQLException
     {
-        this.hasTileMatrixTable    = DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_tile_matrix");
-        this.hasTileMatrixSetTable = DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_tile_matrix_set");
+        final Statement statement = this.databaseConnection.createStatement();
 
-        try(Statement statement = this.databaseConnection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT tbl_name FROM sqlite_master WHERE tbl_name NOT LIKE 'gpkg_%' AND (type = 'table' OR type = 'view');"))
+        final ResultSet resultSet = statement.executeQuery(String.format("SELECT table_name FROM gpkg_contents WHERE data_type = '%s';", dataType));
+        while(resultSet.next())
         {
-            while(resultSet.next())
-            {
-                try
-                {
-                    final String tableName = resultSet.getString("tbl_name");
-
-                    // This throws if the table definition doesn't match, and won't be added to the collection
-                    TableVerifier.verifyTable(this.databaseConnection,
-                                              tableName,
-                                              TileTableExpectedColumns,
-                                              TileTableExpectedForeignKeys,
-                                              TileTableExpectedUniqueColumnGroups);
-
-                  this.tileTableNames.add(tableName);
-                }
-                catch(final Throwable ignore)
-                {
-                    // If verification fails- it's not a tiles table
-                }
-            }
+            this.tileTableNames.add(resultSet.getString(1));
         }
-
-        try(final Statement statement = this.databaseConnection.createStatement();
-            final ResultSet resultSet = statement.executeQuery(String.format("SELECT table_name FROM gpkg_contents WHERE data_type = '%s';", dataType)))
-        {
-            while(resultSet.next())
-            {
-                this.contentsTileTableNames.add(resultSet.getString(1));
-            }
-        }
-    }
-
-    @BeforeTest
-    public void validateClassEnabled(ITestContext testContext) throws IOException {
-      Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
-      final String pstr = params.get(TestRunArg.ICS.toString());
-      final String testName = testContext.getName();
-      HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
-      if (set.contains(testName)){
-        Assert.assertTrue(true);
-      } else {
-        Assert.assertTrue(false, String.format("Conformance class %s is not enabled", testName));
-      }
+        Assert.assertTrue(!this.tileTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));
     }
 
     /**
@@ -257,32 +212,32 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 38")
     public void tileMatrixSetTable() throws SQLException
     {
-        if(!this.tileTableNames.isEmpty())
+    	final String tableName = "gpkg_tile_matrix_set";
+    	
+        assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, tableName), 
+        		ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
+
+        try
         {
-            assertTrue(this.hasTileMatrixSetTable, ErrorMessageKeys.TILE_MATRIX_SET_TABLE_DOES_NOT_EXIST);
+            final Map<String, ColumnDefinition> tileMatrixSetColumns = new HashMap<>();
 
-            try
-            {
-                final Map<String, ColumnDefinition> tileMatrixSetColumns = new HashMap<>();
+            tileMatrixSetColumns.put("table_name", new ColumnDefinition("TEXT",    true, true,  true,  null));
+            tileMatrixSetColumns.put("srs_id",     new ColumnDefinition("INTEGER", true, false, false, null));
+            tileMatrixSetColumns.put("min_x",      new ColumnDefinition("DOUBLE",  true, false, false, null));
+            tileMatrixSetColumns.put("min_y",      new ColumnDefinition("DOUBLE",  true, false, false, null));
+            tileMatrixSetColumns.put("max_x",      new ColumnDefinition("DOUBLE",  true, false, false, null));
+            tileMatrixSetColumns.put("max_y",      new ColumnDefinition("DOUBLE",  true, false, false, null));
 
-                tileMatrixSetColumns.put("table_name", new ColumnDefinition("TEXT",    true, true,  true,  null));
-                tileMatrixSetColumns.put("srs_id",     new ColumnDefinition("INTEGER", true, false, false, null));
-                tileMatrixSetColumns.put("min_x",      new ColumnDefinition("DOUBLE",  true, false, false, null));
-                tileMatrixSetColumns.put("min_y",      new ColumnDefinition("DOUBLE",  true, false, false, null));
-                tileMatrixSetColumns.put("max_x",      new ColumnDefinition("DOUBLE",  true, false, false, null));
-                tileMatrixSetColumns.put("max_y",      new ColumnDefinition("DOUBLE",  true, false, false, null));
-
-                TableVerifier.verifyTable(this.databaseConnection,
-                                          "gpkg_tile_matrix_set",
-                                          tileMatrixSetColumns,
-                                          new HashSet<>(Arrays.asList(new ForeignKeyDefinition("gpkg_spatial_ref_sys", "srs_id",     "srs_id"),
-                                                                      new ForeignKeyDefinition("gpkg_contents",        "table_name", "table_name"))),
-                                          Collections.emptyList());
-            }
-            catch(final Throwable th)
-            {
-                fail(ErrorMessage.format(ErrorMessageKeys.BAD_TILE_MATRIX_SET_TABLE_DEFINITION, th.getMessage()));
-            }
+            TableVerifier.verifyTable(this.databaseConnection,
+            						  tableName,
+                                      tileMatrixSetColumns,
+                                      new HashSet<>(Arrays.asList(new ForeignKeyDefinition("gpkg_spatial_ref_sys", "srs_id",     "srs_id"),
+                                                                  new ForeignKeyDefinition("gpkg_contents",        "table_name", "table_name"))),
+                                      Collections.emptyList());
+        }
+        catch(final Throwable th)
+        {
+            fail(ErrorMessage.format(ErrorMessageKeys.BAD_TILE_MATRIX_SET_TABLE_DEFINITION, th.getMessage()));
         }
     }
 
@@ -300,15 +255,12 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 39")
     public void matrixSetNamesReferenceTiles() throws SQLException
     {
-        if(this.hasTileMatrixSetTable)
-        {
-    		for (final String tableName : this.contentsTileTableNames) {
-    			final Statement statement1 = this.databaseConnection.createStatement();
-    			final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT table_name FROM gpkg_tile_matrix_set WHERE table_name = '%s'", tableName));
-                assertTrue(resultSet1.next(),
-                        ErrorMessage.format(ErrorMessageKeys.UNREFERENCED_TILE_MATRIX_SET_TABLE, tableName));
-    		}
-        }
+		for (final String tableName : this.tileTableNames) {
+			final Statement statement1 = this.databaseConnection.createStatement();
+			final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT table_name FROM gpkg_tile_matrix_set WHERE table_name = '%s'", tableName));
+            assertTrue(resultSet1.next(),
+                    ErrorMessage.format(ErrorMessageKeys.UNREFERENCED_TILE_MATRIX_SET_TABLE, tableName));
+		}
     }
 
     /**
@@ -324,23 +276,20 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 40")
     public void matrixSetNameForEachTilesTable() throws SQLException
     {
-        if(this.hasTileMatrixSetTable)
+        try(Statement statement = this.databaseConnection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_tile_matrix_set;"))
         {
-            try(Statement statement = this.databaseConnection.createStatement();
-                ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_tile_matrix_set;"))
+            final Collection<String> tableNames = new LinkedList<>();
+
+            while(resultSet.next())
             {
-                final Collection<String> tableNames = new LinkedList<>();
+                tableNames.add(resultSet.getString("table_name"));
+            }
 
-                while(resultSet.next())
-                {
-                    tableNames.add(resultSet.getString("table_name"));
-                }
-
-                for(final String tableName : this.contentsTileTableNames)
-                {
-                    assertTrue(tableNames.contains(tableName),
-                               ErrorMessage.format(ErrorMessageKeys.UNREFERENCED_TILES_CONTENT_TABLE_NAME, tableName));
-                }
+            for(final String tableName : this.tileTableNames)
+            {
+                assertTrue(tableNames.contains(tableName),
+                           ErrorMessage.format(ErrorMessageKeys.UNREFERENCED_TILES_CONTENT_TABLE_NAME, tableName));
             }
         }
     }
@@ -358,15 +307,12 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 41")
     public void matrixSetSrsIdReferencesGoodId() throws SQLException
     {
-        if(this.hasTileMatrixSetTable)
+        try(final Statement statement = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("SELECT srs_id from gpkg_tile_matrix_set WHERE srs_id NOT IN (SELECT srs_id FROM gpkg_spatial_ref_sys);"))
         {
-            try(final Statement statement = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery("SELECT srs_id from gpkg_tile_matrix_set WHERE srs_id NOT IN (SELECT srs_id FROM gpkg_spatial_ref_sys);"))
+            if(resultSet.next())
             {
-                if(resultSet.next())
-                {
-                    fail(ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_SET_SRS_REFERENCE, resultSet.getInt("srs_id")));
-                }
+                fail(ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_SET_SRS_REFERENCE, resultSet.getInt("srs_id")));
             }
         }
     }
@@ -390,33 +336,33 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 42")
     public void tileMatrixTableDefinition() throws SQLException
     {
-        if(!this.tileTableNames.isEmpty())
+    	final String tableName = "gpkg_tile_matrix";
+    	
+        assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, tableName), 
+        		ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
+
+        try
         {
-            assertTrue(this.hasTileMatrixTable, ErrorMessageKeys.TILE_MATRIX_TABLE_DOES_NOT_EXIST);
+            final Map<String, ColumnDefinition> tileMatrixColumns = new HashMap<>();
 
-            try
-            {
-                final Map<String, ColumnDefinition> tileMatrixColumns = new HashMap<>();
+            tileMatrixColumns.put("table_name",     new ColumnDefinition("TEXT",    true, true,  true,  null));
+            tileMatrixColumns.put("zoom_level",     new ColumnDefinition("INTEGER", true, true,  true,  null));
+            tileMatrixColumns.put("matrix_width",   new ColumnDefinition("INTEGER", true, false, false, null));
+            tileMatrixColumns.put("matrix_height",  new ColumnDefinition("INTEGER", true, false, false, null));
+            tileMatrixColumns.put("tile_width",     new ColumnDefinition("INTEGER", true, false, false, null));
+            tileMatrixColumns.put("tile_height",    new ColumnDefinition("INTEGER", true, false, false, null));
+            tileMatrixColumns.put("pixel_x_size",   new ColumnDefinition("DOUBLE",  true, false, false, null));
+            tileMatrixColumns.put("pixel_y_size",   new ColumnDefinition("DOUBLE",  true, false, false, null));
 
-                tileMatrixColumns.put("table_name",     new ColumnDefinition("TEXT",    true, true,  true,  null));
-                tileMatrixColumns.put("zoom_level",     new ColumnDefinition("INTEGER", true, true,  true,  null));
-                tileMatrixColumns.put("matrix_width",   new ColumnDefinition("INTEGER", true, false, false, null));
-                tileMatrixColumns.put("matrix_height",  new ColumnDefinition("INTEGER", true, false, false, null));
-                tileMatrixColumns.put("tile_width",     new ColumnDefinition("INTEGER", true, false, false, null));
-                tileMatrixColumns.put("tile_height",    new ColumnDefinition("INTEGER", true, false, false, null));
-                tileMatrixColumns.put("pixel_x_size",   new ColumnDefinition("DOUBLE",  true, false, false, null));
-                tileMatrixColumns.put("pixel_y_size",   new ColumnDefinition("DOUBLE",  true, false, false, null));
-
-                TableVerifier.verifyTable(this.databaseConnection,
-                                          "gpkg_tile_matrix",
-                                          tileMatrixColumns,
-                                          new HashSet<>(Arrays.asList(new ForeignKeyDefinition("gpkg_contents", "table_name", "table_name"))),
-                                          Collections.emptyList());
-            }
-            catch(final Throwable th)
-            {
-                fail(ErrorMessage.format(ErrorMessageKeys.BAD_TILE_MATRIX_TABLE_DEFINITION, th.getMessage()));
-            }
+            TableVerifier.verifyTable(this.databaseConnection,
+                                      tableName,
+                                      tileMatrixColumns,
+                                      new HashSet<>(Arrays.asList(new ForeignKeyDefinition("gpkg_contents", "table_name", "table_name"))),
+                                      Collections.emptyList());
+        }
+        catch(final Throwable th)
+        {
+            fail(ErrorMessage.format(ErrorMessageKeys.BAD_TILE_MATRIX_TABLE_DEFINITION, th.getMessage()));
         }
     }
 
@@ -465,41 +411,38 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 44")
     public void tileMatrixPerZoomLevel() throws SQLException
     {
-        if(this.hasTileMatrixTable)
+        for(final String tableName : this.tileTableNames)
         {
-            for(final String tableName : this.tileTableNames)
+            final Collection<Integer> tileMatrixZooms = new LinkedList<>();
+
+            try(final PreparedStatement statement = this.databaseConnection.prepareStatement("SELECT DISTINCT zoom_level FROM gpkg_tile_matrix WHERE table_name = ? ORDER BY zoom_level;"))
             {
-                final Collection<Integer> tileMatrixZooms = new LinkedList<>();
+                statement.setString(1, tableName);
 
-                try(final PreparedStatement statement = this.databaseConnection.prepareStatement("SELECT DISTINCT zoom_level FROM gpkg_tile_matrix WHERE table_name = ? ORDER BY zoom_level;"))
+                try(final ResultSet gmZoomLevels = statement.executeQuery())
                 {
-                    statement.setString(1, tableName);
-
-                    try(final ResultSet gmZoomLevels = statement.executeQuery())
+                    while(gmZoomLevels.next())
                     {
-                        while(gmZoomLevels.next())
-                        {
-                            tileMatrixZooms.add(gmZoomLevels.getInt("zoom_level"));
-                        }
+                        tileMatrixZooms.add(gmZoomLevels.getInt("zoom_level"));
                     }
                 }
+            }
 
-                final Collection<Integer> tilePyramidZooms = new LinkedList<>();
+            final Collection<Integer> tilePyramidZooms = new LinkedList<>();
 
-                try(final Statement statement    = this.databaseConnection.createStatement();
-                    final ResultSet pyZoomLevels = statement.executeQuery(String.format("SELECT DISTINCT zoom_level FROM %s ORDER BY zoom_level;", tableName)))
+            try(final Statement statement    = this.databaseConnection.createStatement();
+                final ResultSet pyZoomLevels = statement.executeQuery(String.format("SELECT DISTINCT zoom_level FROM %s ORDER BY zoom_level;", tableName)))
+            {
+                while(pyZoomLevels.next())
                 {
-                    while(pyZoomLevels.next())
-                    {
-                        tilePyramidZooms.add(pyZoomLevels.getInt("zoom_level"));
-                    }
+                    tilePyramidZooms.add(pyZoomLevels.getInt("zoom_level"));
                 }
+            }
 
-                for(final Integer zoom: tilePyramidZooms)
-                {
-                    assertTrue(tileMatrixZooms.contains(zoom),
-                               ErrorMessage.format(ErrorMessageKeys.MISSING_TILE_MATRIX_ENTRY, zoom, tableName));
-                }
+            for(final Integer zoom: tilePyramidZooms)
+            {
+                assertTrue(tileMatrixZooms.contains(zoom),
+                           ErrorMessage.format(ErrorMessageKeys.MISSING_TILE_MATRIX_ENTRY, zoom, tableName));
             }
         }
     }
@@ -522,71 +465,67 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 45")
     public void tileMatrixDimensionAgreement() throws SQLException
     {
-        if(this.hasTileMatrixTable &&
-           this.hasTileMatrixSetTable)
+        final Map<String, Collection<Integer>> tableNamesWithBadZooms = new HashMap<>();
+
+        for(final String tableName : this.tileTableNames)
         {
-            final Map<String, Collection<Integer>> tableNamesWithBadZooms = new HashMap<>();
-
-            for(final String tableName : this.tileTableNames)
+            try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement("SELECT min_x, min_y, max_x, max_y FROM gpkg_tile_matrix_set WHERE table_name = ?"))
             {
-                try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement("SELECT min_x, min_y, max_x, max_y FROM gpkg_tile_matrix_set WHERE table_name = ?"))
+                preparedStatement.setString(1, tableName);
+
+                try(final ResultSet boundingBox = preparedStatement.executeQuery())
                 {
-                    preparedStatement.setString(1, tableName);
-
-                    try(final ResultSet boundingBox = preparedStatement.executeQuery())
+                    if(boundingBox.next())
                     {
-                        if(boundingBox.next())
+                        final double width  = boundingBox.getDouble("max_x") - boundingBox.getDouble("min_x");
+                        final double height = boundingBox.getDouble("max_y") - boundingBox.getDouble("min_y");
+
+                        final Collection<Integer> zoomLevels = new ArrayList<>();
+
+                        try(final PreparedStatement statement = this.databaseConnection.prepareStatement("SELECT zoom_level, pixel_x_size, pixel_y_size, matrix_width, matrix_height, tile_width, tile_height FROM gpkg_tile_matrix WHERE table_name = ? ORDER BY zoom_level ASC;"))
                         {
-                            final double width  = boundingBox.getDouble("max_x") - boundingBox.getDouble("min_x");
-                            final double height = boundingBox.getDouble("max_y") - boundingBox.getDouble("min_y");
+                            statement.setString(1, tableName);
 
-                            final Collection<Integer> zoomLevels = new ArrayList<>();
-
-                            try(final PreparedStatement statement = this.databaseConnection.prepareStatement("SELECT zoom_level, pixel_x_size, pixel_y_size, matrix_width, matrix_height, tile_width, tile_height FROM gpkg_tile_matrix WHERE table_name = ? ORDER BY zoom_level ASC;"))
+                            try(final ResultSet pixelInfo = statement.executeQuery())
                             {
-                                statement.setString(1, tableName);
-
-                                try(final ResultSet pixelInfo = statement.executeQuery())
+                                while(pixelInfo.next())
                                 {
-                                    while(pixelInfo.next())
-                                    {
-                                        final double pixelXSize   = pixelInfo.getDouble("pixel_x_size");
-                                        final double pixelYSize   = pixelInfo.getDouble("pixel_y_size");
-                                        final double matrixHeight = pixelInfo.getInt   ("matrix_height");
-                                        final double matrixWidth  = pixelInfo.getInt   ("matrix_width");
-                                        final double tileHeight   = pixelInfo.getInt   ("tile_height");
-                                        final double tileWidth    = pixelInfo.getInt   ("tile_width");
+                                    final double pixelXSize   = pixelInfo.getDouble("pixel_x_size");
+                                    final double pixelYSize   = pixelInfo.getDouble("pixel_y_size");
+                                    final double matrixHeight = pixelInfo.getInt   ("matrix_height");
+                                    final double matrixWidth  = pixelInfo.getInt   ("matrix_width");
+                                    final double tileHeight   = pixelInfo.getInt   ("tile_height");
+                                    final double tileWidth    = pixelInfo.getInt   ("tile_width");
 
-                                        if(!isEqual(pixelXSize, (width  / matrixWidth)  / tileWidth) ||
-                                           !isEqual(pixelYSize, (height / matrixHeight) / tileHeight))
-                                        {
-                                            zoomLevels.add(pixelInfo.getInt("zoom_level"));
-                                        }
+                                    if(!isEqual(pixelXSize, (width  / matrixWidth)  / tileWidth) ||
+                                       !isEqual(pixelYSize, (height / matrixHeight) / tileHeight))
+                                    {
+                                        zoomLevels.add(pixelInfo.getInt("zoom_level"));
                                     }
                                 }
                             }
+                        }
 
-                            if(!zoomLevels.isEmpty())
-                            {
-                                tableNamesWithBadZooms.put(tableName, zoomLevels);
-                            }
+                        if(!zoomLevels.isEmpty())
+                        {
+                            tableNamesWithBadZooms.put(tableName, zoomLevels);
                         }
                     }
                 }
             }
-
-            assertTrue(tableNamesWithBadZooms.isEmpty(),
-                       ErrorMessage.format(ErrorMessageKeys.BAD_PIXEL_DIMENSIONS,
-                                           tableNamesWithBadZooms.entrySet()
-                                                                 .stream()
-                                                                 .map(entrySet -> String.format("%s: %s",
-                                                                                                entrySet.getKey(),
-                                                                                                entrySet.getValue()
-                                                                                                        .stream()
-                                                                                                        .map(Object::toString)
-                                                                                                        .collect(Collectors.joining(", "))))
-                                                                 .collect(Collectors.joining("\n"))));
         }
+
+        assertTrue(tableNamesWithBadZooms.isEmpty(),
+                   ErrorMessage.format(ErrorMessageKeys.BAD_PIXEL_DIMENSIONS,
+                                       tableNamesWithBadZooms.entrySet()
+                                                             .stream()
+                                                             .map(entrySet -> String.format("%s: %s",
+                                                                                            entrySet.getKey(),
+                                                                                            entrySet.getValue()
+                                                                                                    .stream()
+                                                                                                    .map(Object::toString)
+                                                                                                    .collect(Collectors.joining(", "))))
+                                                             .collect(Collectors.joining("\n"))));
     }
 
     /**
@@ -602,15 +541,12 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 46")
     public void zoomLevelNotNegative() throws SQLException
     {
-        if(this.hasTileMatrixTable)
+        try(final Statement statement = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("SELECT zoom_level FROM gpkg_tile_matrix WHERE zoom_level < 0;"))
         {
-            try(final Statement statement = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery("SELECT zoom_level FROM gpkg_tile_matrix WHERE zoom_level < 0;"))
+            if(resultSet.next())
             {
-                if(resultSet.next())
-                {
-                    fail(ErrorMessageKeys.NEGATIVE_ZOOM_LEVEL);
-                }
+                fail(ErrorMessageKeys.NEGATIVE_ZOOM_LEVEL);
             }
         }
     }
@@ -628,15 +564,12 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 47")
     public void matrixWidthGreaterThanZero() throws SQLException
     {
-        if(this.hasTileMatrixTable)
+        try(final Statement statement = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("SELECT matrix_width FROM gpkg_tile_matrix WHERE matrix_width <= 0;"))
         {
-            try(final Statement statement = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery("SELECT matrix_width FROM gpkg_tile_matrix WHERE matrix_width <= 0;"))
+            if(resultSet.next())
             {
-                if(resultSet.next())
-                {
-                    fail(ErrorMessageKeys.NON_POSITIVE_MATRIX_WIDTH);
-                }
+                fail(ErrorMessageKeys.NON_POSITIVE_MATRIX_WIDTH);
             }
         }
     }
@@ -654,15 +587,12 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 48")
     public void matrixHeightGreaterThanZero() throws SQLException
     {
-        if(this.hasTileMatrixTable)
+        try(final Statement statement = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("SELECT matrix_height FROM gpkg_tile_matrix WHERE matrix_height <= 0;"))
         {
-            try(final Statement statement = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery("SELECT matrix_height FROM gpkg_tile_matrix WHERE matrix_height <= 0;"))
+            if(resultSet.next())
             {
-                if(resultSet.next())
-                {
-                    fail(ErrorMessageKeys.NON_POSITIVE_MATRIX_HEIGHT);
-                }
+                fail(ErrorMessageKeys.NON_POSITIVE_MATRIX_HEIGHT);
             }
         }
     }
@@ -680,15 +610,12 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 49")
     public void tileWidthGreaterThanZero() throws SQLException
     {
-        if(this.hasTileMatrixTable)
+        try(final Statement statement = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("SELECT tile_width FROM gpkg_tile_matrix WHERE tile_width <= 0;"))
         {
-            try(final Statement statement = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery("SELECT tile_width FROM gpkg_tile_matrix WHERE tile_width <= 0;"))
+            if(resultSet.next())
             {
-                if(resultSet.next())
-                {
-                    fail(ErrorMessageKeys.NON_POSITIVE_TILE_WIDTH);
-                }
+                fail(ErrorMessageKeys.NON_POSITIVE_TILE_WIDTH);
             }
         }
     }
@@ -706,15 +633,12 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 50")
     public void tileHeightGreaterThanZero() throws SQLException
     {
-        if(this.hasTileMatrixTable)
+        try(final Statement statement = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("SELECT tile_height FROM gpkg_tile_matrix WHERE tile_height <= 0;"))
         {
-            try(final Statement statement = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery("SELECT tile_height FROM gpkg_tile_matrix WHERE tile_height <= 0;"))
+            if(resultSet.next())
             {
-                if(resultSet.next())
-                {
-                    fail(ErrorMessageKeys.NON_POSITIVE_TILE_HEIGHT);
-                }
+                fail(ErrorMessageKeys.NON_POSITIVE_TILE_HEIGHT);
             }
         }
     }
@@ -732,15 +656,12 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 51")
     public void pixelXSizeGreaterThanZero() throws SQLException
     {
-        if(this.hasTileMatrixTable)
+        try(final Statement statement = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery("SELECT pixel_x_size FROM gpkg_tile_matrix WHERE pixel_x_size <= 0;"))
         {
-            try(final Statement statement = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery("SELECT pixel_x_size FROM gpkg_tile_matrix WHERE pixel_x_size <= 0;"))
+            if(resultSet.next())
             {
-                if(resultSet.next())
-                {
-                    fail(ErrorMessageKeys.NON_POSITIVE_PIXEL_X_SIZE);
-                }
+                fail(ErrorMessageKeys.NON_POSITIVE_PIXEL_X_SIZE);
             }
         }
     }
@@ -758,16 +679,11 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 52")
     public void pixelYSizeGreaterThanZero() throws SQLException
     {
-        if(this.hasTileMatrixTable)
+        final Statement statement = this.databaseConnection.createStatement();
+        final ResultSet resultSet = statement.executeQuery("SELECT pixel_y_size FROM gpkg_tile_matrix WHERE pixel_y_size <= 0;");
+        if(resultSet.next())
         {
-            try(final Statement statement = this.databaseConnection.createStatement();
-                final ResultSet resultSet = statement.executeQuery("SELECT pixel_y_size FROM gpkg_tile_matrix WHERE pixel_y_size <= 0;"))
-            {
-                if(resultSet.next())
-                {
-                    fail(ErrorMessageKeys.NON_POSITIVE_PIXEL_Y_SIZE);
-                }
-            }
+            fail(ErrorMessageKeys.NON_POSITIVE_PIXEL_Y_SIZE);
         }
     }
 
@@ -786,36 +702,29 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 53")
     public void sortedPixelSizes() throws SQLException
     {
-        if(this.hasTileMatrixTable)
-        {
-            for(final String pyramidTable : this.tileTableNames)
-            {
-                try(final PreparedStatement statement = this.databaseConnection.prepareStatement("SELECT pixel_x_size, pixel_y_size FROM gpkg_tile_matrix WHERE table_name = ? ORDER BY zoom_level ASC;"))
-                {
-                    statement.setString(1, pyramidTable);
+        for(final String pyramidTable : this.tileTableNames) {
 
-                    try(final ResultSet resultSet = statement.executeQuery())
-                    {
-                        if(resultSet.isBeforeFirst())
-                        {
-                            resultSet.next();
+        	final PreparedStatement statement = this.databaseConnection.prepareStatement("SELECT pixel_x_size, pixel_y_size FROM gpkg_tile_matrix WHERE table_name = ? ORDER BY zoom_level ASC;");
 
-                            double lastPixelX = resultSet.getDouble("pixel_x_size");
-                            double lastPixelY = resultSet.getDouble("pixel_y_size");
+            statement.setString(1, pyramidTable);
 
-                            while(resultSet.next())
-                            {
-                                final double pixelX = resultSet.getDouble("pixel_x_size");
-                                final double pixelY = resultSet.getDouble("pixel_y_size");
+            final ResultSet resultSet = statement.executeQuery();
 
-                                assertTrue(lastPixelX > pixelX && lastPixelY > pixelY,
-                                           ErrorMessage.format(ErrorMessageKeys.PIXEL_SIZE_NOT_DECREASING, pyramidTable));
+    		if(resultSet.isBeforeFirst()) {
+                resultSet.next();
 
-                                lastPixelX = pixelX;
-                                lastPixelY = pixelY;
-                            }
-                        }
-                    }
+                double lastPixelX = resultSet.getDouble("pixel_x_size");
+                double lastPixelY = resultSet.getDouble("pixel_y_size");
+
+                while(resultSet.next()) {
+                    final double pixelX = resultSet.getDouble("pixel_x_size");
+                    final double pixelY = resultSet.getDouble("pixel_y_size");
+
+                    assertTrue(lastPixelX > pixelX && lastPixelY > pixelY,
+                               ErrorMessage.format(ErrorMessageKeys.PIXEL_SIZE_NOT_DECREASING, pyramidTable));
+
+                    lastPixelX = pixelX;
+                    lastPixelY = pixelY;
                 }
             }
         }
@@ -850,10 +759,8 @@ public class TileTests extends CommonFixture
         expectedColumns.put("tile_row",    new ColumnDefinition("INTEGER", true,  false, false, null));
         expectedColumns.put("tile_data",   new ColumnDefinition("BLOB",    true,  false, false, null));
 
-        for(final String tableName : this.contentsTileTableNames)
-        {
-            try
-            {
+        for(final String tableName : this.tileTableNames) {
+            try {
                 TableVerifier.verifyTable(this.databaseConnection,
                                           tableName,
                                           expectedColumns,
@@ -884,38 +791,27 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 55")
     public void zoomLevelRange() throws SQLException
     {
-        if(this.hasTileMatrixTable)
-        {
-            for(final String tableName : this.tileTableNames)
-            {
-                try(final PreparedStatement statement = this.databaseConnection.prepareStatement("SELECT MIN(zoom_level) AS min_zoom, MAX(zoom_level) AS max_zoom FROM gpkg_tile_matrix WHERE table_name = ?;"))
+        for(final String tableName : this.tileTableNames) {
+            
+        	final PreparedStatement statement = this.databaseConnection.prepareStatement("SELECT MIN(zoom_level) AS min_zoom, MAX(zoom_level) AS max_zoom FROM gpkg_tile_matrix WHERE table_name = ?;");
+            statement.setString(1, tableName);
+
+            final ResultSet minMaxZoom = statement.executeQuery();
+            final int minZoom = minMaxZoom.getInt("min_zoom");
+            final int maxZoom = minMaxZoom.getInt("max_zoom");
+
+            if(!minMaxZoom.wasNull()) {
+                
+            	final PreparedStatement zoomStatement = this.databaseConnection.prepareStatement(String.format("SELECT zoom_level FROM %s WHERE zoom_level < ? OR zoom_level > ?", tableName));
+                zoomStatement.setInt(1, minZoom);
+                zoomStatement.setInt(2, maxZoom);
+
+                final ResultSet invalidZooms = zoomStatement.executeQuery();
+                if(invalidZooms.next())
                 {
-                    statement.setString(1, tableName);
-
-                    try(final ResultSet minMaxZoom = statement.executeQuery())
-                    {
-                        final int minZoom = minMaxZoom.getInt("min_zoom");
-                        final int maxZoom = minMaxZoom.getInt("max_zoom");
-
-                        if(!minMaxZoom.wasNull())
-                        {
-                            try(final PreparedStatement zoomStatement = this.databaseConnection.prepareStatement(String.format("SELECT zoom_level FROM %s WHERE zoom_level < ? OR zoom_level > ?", tableName)))
-                            {
-                                zoomStatement.setInt(1, minZoom);
-                                zoomStatement.setInt(2, maxZoom);
-
-                                try(final ResultSet invalidZooms = zoomStatement.executeQuery())
-                                {
-                                    if(invalidZooms.next())
-                                    {
-                                        fail(ErrorMessage.format(ErrorMessageKeys.UNDEFINED_ZOOM_LEVEL,
-                                                                 tableName,
-                                                                 invalidZooms.getInt("zoom_level")));
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    fail(ErrorMessage.format(ErrorMessageKeys.UNDEFINED_ZOOM_LEVEL,
+                                             tableName,
+                                             invalidZooms.getInt("zoom_level")));
                 }
             }
         }
@@ -937,35 +833,29 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 56")
     public void tileColumnRange() throws SQLException
     {
-        if(this.hasTileMatrixTable)
+        for(final String tableName : this.tileTableNames)
         {
-            for(final String tableName : this.tileTableNames)
-            {
-                final String query = String.format("SELECT zoom_level as zl, matrix_width as width " +
-                                                   "FROM   gpkg_tile_matrix "        +
-                                                   "WHERE  table_name = ? "       +
-                                                   "AND (zoom_level in (SELECT zoom_level FROM %1$s WHERE tile_column < 0) " +
-                                                   "OR  (EXISTS(SELECT NULL FROM %1$s WHERE zoom_level = zl AND tile_column > width - 1)));",
-                                                   tableName);
+            final String query = String.format("SELECT zoom_level as zl, matrix_width as width " +
+                                               "FROM   gpkg_tile_matrix "        +
+                                               "WHERE  table_name = ? "       +
+                                               "AND (zoom_level in (SELECT zoom_level FROM %1$s WHERE tile_column < 0) " +
+                                               "OR  (EXISTS(SELECT NULL FROM %1$s WHERE zoom_level = zl AND tile_column > width - 1)));",
+                                               tableName);
 
-                try(final PreparedStatement statement = this.databaseConnection.prepareStatement(query))
-                {
-                    statement.setString(1, tableName);
+            final PreparedStatement statement = this.databaseConnection.prepareStatement(query);
 
-                    try(final ResultSet resultSet = statement.executeQuery())
-                    {
-                        while(resultSet.next())
-                        {
-                            final int matrixWidth = resultSet.getInt("width");
-                            final int zoomLevel   = resultSet.getInt("zl");
+            statement.setString(1, tableName);
 
-                            fail(ErrorMessage.format(ErrorMessageKeys.TILE_COLUMN_OUT_OF_RANGE,
-                                                     tableName,
-                                                     matrixWidth-1,
-                                                     zoomLevel));
-                        }
-                    }
-                }
+            final ResultSet resultSet = statement.executeQuery();
+
+            while(resultSet.next()) {
+                final int matrixWidth = resultSet.getInt("width");
+                final int zoomLevel   = resultSet.getInt("zl");
+
+                fail(ErrorMessage.format(ErrorMessageKeys.TILE_COLUMN_OUT_OF_RANGE,
+                                         tableName,
+                                         matrixWidth-1,
+                                         zoomLevel));
             }
         }
     }
@@ -986,35 +876,29 @@ public class TileTests extends CommonFixture
     @Test(description = "See OGC 12-128r12: Requirement 57")
     public void tileRowRange() throws SQLException
     {
-        if(this.hasTileMatrixTable)
+        for(final String tableName : this.tileTableNames)
         {
-            for(final String tableName : this.tileTableNames)
-            {
-                final String query = String.format("SELECT zoom_level as zl, matrix_height as height " +
-                                                   "FROM   gpkg_tile_matrix "        +
-                                                   "WHERE  table_name = ? "       +
-                                                   "AND (zoom_level in (SELECT zoom_level FROM %1$s WHERE tile_row < 0) " +
-                                                   "OR  (EXISTS(SELECT NULL FROM %1$s WHERE zoom_level = zl AND tile_row > height - 1)));",
-                                                   tableName);
+            final String query = String.format("SELECT zoom_level as zl, matrix_height as height " +
+                                               "FROM   gpkg_tile_matrix "        +
+                                               "WHERE  table_name = ? "       +
+                                               "AND (zoom_level in (SELECT zoom_level FROM %1$s WHERE tile_row < 0) " +
+                                               "OR  (EXISTS(SELECT NULL FROM %1$s WHERE zoom_level = zl AND tile_row > height - 1)));",
+                                               tableName);
 
-                try(final PreparedStatement statement = this.databaseConnection.prepareStatement(query))
-                {
-                    statement.setString(1, tableName);
+            final PreparedStatement statement = this.databaseConnection.prepareStatement(query);
+            
+            statement.setString(1, tableName);
 
-                    try(final ResultSet resultSet = statement.executeQuery())
-                    {
-                        while(resultSet.next())
-                        {
-                            final int matrixHeight = resultSet.getInt("height");
-                            final int zoomLevel   = resultSet.getInt("zl");
+            final ResultSet resultSet = statement.executeQuery();
 
-                            fail(ErrorMessage.format(ErrorMessageKeys.TILE_ROW_OUT_OF_RANGE,
-                                                     tableName,
-                                                     matrixHeight-1,
-                                                     zoomLevel));
-                        }
-                    }
-                }
+            while(resultSet.next()) {
+                final int matrixHeight = resultSet.getInt("height");
+                final int zoomLevel   = resultSet.getInt("zl");
+
+                fail(ErrorMessage.format(ErrorMessageKeys.TILE_ROW_OUT_OF_RANGE,
+                                         tableName,
+                                         matrixHeight-1,
+                                         zoomLevel));
             }
         }
     }
@@ -1068,11 +952,8 @@ public class TileTests extends CommonFixture
 	}
 
 	private String dataType = "tiles";
-	private boolean hasTileMatrixTable;
-    private boolean hasTileMatrixSetTable;
 
     private final Collection<String> tileTableNames         = new ArrayList<>();
-    private final Collection<String> contentsTileTableNames = new ArrayList<>();
 
     private static final double EPSILON = 0.0001;   // TODO should this be made configurable?
 
@@ -1080,8 +961,6 @@ public class TileTests extends CommonFixture
     protected static final Collection<ImageReader> pngImageReaders;
 
     private static final Map<String, ColumnDefinition> TileTableExpectedColumns;
-    private static final Set<ForeignKeyDefinition>     TileTableExpectedForeignKeys;
-    private static final Set<UniqueDefinition>         TileTableExpectedUniqueColumnGroups;
 
     static
     {
@@ -1102,8 +981,5 @@ public class TileTests extends CommonFixture
         TileTableExpectedColumns.put("tile_column",  new ColumnDefinition("INTEGER", true,  false, false, null));
         TileTableExpectedColumns.put("tile_row",     new ColumnDefinition("INTEGER", true,  false, false, null));
         TileTableExpectedColumns.put("tile_data",    new ColumnDefinition("BLOB",    true,  false, false, null));
-
-        TileTableExpectedForeignKeys = Collections.emptySet();
-        TileTableExpectedUniqueColumnGroups =  new HashSet<>(Arrays.asList(new UniqueDefinition("zoom_level", "tile_column", "tile_row")));
     }
 }
