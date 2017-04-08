@@ -79,9 +79,12 @@ public class ErrorMessageKeys {
     public static final String UNDEFINED_ZOOM_LEVEL = "UndefinedZoomLevel";
     public static final String TILE_COLUMN_OUT_OF_RANGE = "TileColumnOutOfRange";
     public static final String TILE_ROW_OUT_OF_RANGE = "TileRowOutOfRange";
+    public static final String INVALID_RTREE_REFERENCE = "InvalidRTreeReference";
     public static final String INVALID_DATA_COLUMN = "InvalidDataColumn";
     public static final String INVALID_DATA_TABLE = "InvalidDataTable";
     public static final String INVALID_EXTENSION_DATA_SCOPE = "InvalidExtensionDataScope";
+    public static final String ILLEGAL_EXTENSION_DATA_SCOPE = "IllegalExtensionDataScope";
+    public static final String INVALID_RTREE_DEFINITION = "InvalidRTreeDefinition";
     public static final String INVALID_METADATA_SCOPE = "InvalidMetadataScope";
     public static final String BAD_METADATA_REFERENCE_TABLE_DEFINITION = "BadMetadataReferenceTableDefinition";
     public static final String INVALID_METADATA_REFERENCE_SCOPE = "InvalidMetadataReferenceScope";

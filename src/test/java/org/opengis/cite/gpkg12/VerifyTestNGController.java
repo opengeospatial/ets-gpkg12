@@ -54,14 +54,14 @@ public class VerifyTestNGController {
     public void cleanTestRun() throws Exception {
 
         runTests(ClassLoader.getSystemResource("gpkg/bentiu_southsudan-osm-20170213.gpkg"), 2); //R5, R29
+        runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 2); // R107 MinIsInclusive/MaxIsInclusive, R77
         runTests(ClassLoader.getSystemResource("gpkg/states10.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/bluemarble.gpkg"), 0);
 //        runTests(ClassLoader.getSystemResource("gpkg/ERDC_Whitehorse_GeoPackage.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/elevation.gpkg"), 0); // These two are the id notnull thing
         runTests(ClassLoader.getSystemResource("gpkg/empty.gpkg"), 1); // Failing on R17 which is silly because it is empty
         runTests(ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg"), 1); // This is an invalid 1.0 or 1.1 GPKG - it has an invalid metadata table (md_standard_URI instead of md_standard_uri) 
-        runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 1); // and MinIsInclusive/MaxIsInclusive
-        runTests(ClassLoader.getSystemResource("gpkg/sample1_1.gpkg"), 0);
+        runTests(ClassLoader.getSystemResource("gpkg/sample1_1.gpkg"), 1); // R77
         runTests(ClassLoader.getSystemResource("gpkg/sample1_2.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/sample1_2F10.gpkg"), 1); // Default "undefined"
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample.gpkg"), 0);

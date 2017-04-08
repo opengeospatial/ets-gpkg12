@@ -32,6 +32,11 @@
       <package name="org.opengis.cite.gpkg12.extensions" />
     </packages>
   </test>
+  <test name="RTree Index">
+    <packages>
+      <package name="org.opengis.cite.gpkg12.extensions.rtreeindex" />
+    </packages>
+  </test>
   <test name="Metadata">
     <packages>
       <package name="org.opengis.cite.gpkg12.extensions.metadata" />
