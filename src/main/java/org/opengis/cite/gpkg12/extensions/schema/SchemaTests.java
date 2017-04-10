@@ -235,7 +235,7 @@ public class SchemaTests extends CommonFixture
 				assertTrue("NUMERIC".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min notnull"));
 				passFlag |= (1 << 3);
-			} else if (minIsInclusive.equals(name)){
+			} else if (minIsInclusive.equalsIgnoreCase(name)){
 				assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", minIsInclusive + " type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", minIsInclusive + " notnull"));
 				passFlag |= (1 << 4);
@@ -243,7 +243,7 @@ public class SchemaTests extends CommonFixture
 				assertTrue("NUMERIC".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max notnull"));
 				passFlag |= (1 << 5);
-			} else if (maxIsInclusive.equals(name)){
+			} else if (maxIsInclusive.equalsIgnoreCase(name)){
 				assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", maxIsInclusive + " type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", maxIsInclusive + " notnull"));
 				passFlag |= (1 << 6);

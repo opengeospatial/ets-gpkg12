@@ -38,6 +38,8 @@ public class RTreeIndexTests extends CommonFixture {
      * @see <a href="http://www.geopackage.org/spec/#r75" target=
      *      "_blank">F.8. Metadata - Requirement 75</a>
      *
+     * @param testContext the ITestContext to use
+     * @throws SQLException on any error
      */
     @BeforeClass
     public void validateExtensionPresent(ITestContext testContext) throws SQLException {
@@ -92,9 +94,9 @@ public class RTreeIndexTests extends CommonFixture {
      * below. The tables below contain SQL templates with variables. Replace 
      * the following template variables with the specified values to create 
      * the required SQL statements:
-     * <t>: The name of the feature table containing the geometry column
-     * <c>: The name of the geometry column in <t> that is being indexed
-     * <i>: The name of the integer primary key column in <t> as specified 
+     * &lt;t&gt;: The name of the feature table containing the geometry column
+     * &lt;c&gt;: The name of the geometry column in &lt;t&gt; that is being indexed
+     * &lt;i&gt;: The name of the integer primary key column in &lt;t&gt; as specified 
      * in [r29]
      * 
      * @throws SQLException on any error

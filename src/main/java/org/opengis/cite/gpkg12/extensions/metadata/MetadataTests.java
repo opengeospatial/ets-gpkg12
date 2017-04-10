@@ -87,6 +87,12 @@ public class MetadataTests extends CommonFixture
         }
     }
     
+    /**
+     * Determines if the extension is active by looking for relevant tables and/or rows
+     * 
+     * @param testContext the ITestContext to use
+     * @throws SQLException on any SQL error (which would indicate non-compliance)
+     */
     @BeforeClass
     public void activeExtension(ITestContext testContext) throws SQLException {
     	// Starting with GPKG 1.1, this is a proper extension.
