@@ -86,10 +86,10 @@ public class FeaturesTests extends CommonFixture {
 
 			// 2
 			assertTrue(resultSet.next(),
-					ErrorMessage.format(ErrorMessageKeys.FEATURES_TABLE_DOES_NOT_EXIST, tableName));
+					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
 			
 			// 3
-			checkPrimaryKey(tableName, null);
+			checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName));
 		}
 	}
 
@@ -98,9 +98,11 @@ public class FeaturesTests extends CommonFixture {
 	 * Test case
 	 * {@code /opt/features/geometry_encoding/data/blob} and 
 	 * {@code /opt/features/geometry_encoding/data/core_types_existing_sparse_data}
+	 * This test will also fail if the primary key is missing since that makes it difficult
+	 * to isolate which ro
 	 *
 	 * @see <a href="_requirement-19" target= "_blank">Vector
-	 *      Features BLOB Format - Requirement 19</a>
+	 *      Features BLOB Format - Requirement 19 and 20</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
@@ -117,34 +119,50 @@ public class FeaturesTests extends CommonFixture {
 			final Statement statement3 = this.databaseConnection.createStatement();
 			final String cn = resultSet1.getString("cn");
 			final String tn = resultSet1.getString("tn");
+			String pkColumn;
+			try {
+				pkColumn = getPrimaryKeyColumn(tn);
+			} catch (AssertionError exc) {
+				// If we don't find a primary key, just use the rowid;
+				pkColumn = "rowid";
+			}
+			
 			// 3a
-			final ResultSet resultSet3 = statement3.executeQuery(String.format("SELECT %s FROM %s;", cn, tn));
+			final ResultSet resultSet3 = statement3.executeQuery(String.format("SELECT %s, %s FROM %s;", cn, pkColumn, tn));
 			
 			// 3b
 			while (resultSet3.next()){
-		        // 3c
-				final InputStream sgpb = resultSet3.getBinaryStream(cn);
-
+				final int pk = resultSet3.getInt(pkColumn);
+				
+				InputStream sgpb;
+				try {
+			        // 3c
+					sgpb = resultSet3.getBinaryStream(cn);
+					// This exception will be thrown if the geometry BLOB is NULL
+				} catch (NullPointerException npe) {
+					continue;
+				}
+	
 				// 3ci
 				final byte[] sgbpb = new byte[4];
 				try {
 					sgpb.read(sgbpb);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-					assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));;
+					assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Couldn't read WKB prefix"));
 				}
 		        final byte[] gp = Arrays.copyOfRange(sgbpb, 0, 2);
-		        assertTrue(Arrays.equals(gp, GPKG12.BINARY_GP), ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
+		        assertTrue(Arrays.equals(gp, GPKG12.BINARY_GP), ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "First two bytes of WKB are wrong."));
 
 		        // 3cii
-		        assertTrue(sgbpb[2] == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
+		        assertTrue(sgbpb[2] == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Third byte of WKB must be 0."));
 		        
 		        // 3ciii
-		        assertTrue((sgbpb[3] & 0b00100000) == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
+		        assertTrue((sgbpb[3] & 0b00100000) == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Sixth bit of byte 4 of WKB must be 0."));
 		        
 		        // 3civ
 		        final int envelope = (sgbpb[3] & 0b00001110) >> 1;
-		        assertTrue(envelope <= 4, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
+		        assertTrue(envelope <= 4, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Envelope type of WKB (byte 4) is invalid."));
 		        
 		        // TODO: 3cv 
 			}

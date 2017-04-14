@@ -53,7 +53,10 @@ public class VerifyTestNGController {
     @Test
     public void cleanTestRun() throws Exception {
 
-        runTests(ClassLoader.getSystemResource("gpkg/bentiu_southsudan-osm-20170213.gpkg"), 2); //R5, R29
+//        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_spi_nonlinear_webp_elevation.gpkg"), 4);
+        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_spatial_index_extension.gpkg"), 0);
+        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_no_extensions.gpkg"), 0);
+        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_no_extensions_with_gpkg_ogr_contents.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 1); // R77
         runTests(ClassLoader.getSystemResource("gpkg/states10.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/bluemarble.gpkg"), 0);
@@ -67,6 +70,7 @@ public class VerifyTestNGController {
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/geonames_belgium.gpkg"), 5); // lower case data types, wrong date default, R77
         runTests(ClassLoader.getSystemResource("gpkg/haiti-vectors-split.gpkg"), 5); // lower case data types, wrong date default, R77
+        runTests(ClassLoader.getSystemResource("gpkg/bentiu_southsudan-osm-20170213.gpkg"), 2); //R5, R29
     }
     private void runTests(URL testSubject, int fails) throws Exception {
         this.testRunProps.setProperty(TestRunArg.IUT.toString(), testSubject.toURI().toString());

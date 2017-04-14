@@ -35,6 +35,8 @@ public class ErrorMessageKeys {
     public static final String SQLITE_OMIT_OPTIONS = "SqliteOmitOptions";
     public static final String TABLE_DEFINITION_INVALID = "TableDefinitionInvalid";
     public static final String MISSING_TABLE = "MissingTable";
+    public static final String TABLE_NO_PK = "TableNoPK";
+    public static final String TABLE_PK_NOT_UNIQUE = "TablePKNotUnique";
     public static final String NO_GEOGRAPHIC_SRS = "NoGeographicSrs";
     public static final String NO_UNDEFINED_CARTESIAN_SRS = "NoUndefinedCartesianSrs";
     public static final String NO_UNDEFINED_GEOGRAPHIC_SRS = "NoUndefinedGeographicSrs";
@@ -44,9 +46,6 @@ public class ErrorMessageKeys {
     public static final String BAD_CONTENTS_TABLE_SRS_FOREIGN_KEY = "BadContentsTableSrsForeignKey";
     public static final String BAD_CONTENTS_TABLE_DEFINITION = "BadContentsTableDefinition";
     public static final String OPTIONS_NO_FEATURES_OR_TILES = "OptionsNoFeaturesOrTiles";
-    public static final String FEATURES_TABLE_DOES_NOT_EXIST = "FeaturesTableDoesNotExist";// TODO: Get rid of this key
-    public static final String FEATURE_TABLE_NO_PK = "FeatureTableNoPK";
-    public static final String FEATURE_TABLE_PK_NOT_UNIQUE = "FeatureTablePKNotUnique";
     public static final String FEATURES_BINARY_INVALID = "FeaturesBinaryInvalid";
     public static final String FEATURES_GEOMETRY_COLUMNS_INVALID = "FeaturesGeometryColumnsInvalid";
     public static final String FEATURES_GEOMETRY_COLUMNS_NO_FK = "FeaturesGeometryColumnsNoFK";
