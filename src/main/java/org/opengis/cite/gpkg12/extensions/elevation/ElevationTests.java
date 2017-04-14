@@ -57,7 +57,7 @@ public class ElevationTests extends TileTests {
     }
 
 	/**
-	 * Sets up variables used across methods
+	 * Sets up variables used across methods, overrides TileTests
 	 *
 	 * @throws SQLException
 	 *             if there is a database error
@@ -549,7 +549,7 @@ public class ElevationTests extends TileTests {
 
     }
 
-    private static boolean isAcceptedImageFormat(final byte[] image) throws IOException
+    protected boolean isAcceptedImageFormat(final byte[] image) throws IOException
     {
         if(image == null)
         {

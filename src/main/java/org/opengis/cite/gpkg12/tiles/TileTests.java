@@ -63,13 +63,29 @@ public class TileTests extends CommonFixture
     @BeforeClass
     public void setUp() throws SQLException
     {
+        final Collection<String> extensionTableNames = new ArrayList<String>();
+
+        // We may have tiles tables that are handled by an extension
+    	if (DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions")){
+            final Statement statement2 = this.databaseConnection.createStatement();
+
+            final ResultSet resultSet2 = statement2.executeQuery("SELECT table_name FROM gpkg_extensions WHERE column_name = 'tile_data';");
+            while(resultSet2.next())
+            {
+            	final String tableName = resultSet2.getString(1);
+                extensionTableNames.add(tableName);
+            }
+    	}
+    	
         final Statement statement = this.databaseConnection.createStatement();
 
         final ResultSet resultSet = statement.executeQuery(String.format("SELECT table_name FROM gpkg_contents WHERE data_type = '%s';", dataType));
         while(resultSet.next())
         {
-            this.tileTableNames.add(resultSet.getString(1));
+        	final String tableName = resultSet.getString(1);
+            this.tileTableNames.add(tableName);
         }
+        this.tileTableNames.removeAll(extensionTableNames);
         Assert.assertTrue(!this.tileTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));
     }
 
@@ -908,7 +924,7 @@ public class TileTests extends CommonFixture
         return Math.abs(first - second) < EPSILON;
     }
 
-    private static boolean isAcceptedImageFormat(final byte[] image) throws IOException
+    protected boolean isAcceptedImageFormat(final byte[] image) throws IOException
     {
         if(image == null)
         {
@@ -953,11 +969,11 @@ public class TileTests extends CommonFixture
 
 	private String dataType = "tiles";
 
-    private final Collection<String> tileTableNames         = new ArrayList<>();
+    protected final Collection<String> tileTableNames = new ArrayList<String>();
 
     private static final double EPSILON = 0.0001;   // TODO should this be made configurable?
 
-    private static final Collection<ImageReader> jpegImageReaders;
+    protected static final Collection<ImageReader> jpegImageReaders;
     protected static final Collection<ImageReader> pngImageReaders;
 
     private static final Map<String, ColumnDefinition> TileTableExpectedColumns;

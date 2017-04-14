@@ -38,6 +38,11 @@
       <package name="org.opengis.cite.gpkg12.extensions.rtreeindex" />
     </packages>
   </test>
+  <test name="Webp">
+    <packages>
+      <package name="org.opengis.cite.gpkg12.extensions.webp" />
+    </packages>
+  </test>
   <test name="Metadata">
     <packages>
       <package name="org.opengis.cite.gpkg12.extensions.metadata" />
