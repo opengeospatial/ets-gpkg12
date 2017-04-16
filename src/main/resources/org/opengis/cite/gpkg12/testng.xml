@@ -33,6 +33,11 @@
       <package name="org.opengis.cite.gpkg12.extensions" />
     </packages>
   </test>
+  <test name="Non-linear Geometries">
+    <packages>
+      <package name="org.opengis.cite.gpkg12.extensions.nonlinear" />
+    </packages>
+  </test>
   <test name="RTree Index">
     <packages>
       <package name="org.opengis.cite.gpkg12.extensions.rtreeindex" />

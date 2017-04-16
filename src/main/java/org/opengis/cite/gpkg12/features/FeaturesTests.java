@@ -347,6 +347,8 @@ public class FeaturesTests extends CommonFixture {
 		while (resultSet.next()){
 			// 3
 			final String geometryTypeName = resultSet.getString("geometry_type_name");
+			final String tableName = resultSet.getString("table_name");
+			final String columnName = resultSet.getString("column_name");
 			
 			boolean pass = false;
 
@@ -363,12 +365,10 @@ public class FeaturesTests extends CommonFixture {
 			}
 			
 			if (!pass) {
-				final String tableName = resultSet.getString("table_name");
-				final String columnName = resultSet.getString("column_name");
 				pass = isExtendedType(tableName, columnName);
 			}
 			
-			assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
+			assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName, tableName));
 		}
 	}
 
