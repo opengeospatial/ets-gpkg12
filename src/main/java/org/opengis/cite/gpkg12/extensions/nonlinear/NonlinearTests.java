@@ -53,7 +53,6 @@ public class NonlinearTests extends FeaturesTests {
         Assert.assertTrue(resultSet1.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "RTree Spatial Index Extension"));
     }
 
-
 	/**
 	 * The `geometry_type_name` value in a `gpkg_geometry_columns` row MAY be 
 	 * one of the uppercase extended non-linear geometry type names specified 
@@ -87,9 +86,15 @@ public class NonlinearTests extends FeaturesTests {
 			boolean pass = false;
 
 			if (getGeopackageVersion().equals(GeoPackageVersion.V120)){
-				pass = allowedGeometryTypes.contains(geometryTypeName);
+				pass |= getAllowedGeometryTypes().contains(geometryTypeName) || extendedGeometryTypes.contains(geometryTypeName);
 			} else {
-				for (String geometryType: allowedGeometryTypes){
+				for (final String geometryType: extendedGeometryTypes){
+					if (geometryTypeName.equalsIgnoreCase(geometryType)){
+						pass = true;
+						break;
+					}
+				}
+				for (final String geometryType: getAllowedGeometryTypes()){
 					if (geometryTypeName.equalsIgnoreCase(geometryType)){
 						pass = true;
 						break;
@@ -101,7 +106,66 @@ public class NonlinearTests extends FeaturesTests {
 		}
 	}
 
-	private static final Collection<String> allowedGeometryTypes = 
-			Arrays.asList("GEOMETRY","POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON","GEOMETRYCOLLECTION",
-					"CIRCULARSTRING", "COMPOUNDCURVE", "CURVEPOLYGON", "MULTICURVE", "MULTISURFACE", "CURVE", "SURFACE");
+	// TODO: No clear way to test R66
+	
+
+	/**
+	 * A GeoPackage that contains a `gpkg_geometry_columns` table or 
+	 * updateable view with row records that specify extension 
+	 * `geometry_type_name` column values SHALL contain a `gpkg_extensions` 
+	 * table that contains row records with `table_name` and `column_name` 
+	 * values from the `gpkg_geometry_columns` row records that identify 
+	 * extension type uses, and `extension_name` column values for each of 
+	 * those geometry types constructed per the previous requirement 
+	 * <<extension_geometry_types_extensions_name>>.
+	 * 
+	 * Test case
+	 * {@code /extensions/geometry_types/extension_row}
+	 *
+	 * @see <a href="#r68" target= "_blank">Annex F.1 GeoPackage 
+	 * Non-Linear Geometry Types - Requirement 68</a>
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = "See OGC 12-128r13: Requirement 68")
+	public void extensionsRow() throws SQLException {
+		// 1
+		final Statement statement1 = this.databaseConnection.createStatement();
+
+		final ResultSet resultSet1 = statement1.executeQuery("SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns");
+		
+		// 2
+		while (resultSet1.next()){
+			// 3
+			final String geometryTypeName = resultSet1.getString("geometry_type_name");
+			
+			// 3a
+			if(extendedGeometryTypes.contains(geometryTypeName)) {
+				final String tableName = resultSet1.getString("table_name");
+				final String columnName = resultSet1.getString("column_name");
+				
+				// 3ai
+				final Statement statement2 = this.databaseConnection.createStatement();
+				
+				final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT extension_name FROM gpkg_extensions WHERE table_name = '%s' AND column_name = '%s'", tableName, columnName));
+				
+				boolean pass = false;
+
+				while (resultSet2.next()) {
+					// 3aii
+					if (resultSet2.getString(1).equals(String.format("gpkg_geom_%s", geometryTypeName))) {
+						pass |= true;
+						break;
+					}
+				}
+				assertTrue(pass, 
+						ErrorMessage.format(ErrorMessageKeys.EXTENDED_GEOMETRY_REFERENCE_MISSING, tableName, geometryTypeName));
+			}
+		}
+	}
+	
+	
+	private static final Collection<String> extendedGeometryTypes = 
+			Arrays.asList("CIRCULARSTRING", "COMPOUNDCURVE", "CURVEPOLYGON", "MULTICURVE", "MULTISURFACE", "CURVE", "SURFACE");
 }

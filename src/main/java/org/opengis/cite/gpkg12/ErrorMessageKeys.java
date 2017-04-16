@@ -84,6 +84,7 @@ public class ErrorMessageKeys {
     public static final String INVALID_DATA_TABLE = "InvalidDataTable";
     public static final String INVALID_EXTENSION_DATA_SCOPE = "InvalidExtensionDataScope";
     public static final String ILLEGAL_EXTENSION_DATA_SCOPE = "IllegalExtensionDataScope";
+    public static final String EXTENDED_GEOMETRY_REFERENCE_MISSING = "ExtendedGeometryReferenceMissing";
     public static final String INVALID_RTREE_DEFINITION = "InvalidRTreeDefinition";
     public static final String INVALID_METADATA_SCOPE = "InvalidMetadataScope";
     public static final String BAD_METADATA_REFERENCE_TABLE_DEFINITION = "BadMetadataReferenceTableDefinition";

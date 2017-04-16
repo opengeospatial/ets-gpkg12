@@ -353,9 +353,9 @@ public class FeaturesTests extends CommonFixture {
 			boolean pass = false;
 
 			if (getGeopackageVersion().equals(GeoPackageVersion.V120)){
-				pass = allowedGeometryTypes.contains(geometryTypeName);
+				pass = ALLOWED_GEOMETRY_TYPES.contains(geometryTypeName);
 			} else {
-				final Iterator<String> iterator = allowedGeometryTypes.iterator();
+				final Iterator<String> iterator = ALLOWED_GEOMETRY_TYPES.iterator();
 				while(iterator.hasNext()){
 					if (geometryTypeName.equalsIgnoreCase(iterator.next())){
 						pass = true;
@@ -505,7 +505,11 @@ public class FeaturesTests extends CommonFixture {
 		}
 	}
 	
-	private static final Collection<String> allowedGeometryTypes = 
+	private static final Collection<String> ALLOWED_GEOMETRY_TYPES = 
 			Arrays.asList("GEOMETRY","POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON","GEOMETRYCOLLECTION");
+	protected static Collection<String> getAllowedGeometryTypes() {
+		return ALLOWED_GEOMETRY_TYPES;
+	}
+
 	private final Collection<String> featureTableNames = new ArrayList<>();
 }
