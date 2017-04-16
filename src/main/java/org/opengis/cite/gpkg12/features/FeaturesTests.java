@@ -50,15 +50,6 @@ public class FeaturesTests extends CommonFixture {
 		}
 		
         Assert.assertTrue(!this.featureTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));
-
-        allowedGeometryTypes.add("GEOMETRY");
-		allowedGeometryTypes.add("POINT");
-		allowedGeometryTypes.add("LINESTRING");
-		allowedGeometryTypes.add("POLYGON");
-		allowedGeometryTypes.add("MULTIPOINT");
-		allowedGeometryTypes.add("MULTILINESTRING");
-		allowedGeometryTypes.add("MULTIPOLYGON");
-		allowedGeometryTypes.add("GEOMETRYCOLLECTION");
 	}
     	
 	/**
@@ -350,26 +341,34 @@ public class FeaturesTests extends CommonFixture {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("SELECT DISTINCT geometry_type_name FROM gpkg_geometry_columns");
+		final ResultSet resultSet = statement.executeQuery("SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns");
 		
 		// 2
 		while (resultSet.next()){
 			// 3
 			final String geometryTypeName = resultSet.getString("geometry_type_name");
+			
+			boolean pass = false;
 
 			if (getGeopackageVersion().equals(GeoPackageVersion.V120)){
-				assertTrue(allowedGeometryTypes.contains(geometryTypeName), ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
+				pass = allowedGeometryTypes.contains(geometryTypeName);
 			} else {
-				boolean foundMatch = false;
 				final Iterator<String> iterator = allowedGeometryTypes.iterator();
 				while(iterator.hasNext()){
 					if (geometryTypeName.equalsIgnoreCase(iterator.next())){
-						foundMatch = true;
+						pass = true;
 						break;
 					}
 				}
-				assertTrue(foundMatch, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
 			}
+			
+			if (!pass) {
+				final String tableName = resultSet.getString("table_name");
+				final String columnName = resultSet.getString("column_name");
+				pass = isExtendedType(tableName, columnName);
+			}
+			
+			assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
 		}
 	}
 
@@ -486,7 +485,8 @@ public class FeaturesTests extends CommonFixture {
 			while (resultSet.next()){
 				// 2a
 				final String geometryTypeName = resultSet.getString("geometry_type_name");
-				assertTrue(allowedGeometryTypes.contains(geometryTypeName), ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
+				// This assertion being removed as per https://github.com/opengeospatial/geopackage/issues/347
+//				assertTrue(allowedGeometryTypes.contains(geometryTypeName), ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
 
 				//2b
 				final String tableName = resultSet.getString("table_name");
@@ -505,6 +505,7 @@ public class FeaturesTests extends CommonFixture {
 		}
 	}
 	
-	private final Collection<String> allowedGeometryTypes = new ArrayList<>();
+	private static final Collection<String> allowedGeometryTypes = 
+			Arrays.asList("GEOMETRY","POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON","GEOMETRYCOLLECTION");
 	private final Collection<String> featureTableNames = new ArrayList<>();
 }

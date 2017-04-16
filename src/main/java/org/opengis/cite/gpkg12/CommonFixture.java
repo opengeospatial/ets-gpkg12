@@ -16,6 +16,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteDataSource;
 import org.testng.Assert;
@@ -196,6 +197,28 @@ public class CommonFixture {
 		assertTrue(pass && (result != null), ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));
 		
 		return result;
+    }
+
+    /**
+     * This function accounts for extensions to Requirement 5 and 25
+     * 
+     * @param tableName the table name to inspect
+     * @param columnName the column name to inspect
+     * @return true: this table/column is an exception to Requirement 5 and should be skipped
+     * @throws SQLException
+     */
+    protected boolean isExtendedType(String tableName, String columnName) throws SQLException {
+    	boolean result = false;
+    	
+    	// This accounts for the exception in Requirement 65
+    	if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions")) {
+            final Statement statement  = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = '%s' AND column_name = '%s' AND extension_name LIKE 'gpkg_geom_%%'",  tableName, columnName));
+        	resultSet.next();
+        	result |= (resultSet.getInt(1) > 0);
+    	}
+
+    	return result;
     }
     
     /**
