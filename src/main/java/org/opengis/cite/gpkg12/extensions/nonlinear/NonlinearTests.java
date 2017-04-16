@@ -106,8 +106,7 @@ public class NonlinearTests extends FeaturesTests {
 		}
 	}
 
-	// TODO: No clear way to test R66
-	
+	// TODO: No clear way to test R66 as it requires a spatial library
 
 	/**
 	 * A GeoPackage that contains a `gpkg_geometry_columns` table or 

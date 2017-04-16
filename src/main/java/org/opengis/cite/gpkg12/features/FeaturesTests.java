@@ -505,6 +505,8 @@ public class FeaturesTests extends CommonFixture {
 		}
 	}
 	
+	// TODO: Don't know how to test R32/33 as they require a spatial library
+	
 	private static final Collection<String> ALLOWED_GEOMETRY_TYPES = 
 			Arrays.asList("GEOMETRY","POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON","GEOMETRYCOLLECTION");
 	protected static Collection<String> getAllowedGeometryTypes() {
