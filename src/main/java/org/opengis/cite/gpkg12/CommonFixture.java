@@ -11,14 +11,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteDataSource;
+import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -103,6 +108,16 @@ public class CommonFixture {
         }
     }
     
+    @BeforeTest
+    public void validateClassEnabled(ITestContext testContext) throws IOException {
+      Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
+      final String pstr = params.get(TestRunArg.ICS.toString());
+      final String testName = testContext.getName();
+      setTestName(testName);
+      HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
+      Assert.assertTrue(set.contains(testName), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, testName));
+    }
+    
     /**
      * A GeoPackage SHALL contain a value of 0x47504B47 ("GPKG" in ASCII) in 
      * the "application_id" field of the SQLite database header to indicate 
@@ -145,6 +160,68 @@ public class CommonFixture {
     }   
     
     /**
+     * This function returns the name of a single primary key column for the given table
+     * 
+     * @return the name of the primary key column
+     * @param tableName
+     * @throws SQLException on any error
+     */
+    protected String getPrimaryKeyColumn(String tableName) throws SQLException {
+    	String result = null;
+    	
+		final Statement statement = this.databaseConnection.createStatement();
+		// 1
+		final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName));
+
+		// 2
+		assertTrue(resultSet.next(),
+				ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
+		
+		boolean pass = false;
+		// 3
+		do {
+			final int pk = resultSet.getInt("pk");
+			final String name = resultSet.getString("name");
+			final String type = resultSet.getString("type");
+			if (pk > 0) {
+				assertTrue(pk == 1, 
+						ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, 
+								String.format("%s has an invalid primary key value of %d", name, pk)));
+				assertTrue("INTEGER".equalsIgnoreCase(type), 
+						ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));
+				result = name;
+				pass = true;
+			}
+		} while (resultSet.next());
+
+		assertTrue(pass && (result != null), ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));
+		
+		return result;
+    }
+
+    /**
+     * This function accounts for extensions to Requirement 5 and 25
+     * 
+     * @param tableName the table name to inspect
+     * @param columnName the column name to inspect
+     * @return true: this table/column is an exception to Requirement 5 and should be skipped
+     * @throws SQLException
+     */
+    protected boolean isExtendedType(String tableName, String columnName) throws SQLException {
+    	boolean result = false;
+    	
+    	// This accounts for the exception in Requirement 65
+    	if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions")) {
+            final Statement statement  = this.databaseConnection.createStatement();
+            final ResultSet resultSet = statement.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = '%s' AND column_name = '%s' AND extension_name LIKE 'gpkg_geom_%%'",  tableName, columnName));
+        	resultSet.next();
+        	result |= (resultSet.getInt(1) > 0);
+    	}
+
+    	return result;
+    }
+    
+    /**
      * This function checks to determine whether the primary key is valid.
      * Checking the notnull column of PRAGMA table_info is insufficient. 
      * See https://github.com/opengeospatial/geopackage/issues/282 for more details. 
@@ -153,13 +230,21 @@ public class CommonFixture {
      * @throws SQLException on any error
      */
     protected void checkPrimaryKey(String tableName, String pkName) throws SQLException {
+    	// 0 sanity checks
+		if (pkName == null) {
+			throw new IllegalArgumentException("pkName must not be null.");
+		}
+		if (tableName == null) {
+			throw new IllegalArgumentException("tableName must not be null.");
+		}
+		
 		final Statement statement = this.databaseConnection.createStatement();
 		// 1
 		final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName));
 
 		// 2
 		assertTrue(resultSet.next(),
-				ErrorMessage.format(ErrorMessageKeys.FEATURES_TABLE_DOES_NOT_EXIST, tableName));
+				ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
 		
 		boolean pass = false;
 		// 3
@@ -173,18 +258,14 @@ public class CommonFixture {
 								String.format("%s is a primary key of %d", name, pk)));
 				assertTrue("INTEGER".equals(type), 
 						ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));
-				if (pkName == null){
-					pkName = name;
-				} else {
-					assertTrue(pkName.equals(name),
-							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName,
-									"pk " + name));
-				}
+				assertTrue(pkName.equals(name),
+						ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName,
+								"pk " + name));
 				pass = true;
 			}
 		} while (resultSet.next());
 
-		assertTrue(pass && (pkName != null), ErrorMessage.format(ErrorMessageKeys.FEATURE_TABLE_NO_PK, tableName));
+		assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));
 		
 		// 4
 		final Statement statement2 = this.databaseConnection.createStatement();
@@ -192,6 +273,16 @@ public class CommonFixture {
 		final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct %s) - COUNT(*) from %s", pkName, tableName));
 		
 		// 5
-		assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.FEATURE_TABLE_PK_NOT_UNIQUE, tableName));
+		assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.TABLE_PK_NOT_UNIQUE, tableName));
     }
+
+    public String getTestName() {
+		return testName;
+	}
+
+	public void setTestName(String testName) {
+		this.testName = testName;
+	}
+
+	private String testName;
 }

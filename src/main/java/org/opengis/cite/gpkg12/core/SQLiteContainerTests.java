@@ -132,6 +132,7 @@ public class SQLiteContainerTests extends CommonFixture {
      * GeoPackage extensions with the "gpkg" author name specified in this
      * encoding standard.
      *
+     * @throws SQLException on any error
      * @see <a href="http://www.geopackage.org/spec/#_requirement-4" target=
      *      "_blank">File Contents - Requirement 4</a>
      */

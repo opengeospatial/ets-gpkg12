@@ -8,11 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
@@ -24,12 +21,10 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
-import org.opengis.cite.gpkg12.TestRunArg;
 import org.opengis.cite.gpkg12.tiles.TileTests;
 import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -51,14 +46,6 @@ public class ElevationTests extends TileTests {
 		
 		setDataType("2d-gridded-coverage");
 	}
-    @BeforeTest
-    public void validateClassEnabled(ITestContext testContext) throws IOException {
-	  Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
-	  final String pstr = params.get(TestRunArg.ICS.toString());
-	  final String testName = testContext.getName();
-	  HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
-	  Assert.assertTrue(set.contains(testName), String.format("Conformance class %s is not enabled", testName));
-    }
 
     @BeforeClass
     public void a_ValidateExtensionPresent(ITestContext testContext) throws SQLException {
@@ -66,13 +53,11 @@ public class ElevationTests extends TileTests {
 		final Statement statement1 = this.databaseConnection.createStatement();
 		ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = 'gpkg_2d_gridded_coverage_ancillary';");
 		resultSet1.next();
-		hasExtension = resultSet1.getInt(1) > 0;
-		
-	    Assert.assertTrue(hasExtension, "The Elevation Extension is not in use in this GeoPackage.");
+        Assert.assertTrue(resultSet1.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Elevation Extension"));
     }
 
 	/**
-	 * Sets up variables used across methods
+	 * Sets up variables used across methods, overrides TileTests
 	 *
 	 * @throws SQLException
 	 *             if there is a database error
@@ -564,7 +549,7 @@ public class ElevationTests extends TileTests {
 
     }
 
-    private static boolean isAcceptedImageFormat(final byte[] image) throws IOException
+    protected boolean isAcceptedImageFormat(final byte[] image) throws IOException
     {
         if(image == null)
         {

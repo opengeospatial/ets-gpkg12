@@ -19,6 +19,8 @@ public class ErrorMessageKeys {
     public static final String UNEXPECTED_STATUS = "UnexpectedStatus";
     public static final String UNEXPECTED_MEDIA_TYPE = "UnexpectedMediaType";
     public static final String MISSING_ENTITY = "MissingEntity";
+    public static final String CONFORMANCE_CLASS_DISABLED = "ConformanceClassDisabled";
+    public static final String CONFORMANCE_CLASS_NOT_USED = "ConformanceClassNotUsed";
     public static final String INVALID_HEADER_STR = "InvalidHeaderString";
     public static final String UNKNOWN_APP_ID = "UnknownApplicationId";
     public static final String UNKNOWN_USER_VERSION = "UnknownUserVersion";
@@ -26,6 +28,7 @@ public class ErrorMessageKeys {
     public static final String INVALID_DATA_TYPE = "InvalidDataType";
     public static final String UNEXPECTED_COLUMN = "UnexpectedColumn";
     public static final String UNEXPECTED_VALUE = "UnexpectedValue";
+    public static final String ILLEGAL_VALUE = "IllegalValue";
     public static final String NON_UNIQUE_VALUE = "NonUniqueValue";
     public static final String PRAGMA_INTEGRITY_CHECK_NOT_OK = "PragmaIntegrityCheckNotOk";
     public static final String INVALID_FOREIGN_KEY = "InvalidForeignKey";
@@ -33,6 +36,8 @@ public class ErrorMessageKeys {
     public static final String SQLITE_OMIT_OPTIONS = "SqliteOmitOptions";
     public static final String TABLE_DEFINITION_INVALID = "TableDefinitionInvalid";
     public static final String MISSING_TABLE = "MissingTable";
+    public static final String TABLE_NO_PK = "TableNoPK";
+    public static final String TABLE_PK_NOT_UNIQUE = "TablePKNotUnique";
     public static final String NO_GEOGRAPHIC_SRS = "NoGeographicSrs";
     public static final String NO_UNDEFINED_CARTESIAN_SRS = "NoUndefinedCartesianSrs";
     public static final String NO_UNDEFINED_GEOGRAPHIC_SRS = "NoUndefinedGeographicSrs";
@@ -42,9 +47,6 @@ public class ErrorMessageKeys {
     public static final String BAD_CONTENTS_TABLE_SRS_FOREIGN_KEY = "BadContentsTableSrsForeignKey";
     public static final String BAD_CONTENTS_TABLE_DEFINITION = "BadContentsTableDefinition";
     public static final String OPTIONS_NO_FEATURES_OR_TILES = "OptionsNoFeaturesOrTiles";
-    public static final String FEATURES_TABLE_DOES_NOT_EXIST = "FeaturesTableDoesNotExist";
-    public static final String FEATURE_TABLE_NO_PK = "FeatureTableNoPK";
-    public static final String FEATURE_TABLE_PK_NOT_UNIQUE = "FeatureTablePKNotUnique";
     public static final String FEATURES_BINARY_INVALID = "FeaturesBinaryInvalid";
     public static final String FEATURES_GEOMETRY_COLUMNS_INVALID = "FeaturesGeometryColumnsInvalid";
     public static final String FEATURES_GEOMETRY_COLUMNS_NO_FK = "FeaturesGeometryColumnsNoFK";
@@ -57,12 +59,10 @@ public class ErrorMessageKeys {
     public static final String TILES_TABLES_NOT_REFERENCED_IN_CONTENTS = "TilesTablesNotReferencedInContents";
     public static final String VALUES_DO_NOT_VARY_BY_FACTOR_OF_TWO = "ValuesDoNotVaryByFactorOfTwo";
     public static final String INVALID_IMAGE_FORMAT = "InvalidImageFormat";
-    public static final String TILE_MATRIX_SET_TABLE_DOES_NOT_EXIST = "TileMatrixSetTableDoesNotExist";
     public static final String BAD_TILE_MATRIX_SET_TABLE_DEFINITION = "BadTileMatrixSetTableDefinition";
     public static final String UNREFERENCED_TILE_MATRIX_SET_TABLE = "UnreferencedTileMatrixSetTable";
     public static final String UNREFERENCED_TILES_CONTENT_TABLE_NAME = "UnreferencedTilesContentTableName";
     public static final String BAD_MATRIX_SET_SRS_REFERENCE = "BadMatrixSetSrsReference";
-    public static final String TILE_MATRIX_TABLE_DOES_NOT_EXIST = "TileMatrixTableDoesNotExist";
     public static final String BAD_TILE_MATRIX_TABLE_DEFINITION = "BadTileMatrixTableDefinition";
     public static final String BAD_MATRIX_CONTENTS_REFERENCES = "BadMatrixContentsReferences";
     public static final String MISSING_TILE_MATRIX_ENTRY = "MissingTileMatrixEntry";
@@ -79,10 +79,13 @@ public class ErrorMessageKeys {
     public static final String UNDEFINED_ZOOM_LEVEL = "UndefinedZoomLevel";
     public static final String TILE_COLUMN_OUT_OF_RANGE = "TileColumnOutOfRange";
     public static final String TILE_ROW_OUT_OF_RANGE = "TileRowOutOfRange";
-    public static final String EXTENSION_MISSING = "ExtensionMissing";
+    public static final String INVALID_RTREE_REFERENCE = "InvalidRTreeReference";
     public static final String INVALID_DATA_COLUMN = "InvalidDataColumn";
     public static final String INVALID_DATA_TABLE = "InvalidDataTable";
     public static final String INVALID_EXTENSION_DATA_SCOPE = "InvalidExtensionDataScope";
+    public static final String ILLEGAL_EXTENSION_DATA_SCOPE = "IllegalExtensionDataScope";
+    public static final String EXTENDED_GEOMETRY_REFERENCE_MISSING = "ExtendedGeometryReferenceMissing";
+    public static final String INVALID_RTREE_DEFINITION = "InvalidRTreeDefinition";
     public static final String INVALID_METADATA_SCOPE = "InvalidMetadataScope";
     public static final String BAD_METADATA_REFERENCE_TABLE_DEFINITION = "BadMetadataReferenceTableDefinition";
     public static final String INVALID_METADATA_REFERENCE_SCOPE = "InvalidMetadataReferenceScope";

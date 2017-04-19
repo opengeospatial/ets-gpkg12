@@ -10,19 +10,14 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.GPKG12;
-import org.opengis.cite.gpkg12.TestRunArg;
 import org.testng.Assert;
-import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -48,44 +43,14 @@ public class FeaturesTests extends CommonFixture {
 	 */
 	@BeforeClass
 	public void setUp() throws SQLException {
-		try (Statement statement = this.databaseConnection.createStatement();
-				ResultSet resultSet = statement.executeQuery(
-						"SELECT table_name FROM gpkg_contents WHERE data_type = 'features';")) {
-			while (resultSet.next()) {
-				this.featureTableNames.add(resultSet.getString("table_name"));
-			}
-		}
-
-		try (final Statement statement = this.databaseConnection.createStatement();
-				final ResultSet resultSet = statement
-						.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type = 'features';")) {
-			while (resultSet.next()) {
-				this.contentsFeatureTableNames.add(resultSet.getString(1));
-			}
+		final Statement statement = this.databaseConnection.createStatement();
+		final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type = 'features';");
+		while (resultSet.next()) {
+			this.featureTableNames.add(resultSet.getString(1));
 		}
 		
-		allowedGeometryTypes.add("GEOMETRY");
-		allowedGeometryTypes.add("POINT");
-		allowedGeometryTypes.add("LINESTRING");
-		allowedGeometryTypes.add("POLYGON");
-		allowedGeometryTypes.add("MULTIPOINT");
-		allowedGeometryTypes.add("MULTILINESTRING");
-		allowedGeometryTypes.add("MULTIPOLYGON");
-		allowedGeometryTypes.add("GEOMETRYCOLLECTION");
+        Assert.assertTrue(!this.featureTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));
 	}
-
-    @BeforeTest
-    public void validateClassEnabled(ITestContext testContext) throws IOException {
-      Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
-      final String pstr = params.get(TestRunArg.ICS.toString());
-      final String testName = testContext.getName();
-      HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
-      if (set.contains(testName)){
-        Assert.assertTrue(true);
-      } else {
-        Assert.assertTrue(false, String.format("Conformance class %s is not enabled", testName));
-      }
-    }
     	
 	/**
 	 * A GeoPackage MAY contain tables or updateable views containing vector 
@@ -112,10 +77,10 @@ public class FeaturesTests extends CommonFixture {
 
 			// 2
 			assertTrue(resultSet.next(),
-					ErrorMessage.format(ErrorMessageKeys.FEATURES_TABLE_DOES_NOT_EXIST, tableName));
+					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
 			
 			// 3
-			checkPrimaryKey(tableName, null);
+			checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName));
 		}
 	}
 
@@ -124,9 +89,11 @@ public class FeaturesTests extends CommonFixture {
 	 * Test case
 	 * {@code /opt/features/geometry_encoding/data/blob} and 
 	 * {@code /opt/features/geometry_encoding/data/core_types_existing_sparse_data}
+	 * This test will also fail if the primary key is missing since that makes it difficult
+	 * to isolate which ro
 	 *
 	 * @see <a href="_requirement-19" target= "_blank">Vector
-	 *      Features BLOB Format - Requirement 19</a>
+	 *      Features BLOB Format - Requirement 19 and 20</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
@@ -143,34 +110,50 @@ public class FeaturesTests extends CommonFixture {
 			final Statement statement3 = this.databaseConnection.createStatement();
 			final String cn = resultSet1.getString("cn");
 			final String tn = resultSet1.getString("tn");
+			String pkColumn;
+			try {
+				pkColumn = getPrimaryKeyColumn(tn);
+			} catch (AssertionError exc) {
+				// If we don't find a primary key, just use the rowid;
+				pkColumn = "rowid";
+			}
+			
 			// 3a
-			final ResultSet resultSet3 = statement3.executeQuery(String.format("SELECT %s FROM %s;", cn, tn));
+			final ResultSet resultSet3 = statement3.executeQuery(String.format("SELECT %s, %s FROM %s;", cn, pkColumn, tn));
 			
 			// 3b
 			while (resultSet3.next()){
-		        // 3c
-				final InputStream sgpb = resultSet3.getBinaryStream(cn);
-
+				final int pk = resultSet3.getInt(pkColumn);
+				
+				InputStream sgpb;
+				try {
+			        // 3c
+					sgpb = resultSet3.getBinaryStream(cn);
+					// This exception will be thrown if the geometry BLOB is NULL
+				} catch (NullPointerException npe) {
+					continue;
+				}
+	
 				// 3ci
 				final byte[] sgbpb = new byte[4];
 				try {
 					sgpb.read(sgbpb);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-					assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));;
+					assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Couldn't read WKB prefix"));
 				}
 		        final byte[] gp = Arrays.copyOfRange(sgbpb, 0, 2);
-		        assertTrue(Arrays.equals(gp, GPKG12.BINARY_GP), ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
+		        assertTrue(Arrays.equals(gp, GPKG12.BINARY_GP), ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "First two bytes of WKB are wrong."));
 
 		        // 3cii
-		        assertTrue(sgbpb[2] == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
+		        assertTrue(sgbpb[2] == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Third byte of WKB must be 0."));
 		        
 		        // 3ciii
-		        assertTrue((sgbpb[3] & 0b00100000) == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
+		        assertTrue((sgbpb[3] & 0b00100000) == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Sixth bit of byte 4 of WKB must be 0."));
 		        
 		        // 3civ
 		        final int envelope = (sgbpb[3] & 0b00001110) >> 1;
-		        assertTrue(envelope <= 4, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn));
+		        assertTrue(envelope <= 4, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Envelope type of WKB (byte 4) is invalid."));
 		        
 		        // TODO: 3cv 
 			}
@@ -358,26 +341,34 @@ public class FeaturesTests extends CommonFixture {
 		// 1
 		final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("SELECT DISTINCT geometry_type_name FROM gpkg_geometry_columns");
+		final ResultSet resultSet = statement.executeQuery("SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns");
 		
 		// 2
 		while (resultSet.next()){
 			// 3
 			final String geometryTypeName = resultSet.getString("geometry_type_name");
+			final String tableName = resultSet.getString("table_name");
+			final String columnName = resultSet.getString("column_name");
+			
+			boolean pass = false;
 
 			if (getGeopackageVersion().equals(GeoPackageVersion.V120)){
-				assertTrue(allowedGeometryTypes.contains(geometryTypeName), ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
+				pass = ALLOWED_GEOMETRY_TYPES.contains(geometryTypeName);
 			} else {
-				boolean foundMatch = false;
-				final Iterator<String> iterator = allowedGeometryTypes.iterator();
+				final Iterator<String> iterator = ALLOWED_GEOMETRY_TYPES.iterator();
 				while(iterator.hasNext()){
 					if (geometryTypeName.equalsIgnoreCase(iterator.next())){
-						foundMatch = true;
+						pass = true;
 						break;
 					}
 				}
-				assertTrue(foundMatch, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
 			}
+			
+			if (!pass) {
+				pass = isExtendedType(tableName, columnName);
+			}
+			
+			assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName, tableName));
 		}
 	}
 
@@ -494,7 +485,8 @@ public class FeaturesTests extends CommonFixture {
 			while (resultSet.next()){
 				// 2a
 				final String geometryTypeName = resultSet.getString("geometry_type_name");
-				assertTrue(allowedGeometryTypes.contains(geometryTypeName), ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
+				// This assertion being removed as per https://github.com/opengeospatial/geopackage/issues/347
+//				assertTrue(allowedGeometryTypes.contains(geometryTypeName), ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
 
 				//2b
 				final String tableName = resultSet.getString("table_name");
@@ -513,7 +505,13 @@ public class FeaturesTests extends CommonFixture {
 		}
 	}
 	
-	private final Collection<String> allowedGeometryTypes = new ArrayList<>();
+	// TODO: Don't know how to test R32/33 as they require a spatial library
+	
+	private static final Collection<String> ALLOWED_GEOMETRY_TYPES = 
+			Arrays.asList("GEOMETRY","POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON","GEOMETRYCOLLECTION");
+	protected static Collection<String> getAllowedGeometryTypes() {
+		return ALLOWED_GEOMETRY_TYPES;
+	}
+
 	private final Collection<String> featureTableNames = new ArrayList<>();
-	private final Collection<String> contentsFeatureTableNames = new ArrayList<>();
 }

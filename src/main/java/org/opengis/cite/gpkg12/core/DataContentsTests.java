@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -79,7 +78,9 @@ public class DataContentsTests extends CommonFixture
                         while(pragmaTableInfo.next())
                         {
                             final String dataType = pragmaTableInfo.getString("type");
-                            final boolean correctDataType = ALLOWED_SQL_TYPES.contains(dataType) ||
+                            final String columnName = pragmaTableInfo.getString("name");
+                            final boolean correctDataType = isExtendedType(tableName, columnName) ||
+                            								getAllowedSqlTypes().contains(dataType) ||
                                                             TEXT_TYPE.matcher(dataType).matches() ||
                                                             BLOB_TYPE.matcher(dataType).matches();
 
@@ -261,15 +262,17 @@ public class DataContentsTests extends CommonFixture
                        ErrorMessage.format(ErrorMessageKeys.OPTIONS_NO_FEATURES_OR_TILES));
         }
     }
-
-
     private static final Pattern TEXT_TYPE = Pattern.compile("TEXT\\([0-9]+\\)");
     private static final Pattern BLOB_TYPE = Pattern.compile("BLOB\\([0-9]+\\)");
 
-    private static final List<String> ALLOWED_SQL_TYPES = Arrays.asList("BOOLEAN", "TINYINT", "SMALLINT", "MEDIUMINT",
+    private static final Collection<String> ALLOWED_SQL_TYPES = Arrays.asList("BOOLEAN", "TINYINT", "SMALLINT", "MEDIUMINT",
                                                                         "INT", "FLOAT", "DOUBLE", "REAL",
                                                                         "TEXT", "BLOB", "DATE", "DATETIME",
                                                                         "GEOMETRY", "POINT", "LINESTRING", "POLYGON",
                                                                         "MULTIPOINT", "MULTILINESTRING", "MULTIPOLYGON", "GEOMETRYCOLLECTION",
                                                                         "INTEGER");
+
+	public static Collection<String> getAllowedSqlTypes() {
+		return ALLOWED_SQL_TYPES;
+	}
 }

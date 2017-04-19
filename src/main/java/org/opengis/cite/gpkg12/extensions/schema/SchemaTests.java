@@ -2,24 +2,19 @@ package org.opengis.cite.gpkg12.extensions.schema;
 
 import static org.testng.Assert.assertTrue;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
-import org.opengis.cite.gpkg12.TestRunArg;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -38,33 +33,15 @@ import org.testng.annotations.Test;
  */
 public class SchemaTests extends CommonFixture
 {
-    /**
-     * Sets up variables used across methods
-     *
-     * @throws SQLException if there is a database error
-     */
-    @BeforeClass
-    public void setUp() throws SQLException
-    {
-    }
-
-    @BeforeTest
-    public void validateClassEnabled(ITestContext testContext) throws IOException {
-      Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
-      final String pstr = params.get(TestRunArg.ICS.toString());
-      final String testName = testContext.getName();
-      HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
-      if (set.contains(testName)){
-        Assert.assertTrue(true);
-      } else {
-        Assert.assertTrue(false, String.format("Conformance class %s is not enabled", testName));
-      }
-    }
-    
     @BeforeClass
     public void activeExtension(ITestContext testContext) throws SQLException {
-    	// Starting with GPKG 1.2, this is a proper extension.
-    	if (getGeopackageVersion() == GeoPackageVersion.V120) {
+    	// Starting with GPKG 1.1, this is a proper extension.
+    	if (getGeopackageVersion() == GeoPackageVersion.V102) {
+			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_data_columns"), 
+					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Schema Option"));
+    		minIsInclusive = "minIsInclusive";
+    		maxIsInclusive = "maxIsInclusive";
+    	} else {
 			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
 					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, "gpkg_extensions"));
 			
@@ -74,13 +51,7 @@ public class SchemaTests extends CommonFixture
 		
 			resultSet.next();
 		
-			Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.EXTENSION_MISSING, "gpkg_schema"));
-    	}
-    	
-    	if (getGeopackageVersion() == GeoPackageVersion.V102){
-    		minIsInclusive = "minIsInclusive";
-    		maxIsInclusive = "maxIsInclusive";
-    	} else {
+			Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Schema Extension"));
     		minIsInclusive = "min_is_inclusive";
     		maxIsInclusive = "max_is_inclusive";
     	}
@@ -264,7 +235,7 @@ public class SchemaTests extends CommonFixture
 				assertTrue("NUMERIC".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min notnull"));
 				passFlag |= (1 << 3);
-			} else if (minIsInclusive.equals(name)){
+			} else if (minIsInclusive.equalsIgnoreCase(name)){
 				assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", minIsInclusive + " type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", minIsInclusive + " notnull"));
 				passFlag |= (1 << 4);
@@ -272,7 +243,7 @@ public class SchemaTests extends CommonFixture
 				assertTrue("NUMERIC".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max notnull"));
 				passFlag |= (1 << 5);
-			} else if (maxIsInclusive.equals(name)){
+			} else if (maxIsInclusive.equalsIgnoreCase(name)){
 				assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", maxIsInclusive + " type"));
 				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", maxIsInclusive + " notnull"));
 				passFlag |= (1 << 6);

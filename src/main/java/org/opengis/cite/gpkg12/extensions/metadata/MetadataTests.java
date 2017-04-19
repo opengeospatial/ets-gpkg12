@@ -3,7 +3,6 @@ package org.opengis.cite.gpkg12.extensions.metadata;
 import static org.testng.Assert.assertTrue;
 import static org.testng.AssertJUnit.fail;
 
-import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -23,12 +22,10 @@ import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.ForeignKeyDefinition;
 import org.opengis.cite.gpkg12.TableVerifier;
-import org.opengis.cite.gpkg12.TestRunArg;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 /**
@@ -89,24 +86,20 @@ public class MetadataTests extends CommonFixture
             }
         }
     }
-
-    @BeforeTest
-    public void validateClassEnabled(ITestContext testContext) throws IOException {
-      Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
-      final String pstr = params.get(TestRunArg.ICS.toString());
-      final String testName = testContext.getName();
-      HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
-      if (set.contains(testName)){
-        Assert.assertTrue(true);
-      } else {
-        Assert.assertTrue(false, String.format("Conformance class %s is not enabled", testName));
-      }
-    }
     
+    /**
+     * Determines if the extension is active by looking for relevant tables and/or rows
+     * 
+     * @param testContext the ITestContext to use
+     * @throws SQLException on any SQL error (which would indicate non-compliance)
+     */
     @BeforeClass
     public void activeExtension(ITestContext testContext) throws SQLException {
-    	// Starting with GPKG 1.2, this is a proper extension.
-    	if (getGeopackageVersion() == GeoPackageVersion.V120) {
+    	// Starting with GPKG 1.1, this is a proper extension.
+    	if (getGeopackageVersion() == GeoPackageVersion.V102) {
+			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_metadata"), 
+					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Metadata Option"));
+    	} else {
 			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
 					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, "gpkg_extensions"));
 			
@@ -116,7 +109,7 @@ public class MetadataTests extends CommonFixture
 		
 			resultSet.next();
 		
-			Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.EXTENSION_MISSING, "gpkg_metadata"));
+			Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Metadata Extension"));
     	}		
     }
 
@@ -253,6 +246,7 @@ public class MetadataTests extends CommonFixture
      * @see <a href="http://www.geopackage.org/spec/#r140" target=
      *      "_blank">F.8. Metadata - Requirement 140</a>
      *
+     * @throws SQLException on any error
      */
     @Test(description = "See OGC 12-128r13: Requirement 140")
     public void metadataExtensionTableValues() throws SQLException
