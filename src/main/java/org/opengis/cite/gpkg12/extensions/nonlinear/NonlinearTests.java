@@ -34,8 +34,8 @@ public class NonlinearTests extends FeaturesTests {
 
     /**
      * An extension name to specify a feature geometry extension type SHALL 
-     * be defined for the "gpkg" author name using the "gpkg_geom_<gname>" 
-     * template where <gname> is the uppercase name of the extension geometry 
+     * be defined for the "gpkg" author name using the "gpkg_geom_&lt;gname&gt;" 
+     * template where &lt;gname&gt; is the uppercase name of the extension geometry 
      * type from Geometry Types (Normative) used in a GeoPackage.
      *
      * @see <a href="http://www.geopackage.org/spec/#r67" target=
@@ -56,7 +56,7 @@ public class NonlinearTests extends FeaturesTests {
 	/**
 	 * The `geometry_type_name` value in a `gpkg_geometry_columns` row MAY be 
 	 * one of the uppercase extended non-linear geometry type names specified 
-	 * in <<geometry_types>>.
+	 * in geometry_types.
 	 * 
 	 * Test case
 	 * {@code /extensions/geometry_types/data_values_geometry_type_name}
@@ -116,7 +116,7 @@ public class NonlinearTests extends FeaturesTests {
 	 * values from the `gpkg_geometry_columns` row records that identify 
 	 * extension type uses, and `extension_name` column values for each of 
 	 * those geometry types constructed per the previous requirement 
-	 * <<extension_geometry_types_extensions_name>>.
+	 * extension_geometry_types_extensions_name.
 	 * 
 	 * Test case
 	 * {@code /extensions/geometry_types/extension_row}
