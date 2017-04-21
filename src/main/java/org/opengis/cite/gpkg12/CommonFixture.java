@@ -130,6 +130,8 @@ public class CommonFixture {
      *
      * @throws IOException
      *             If an I/O error occurs while trying to read the data file.
+     * @throws SQLException
+     *             on any SQL error
      *
      * @see <a href="http://www.geopackage.org/spec/#_requirement-2" target=
      *      "_blank">File Format - Requirement 2</a>
@@ -163,7 +165,7 @@ public class CommonFixture {
      * This function returns the name of a single primary key column for the given table
      * 
      * @return the name of the primary key column
-     * @param tableName
+     * @param tableName the name of the table
      * @throws SQLException on any error
      */
     protected String getPrimaryKeyColumn(String tableName) throws SQLException {
@@ -205,7 +207,7 @@ public class CommonFixture {
      * @param tableName the table name to inspect
      * @param columnName the column name to inspect
      * @return true: this table/column is an exception to Requirement 5 and should be skipped
-     * @throws SQLException
+     * @throws SQLException on any error
      */
     protected boolean isExtendedType(String tableName, String columnName) throws SQLException {
     	boolean result = false;

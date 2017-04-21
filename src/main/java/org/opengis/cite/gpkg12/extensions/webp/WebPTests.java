@@ -128,7 +128,7 @@ public class WebPTests extends TileTests {
      * http://www.geopackage.org/spec/#r37[GPKG-37]) A GeoPackage that 
      * contains a tile pyramid user data table that contains tile data MAY 
      * store tile_data in http://www.ietf.org/rfc/rfc2046.txt[MIME type] 
-     * image/x-webp <<22>>. The http://www.ietf.org/rfc/rfc2046.txt[MIME type] 
+     * image/x-webp. The http://www.ietf.org/rfc/rfc2046.txt[MIME type] 
      * of values of the `tile_data` column in tile pyramid user data tables 
      * SHALL be `image/x-webp`.
      * 
