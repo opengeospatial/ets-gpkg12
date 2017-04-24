@@ -57,11 +57,13 @@ public class WebPTests extends TileTests {
 	 */
     @BeforeClass
     public void a_ValidateExtensionPresent(ITestContext testContext) throws SQLException {
-  		
-		final Statement statement1 = this.databaseConnection.createStatement();
-		ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions WHERE extension_name = 'gpkg_webp';");
-		resultSet1.next();
-        Assert.assertTrue(resultSet1.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "WebP Extension"));
+  		try (
+  				final Statement statement1 = this.databaseConnection.createStatement();
+  				ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions WHERE extension_name = 'gpkg_webp';");
+  				) {
+  			resultSet1.next();
+  	        Assert.assertTrue(resultSet1.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "WebP Extension"));  	  
+  		}
         this.hasExtension = true;
     }
 
@@ -77,10 +79,13 @@ public class WebPTests extends TileTests {
 			return;
 		}
 		
-		final Statement statement2 = this.databaseConnection.createStatement();
-		ResultSet resultSet2 = statement2.executeQuery("SELECT table_name FROM gpkg_extensions WHERE extension_name = 'gpkg_webp';");
-		while (resultSet2.next()) {
-			this.tileTableNames.add(resultSet2.getString("table_name"));
+		try (
+				final Statement statement2 = this.databaseConnection.createStatement();
+				ResultSet resultSet2 = statement2.executeQuery("SELECT table_name FROM gpkg_extensions WHERE extension_name = 'gpkg_webp';");
+				) {
+			while (resultSet2.next()) {
+				this.tileTableNames.add(resultSet2.getString("table_name"));
+			}			
 		}
 	}
 
@@ -103,22 +108,23 @@ public class WebPTests extends TileTests {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 91")
 	public void coverageAncillaryTableDefinition() throws SQLException {
-		
-		// 1
-		final Statement statement = this.databaseConnection.createStatement();
+		try (
+				// 1
+				final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("SELECT table_name, column_name, scope FROM gpkg_extensions where extension_name = 'gpkg_webp';");
-
-		// 2
-		while (resultSet.next()) {
-			// 3
-			final String tableName = resultSet.getString("table_name");
-			final String columnName = resultSet.getString("column_name");
-			final String scope = resultSet.getString("scope");
-			assertTrue("tile_data".equals(columnName), 
-					ErrorMessage.format(ErrorMessageKeys.ILLEGAL_VALUE, "gpkg_extensions", "extension_name", "gpkg_webp", "column_name", "tile_data", columnName, "table_name", tableName));
-			assertTrue("read-write".equals(scope), 
-					ErrorMessage.format(ErrorMessageKeys.ILLEGAL_VALUE, "gpkg_extensions", "extension_name", "gpkg_webp", "scope", "read-write", scope, "table_name", tableName));
+				final ResultSet resultSet = statement.executeQuery("SELECT table_name, column_name, scope FROM gpkg_extensions where extension_name = 'gpkg_webp';");
+				) {
+			// 2
+			while (resultSet.next()) {
+				// 3
+				final String tableName = resultSet.getString("table_name");
+				final String columnName = resultSet.getString("column_name");
+				final String scope = resultSet.getString("scope");
+				assertTrue("tile_data".equals(columnName), 
+						ErrorMessage.format(ErrorMessageKeys.ILLEGAL_VALUE, "gpkg_extensions", "extension_name", "gpkg_webp", "column_name", "tile_data", columnName, "table_name", tableName));
+				assertTrue("read-write".equals(scope), 
+						ErrorMessage.format(ErrorMessageKeys.ILLEGAL_VALUE, "gpkg_extensions", "extension_name", "gpkg_webp", "scope", "read-write", scope, "table_name", tableName));
+			}			
 		}
 	}
 
@@ -168,8 +174,9 @@ public class WebPTests extends TileTests {
         }
 
         final ByteArrayInputStream        byteArray  = new ByteArrayInputStream(image);
-        final MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(byteArray);
-		return canReadImage(pngImageReaders, cacheImage) || canReadImage(jpegImageReaders, cacheImage) || canReadImage(webpImageReaders, cacheImage);
+        try (final MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(byteArray)) { 
+        	return canReadImage(pngImageReaders, cacheImage) || canReadImage(jpegImageReaders, cacheImage) || canReadImage(webpImageReaders, cacheImage);
+        }
     }
 
     private boolean hasExtension = false;

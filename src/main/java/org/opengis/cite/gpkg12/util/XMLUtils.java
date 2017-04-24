@@ -165,9 +165,13 @@ public class XMLUtils {
             }
         } else if (result instanceof StreamResult) {
             StreamResult streamResult = StreamResult.class.cast(result);
-            OutputStream os = streamResult.getOutputStream();
+            @SuppressWarnings("resource")
+			OutputStream os = streamResult.getOutputStream();
             if (null != os) {
                 writer.write(os.toString()); // probably ByteArrayOutputStream
+                try {
+                	os.close();
+                } catch (IOException e) {}
             } else { // try system id or writer
                 Path path = Paths.get(URI.create(streamResult.getSystemId()));
                 try {

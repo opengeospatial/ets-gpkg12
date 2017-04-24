@@ -45,13 +45,15 @@ public class SchemaTests extends CommonFixture
 			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
 					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, "gpkg_extensions"));
 			
-			final Statement statement = this.databaseConnection.createStatement();
-		
-			final ResultSet resultSet = statement.executeQuery("SELECT count(*) from gpkg_extensions WHERE extension_name = 'gpkg_schema';");
-		
-			resultSet.next();
-		
-			Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Schema Extension"));
+			try (
+					final Statement statement = this.databaseConnection.createStatement();
+					
+					final ResultSet resultSet = statement.executeQuery("SELECT count(*) from gpkg_extensions WHERE extension_name = 'gpkg_schema';");
+					) {
+				resultSet.next();
+				
+				Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Schema Extension"));				
+			}
     		minIsInclusive = "min_is_inclusive";
     		maxIsInclusive = "max_is_inclusive";
     	}
@@ -72,55 +74,57 @@ public class SchemaTests extends CommonFixture
     @Test(description = "See OGC 12-128r13: Requirement 103")
     public void dataColumnsTableDefinition() throws SQLException
     {
-		// 1
-		final Statement statement = this.databaseConnection.createStatement();
+    	try (
+    			// 1
+    			final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("PRAGMA table_info('gpkg_data_columns');");
+    			final ResultSet resultSet = statement.executeQuery("PRAGMA table_info('gpkg_data_columns');");
+    			) {
+    		// 2
+    		int passFlag = 0;
+    		final int flagMask = 0b01111111;
+    		
+    		while (resultSet.next()) {
+    			// 3
+    			final String name = resultSet.getString("name");
+    			if ("table_name".equals(name)){
+    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "table_name type"));
+    				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "table_name notnull"));
+    				assertTrue(resultSet.getInt("pk") > 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "table_name pk"));
+    				passFlag |= 1;
+    			} else if ("column_name".equals(name)){
+    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "column_name type"));
+    				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "column_name notnull"));
+    				assertTrue(resultSet.getInt("pk") > 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "column_name pk"));
+    				passFlag |= (1 << 1);
+    			} else if ("name".equals(name)){
+    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "name type"));
 
-		// 2
-		int passFlag = 0;
-		final int flagMask = 0b01111111;
-		
-		while (resultSet.next()) {
-			// 3
-			final String name = resultSet.getString("name");
-			if ("table_name".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "table_name type"));
-				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "table_name notnull"));
-				assertTrue(resultSet.getInt("pk") > 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "table_name pk"));
-				passFlag |= 1;
-			} else if ("column_name".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "column_name type"));
-				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "column_name notnull"));
-				assertTrue(resultSet.getInt("pk") > 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "column_name pk"));
-				passFlag |= (1 << 1);
-			} else if ("name".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "name type"));
-
-				// Huh? How can a unique value be allowed to be null?
-				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "name notnull"));
-				
-				// unique constraint??
-				passFlag |= (1 << 2);
-			} else if ("title".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "title type"));
-				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "title notnull"));
-				passFlag |= (1 << 3);
-			} else if ("description".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "description type"));
-				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "description notnull"));
-				passFlag |= (1 << 4);
-			} else if ("mime_type".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "mime_type type"));
-				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "mime_type notnull"));
-				passFlag |= (1 << 5);
-			} else if ("constraint_name".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "constraint_name type"));
-				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "constraint_name notnull"));
-				passFlag |= (1 << 6);
-			}
-		} 
-		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "missing column(s)"));
+    				// Huh? How can a unique value be allowed to be null?
+    				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "name notnull"));
+    				
+    				// unique constraint??
+    				passFlag |= (1 << 2);
+    			} else if ("title".equals(name)){
+    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "title type"));
+    				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "title notnull"));
+    				passFlag |= (1 << 3);
+    			} else if ("description".equals(name)){
+    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "description type"));
+    				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "description notnull"));
+    				passFlag |= (1 << 4);
+    			} else if ("mime_type".equals(name)){
+    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "mime_type type"));
+    				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "mime_type notnull"));
+    				passFlag |= (1 << 5);
+    			} else if ("constraint_name".equals(name)){
+    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "constraint_name type"));
+    				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "constraint_name notnull"));
+    				passFlag |= (1 << 6);
+    			}
+    		} 
+    		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_columns", "missing column(s)"));
+    	}
     }
 
 
@@ -137,20 +141,22 @@ public class SchemaTests extends CommonFixture
     @Test(description = "See OGC 12-128r13: Requirement 104")
     public void dataColumnsTableName() throws SQLException
     {
-    	// 1
-		final Statement statement1 = this.databaseConnection.createStatement();
+    	try (
+    	    	// 1
+    			final Statement statement1 = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet1 = statement1.executeQuery("SELECT DISTINCT gdc.table_name AS gdc_table, gc.table_name AS gc_table FROM gpkg_data_columns AS gdc LEFT OUTER JOIN gpkg_contents AS gc ON gdc.table_name = gc.table_name;");
+    			final ResultSet resultSet1 = statement1.executeQuery("SELECT DISTINCT gdc.table_name AS gdc_table, gc.table_name AS gc_table FROM gpkg_data_columns AS gdc LEFT OUTER JOIN gpkg_contents AS gc ON gdc.table_name = gc.table_name;");
+    			) {
+    		// 2
+    		while (resultSet1.next()) {
+    			// 3
+    			final String gcTable = resultSet1.getString("gc_table");
+    			final String gdcTable = resultSet1.getString("gdc_table");
 
-		// 2
-		while (resultSet1.next()) {
-			// 3
-			final String gcTable = resultSet1.getString("gc_table");
-			final String gdcTable = resultSet1.getString("gdc_table");
-
-			// 3a
-			assertTrue(gcTable != null, ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TABLE, "gpkg_data_columns", gdcTable));
-		}
+    			// 3a
+    			assertTrue(gcTable != null, ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TABLE, "gpkg_data_columns", gdcTable));
+    		}
+    	}
     }
     
     /**
@@ -167,25 +173,26 @@ public class SchemaTests extends CommonFixture
     @Test(description = "See OGC 12-128r13: Requirement 105")
     public void dataColumnsColumnName() throws SQLException
     {
-    	// 1
-		final Statement statement1 = this.databaseConnection.createStatement();
+    	try (
+    	    	// 1
+    			final Statement statement1 = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet1 = statement1.executeQuery("SELECT table_name, column_name FROM gpkg_data_columns;");
+    			final ResultSet resultSet1 = statement1.executeQuery("SELECT table_name, column_name FROM gpkg_data_columns;");
+    			) {
+    		// 2
+    		while (resultSet1.next()) {
+    			final String columnName = resultSet1.getString("column_name");
+    			final String tableName = resultSet1.getString("table_name");
 
-		// 2
-		while (resultSet1.next()) {
-			// 3
-			final Statement statement2 = this.databaseConnection.createStatement();
-			final String columnName = resultSet1.getString("column_name");
-			final String tableName = resultSet1.getString("table_name");
-
-			try {
-				// 3bi
-				statement2.executeQuery(String.format("SELECT COUNT(%s) from %s;", columnName, tableName));
-			} catch (SQLException exc) {
-				Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_COLUMN, "gpkg_extensions", columnName, tableName));
-			}
-		}
+    			// 3
+    			try (final Statement statement2 = this.databaseConnection.createStatement()){
+    				// 3bi
+    				statement2.executeQuery(String.format("SELECT COUNT(%s) from %s;", columnName, tableName));
+    			} catch (SQLException exc) {
+    				Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_COLUMN, "gpkg_extensions", columnName, tableName));
+    			}
+    		}
+    	}
     }
     
     /**
@@ -203,57 +210,59 @@ public class SchemaTests extends CommonFixture
     @Test(description = "See OGC 12-128r13: Requirement 107")
     public void dataColumnConstraintsTableDefinition() throws SQLException
     {
-		// 1
-		final Statement statement = this.databaseConnection.createStatement();
+    	try (
+    			// 1
+    			final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("PRAGMA table_info('gpkg_data_column_constraints');");
+    			final ResultSet resultSet = statement.executeQuery("PRAGMA table_info('gpkg_data_column_constraints');");
+    			) {
+    		// 2
+    		int passFlag = 0;
+    		final int flagMask = 0b11111111;
+    		
+    		while (resultSet.next()) {
+    			// 3
+    			final String name = resultSet.getString("name");
+    			if ("constraint_name".equals(name)){
+    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "constraint_name type"));
+    				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "constraint_name notnull"));
+    				passFlag |= 1;
+    			} else if ("constraint_type".equals(name)){
+    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "constraint_type type"));
+    				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "constraint_type notnull"));
+    				passFlag |= (1 << 1);
+    			} else if ("value".equals(name)){
+    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "value type"));
 
-		// 2
-		int passFlag = 0;
-		final int flagMask = 0b11111111;
-		
-		while (resultSet.next()) {
-			// 3
-			final String name = resultSet.getString("name");
-			if ("constraint_name".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "constraint_name type"));
-				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "constraint_name notnull"));
-				passFlag |= 1;
-			} else if ("constraint_type".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "constraint_type type"));
-				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "constraint_type notnull"));
-				passFlag |= (1 << 1);
-			} else if ("value".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "value type"));
-
-				// Huh? How can a unique value be allowed to be null?
-				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "value notnull"));
-				
-				// unique constraint??
-				passFlag |= (1 << 2);
-			} else if ("min".equals(name)){
-				assertTrue("NUMERIC".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min type"));
-				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min notnull"));
-				passFlag |= (1 << 3);
-			} else if (minIsInclusive.equalsIgnoreCase(name)){
-				assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", minIsInclusive + " type"));
-				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", minIsInclusive + " notnull"));
-				passFlag |= (1 << 4);
-			} else if ("max".equals(name)){
-				assertTrue("NUMERIC".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max type"));
-				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max notnull"));
-				passFlag |= (1 << 5);
-			} else if (maxIsInclusive.equalsIgnoreCase(name)){
-				assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", maxIsInclusive + " type"));
-				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", maxIsInclusive + " notnull"));
-				passFlag |= (1 << 6);
-			} else if ("description".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "description type"));
-				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "description notnull"));
-				passFlag |= (1 << 7);
-			}
-		} 
-		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "missing column(s)"));
+    				// Huh? How can a unique value be allowed to be null?
+    				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "value notnull"));
+    				
+    				// unique constraint??
+    				passFlag |= (1 << 2);
+    			} else if ("min".equals(name)){
+    				assertTrue("NUMERIC".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min type"));
+    				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "min notnull"));
+    				passFlag |= (1 << 3);
+    			} else if (minIsInclusive.equalsIgnoreCase(name)){
+    				assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", minIsInclusive + " type"));
+    				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", minIsInclusive + " notnull"));
+    				passFlag |= (1 << 4);
+    			} else if ("max".equals(name)){
+    				assertTrue("NUMERIC".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max type"));
+    				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "max notnull"));
+    				passFlag |= (1 << 5);
+    			} else if (maxIsInclusive.equalsIgnoreCase(name)){
+    				assertTrue("BOOLEAN".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", maxIsInclusive + " type"));
+    				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", maxIsInclusive + " notnull"));
+    				passFlag |= (1 << 6);
+    			} else if ("description".equals(name)){
+    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "description type"));
+    				assertTrue(resultSet.getInt("notnull") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "description notnull"));
+    				passFlag |= (1 << 7);
+    			}
+    		} 
+    		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_data_column_constraints", "missing column(s)"));
+    	}
     }
 
     /**
@@ -270,19 +279,21 @@ public class SchemaTests extends CommonFixture
     @Test(description = "See OGC 12-128r13: Requirement 108")
     public void dataColumnConstraintsType() throws SQLException
     {
-    	// 1
-		final Statement statement1 = this.databaseConnection.createStatement();
+    	try (
+    	    	// 1
+    			final Statement statement1 = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet1 = statement1.executeQuery("SELECT DISTINCT constraint_type FROM gpkg_data_column_constraints");
-		
-		// 2
-		while (resultSet1.next()) {
-			// 3
-			final String constraintType = resultSet1.getString("constraint_type");
+    			final ResultSet resultSet1 = statement1.executeQuery("SELECT DISTINCT constraint_type FROM gpkg_data_column_constraints");
+    			) {
+    		// 2
+    		while (resultSet1.next()) {
+    			// 3
+    			final String constraintType = resultSet1.getString("constraint_type");
 
-			Assert.assertTrue(AllowedConstraintTypes.contains(constraintType), 
-					ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_VALUE, constraintType, "constraint_type", "gpkg_data_column_constraints"));
-		}
+    			Assert.assertTrue(AllowedConstraintTypes.contains(constraintType), 
+    					ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_VALUE, constraintType, "constraint_type", "gpkg_data_column_constraints"));
+    		}    		
+    	}
     }
 
     /**
@@ -298,23 +309,27 @@ public class SchemaTests extends CommonFixture
     @Test(description = "See OGC 12-128r13: Requirement 109")
     public void dataColumnConstraintsName() throws SQLException
     {
-    	// 1
-		final Statement statement1 = this.databaseConnection.createStatement();
+    	try (
+    	    	// 1
+    			final Statement statement1 = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet1 = statement1.executeQuery("SELECT DISTINCT constraint_name FROM gpkg_data_column_constraints WHERE constraint_type IN ('range', 'glob')");
-		
-		// 2
-		while (resultSet1.next()) {
-			// 3
-			final String constraintName = resultSet1.getString("constraint_name");
+    			final ResultSet resultSet1 = statement1.executeQuery("SELECT DISTINCT constraint_name FROM gpkg_data_column_constraints WHERE constraint_type IN ('range', 'glob')");
+    			) {
+    		// 2
+    		while (resultSet1.next()) {
+    			// 3
+    			final String constraintName = resultSet1.getString("constraint_name");
 
-			final Statement statement2 = this.databaseConnection.createStatement();
+    			try (
+    					final Statement statement2 = this.databaseConnection.createStatement();
 
-			final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_data_column_constraints WHERE constraint_name = %s", constraintName));
-			
-			Assert.assertTrue(resultSet2.getInt("1") <= 1, 
-					ErrorMessage.format(ErrorMessageKeys.NON_UNIQUE_VALUE, "constraint_name", "gpkg_data_column_constraints", constraintName));
-		}
+    					final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_data_column_constraints WHERE constraint_name = %s", constraintName));
+    					) {
+    				Assert.assertTrue(resultSet2.getInt("1") <= 1, 
+    						ErrorMessage.format(ErrorMessageKeys.NON_UNIQUE_VALUE, "constraint_name", "gpkg_data_column_constraints", constraintName));
+    			}
+    		}
+    	}
     }
 
     /**
@@ -331,20 +346,22 @@ public class SchemaTests extends CommonFixture
     @Test(description = "See OGC 12-128r13: Requirement 110")
     public void dataColumnConstraintsValue() throws SQLException
     {
-    	// 1
-		final Statement statement1 = this.databaseConnection.createStatement();
+    	try (
+    	    	// 1
+    			final Statement statement1 = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet1 = statement1.executeQuery("SELECT constraint_name, value FROM gpkg_data_column_constraints WHERE constraint_type = 'range'");
-		
-		// 2
-		while (resultSet1.next()) {
-			// 3
-			final String constraintName = resultSet1.getString("constraint_name");
-			final String value = resultSet1.getString("value");
+    			final ResultSet resultSet1 = statement1.executeQuery("SELECT constraint_name, value FROM gpkg_data_column_constraints WHERE constraint_type = 'range'");
+    			) {
+    		// 2
+    		while (resultSet1.next()) {
+    			// 3
+    			final String constraintName = resultSet1.getString("constraint_name");
+    			final String value = resultSet1.getString("value");
 
-			Assert.assertTrue(value == null, 
-					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName));
-		}
+    			Assert.assertTrue(value == null, 
+    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName));
+    		}
+    	}
     }
 
     /**
@@ -362,23 +379,25 @@ public class SchemaTests extends CommonFixture
     @Test(description = "See OGC 12-128r13: Requirement 111")
     public void dataColumnConstraintsMinMax() throws SQLException
     {
-    	// 1
-		final Statement statement1 = this.databaseConnection.createStatement();
+    	try (
+    	    	// 1
+    			final Statement statement1 = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet1 = statement1.executeQuery("SELECT constraint_name, min, max FROM gpkg_data_column_constraints WHERE constraint_type = 'range'");
-		
-		// 2
-		while (resultSet1.next()) {
-			final String constraintName = resultSet1.getString("constraint_name");
-			// 3a
-			final double min = resultSet1.getDouble("min");
-			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
-			// 3b
-			final double max = resultSet1.getDouble("max");
-			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
-			// 3c
-			Assert.assertTrue(min <= max, ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
-		}
+    			final ResultSet resultSet1 = statement1.executeQuery("SELECT constraint_name, min, max FROM gpkg_data_column_constraints WHERE constraint_type = 'range'");
+    			) {
+    		// 2
+    		while (resultSet1.next()) {
+    			final String constraintName = resultSet1.getString("constraint_name");
+    			// 3a
+    			final double min = resultSet1.getDouble("min");
+    			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
+    			// 3b
+    			final double max = resultSet1.getDouble("max");
+    			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
+    			// 3c
+    			Assert.assertTrue(min <= max, ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
+    		}    		
+    	}
     }
 
     /**
@@ -395,20 +414,22 @@ public class SchemaTests extends CommonFixture
     @Test(description = "See OGC 12-128r13: Requirement 112")
     public void dataColumnConstraintsInclusive() throws SQLException
     {
-    	// 1
-		final Statement statement1 = this.databaseConnection.createStatement();
+    	try (
+    	    	// 1
+    			final Statement statement1 = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT constraint_name, %s, %s FROM gpkg_data_column_constraints WHERE constraint_type = 'range'", minIsInclusive, maxIsInclusive));
-		
-		// 2
-		while (resultSet1.next()) {
-			final String constraintName = resultSet1.getString("constraint_name");
-			// 3
-			resultSet1.getBoolean(minIsInclusive);
-			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));
-			resultSet1.getBoolean(maxIsInclusive);
-			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));
-		}
+    			final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT constraint_name, %s, %s FROM gpkg_data_column_constraints WHERE constraint_type = 'range'", minIsInclusive, maxIsInclusive));
+    			) {
+    		// 2
+    		while (resultSet1.next()) {
+    			final String constraintName = resultSet1.getString("constraint_name");
+    			// 3
+    			resultSet1.getBoolean(minIsInclusive);
+    			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));
+    			resultSet1.getBoolean(maxIsInclusive);
+    			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));
+    		}
+    	}
     }
 
     /**
@@ -424,33 +445,34 @@ public class SchemaTests extends CommonFixture
      *             If an SQL query causes an error
      */
     @Test(description = "See OGC 12-128r13: Requirement 113")
-    public void dataColumnConstraintsGlobMinMax() throws SQLException
-    {
-    	// 1
-		final Statement statement1 = this.databaseConnection.createStatement();
+    public void dataColumnConstraintsGlobMinMax() throws SQLException {
+    	try (
+    	    	// 1
+    			final Statement statement1 = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT constraint_name, min, max, %s, %s FROM gpkg_data_column_constraints WHERE constraint_type IN ('enum','glob')", minIsInclusive, maxIsInclusive));
-		
-		// 2
-		while (resultSet1.next()) {
-			final String constraintName = resultSet1.getString("constraint_name");
-			// 3a
-			resultSet1.getDouble("min");
-			Assert.assertTrue(resultSet1.wasNull(), 
-					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
-			// 3b
-			resultSet1.getDouble("max");
-			Assert.assertTrue(resultSet1.wasNull(), 
-					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
-			// 3c
-			resultSet1.getDouble(minIsInclusive);
-			Assert.assertTrue(resultSet1.wasNull(), 
-					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));
-			// 3d
-			resultSet1.getDouble(maxIsInclusive);
-			Assert.assertTrue(resultSet1.wasNull(), 
-					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));
-		}
+    			final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT constraint_name, min, max, %s, %s FROM gpkg_data_column_constraints WHERE constraint_type IN ('enum','glob')", minIsInclusive, maxIsInclusive));
+    			) {
+    		// 2
+    		while (resultSet1.next()) {
+    			final String constraintName = resultSet1.getString("constraint_name");
+    			// 3a
+    			resultSet1.getDouble("min");
+    			Assert.assertTrue(resultSet1.wasNull(), 
+    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
+    			// 3b
+    			resultSet1.getDouble("max");
+    			Assert.assertTrue(resultSet1.wasNull(), 
+    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));
+    			// 3c
+    			resultSet1.getDouble(minIsInclusive);
+    			Assert.assertTrue(resultSet1.wasNull(), 
+    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));
+    			// 3d
+    			resultSet1.getDouble(maxIsInclusive);
+    			Assert.assertTrue(resultSet1.wasNull(), 
+    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));
+    		}    		
+    	}
     }
 
     /**
@@ -465,22 +487,23 @@ public class SchemaTests extends CommonFixture
      *             If an SQL query causes an error
      */
     @Test(description = "See OGC 12-128r13: Requirement 114")
-    public void dataColumnConstraintsGlobValue() throws SQLException
-    {
-    	// 1
-		final Statement statement1 = this.databaseConnection.createStatement();
+    public void dataColumnConstraintsGlobValue() throws SQLException {
+    	try (
+    	    	// 1
+    			final Statement statement1 = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet1 = statement1.executeQuery("SELECT constraint_name, value FROM gpkg_data_column_constraints WHERE constraint_type IN ('enum','glob')");
-		
-		// 2
-		while (resultSet1.next()) {
-			// 3
-			final String constraintName = resultSet1.getString("constraint_name");
-			resultSet1.getString("value");
+    			final ResultSet resultSet1 = statement1.executeQuery("SELECT constraint_name, value FROM gpkg_data_column_constraints WHERE constraint_type IN ('enum','glob')");
+    			) {
+    		// 2
+    		while (resultSet1.next()) {
+    			// 3
+    			final String constraintName = resultSet1.getString("constraint_name");
+    			resultSet1.getString("value");
 
-			Assert.assertTrue(!resultSet1.wasNull(), 
-					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName, "not"));
-		}
+    			Assert.assertTrue(!resultSet1.wasNull(), 
+    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName, "not"));
+    		}    		
+    	} 
     }
     static private List<String> AllowedConstraintTypes = Arrays.asList("range", "enum", "glob");
     private String maxIsInclusive;

@@ -36,13 +36,17 @@ public class CRSWKT extends CommonFixture
 		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
 				ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, "gpkg_extensions"));
 		
-		final Statement statement = this.databaseConnection.createStatement();
+		
 	
-		final ResultSet resultSet = statement.executeQuery("SELECT count(*) from gpkg_extensions WHERE extension_name = 'gpkg_crs_wkt';");
+		try (
+				final Statement statement = this.databaseConnection.createStatement();
+				final ResultSet resultSet = statement.executeQuery("SELECT count(*) from gpkg_extensions WHERE extension_name = 'gpkg_crs_wkt';");
+			) {
+			resultSet.next();
+			
+			Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "CRS WKT Extension"));			
+		}
 	
-		resultSet.next();
-	
-		Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "CRS WKT Extension"));
     }
 
     /**
@@ -60,27 +64,30 @@ public class CRSWKT extends CommonFixture
     @Test(description = "See OGC 12-128r13: Requirement 115")
     public void tableDefinition() throws SQLException
     {
-		// 1
-		final Statement statement = this.databaseConnection.createStatement();
+    	try (
+    			// 1
+    			final Statement statement = this.databaseConnection.createStatement();
+    			final ResultSet resultSet = statement.executeQuery("PRAGMA table_info('gpkg_spatial_ref_sys');");
+    			) {
 
-		final ResultSet resultSet = statement.executeQuery("PRAGMA table_info('gpkg_spatial_ref_sys');");
+    		// 2
+    		int passFlag = 0;
+    		final int flagMask = 0b00000001;
 
-		// 2
-		int passFlag = 0;
-		final int flagMask = 0b00000001;
-		
-		while (resultSet.next()) {
-			// 3
-			final String name = resultSet.getString("name");
-			if ("definition_12_063".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 type"));
-				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 notnull"));
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 pk"));
-				assertTrue("undefined".equals(resultSet.getString("dflt_value")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 dflt_value"));
-				passFlag |= 1;
-			}
-		} 
-		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "missing column(s)"));
+    		while (resultSet.next()) {
+    			// 3
+    			final String name = resultSet.getString("name");
+    			if ("definition_12_063".equals(name)){
+    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 type"));
+    				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 notnull"));
+    				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 pk"));
+    				assertTrue("undefined".equals(resultSet.getString("dflt_value")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 dflt_value"));
+    				passFlag |= 1;
+    			}
+    		} 
+    		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "missing column(s)"));
+    	}
+
     }
 
     // Requirement 116 is not testable with these tools
@@ -102,16 +109,20 @@ public class CRSWKT extends CommonFixture
     @Test(description = "See OGC 12-128r13: Requirement 117")
     public void crsTableValues() throws SQLException
     {
-		// 1
-		final Statement statement = this.databaseConnection.createStatement();
+    	try (
+    			// 1
+    			final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("SELECT srs_id, definition, definition_12_063 FROM gpkg_spatial_ref_sys WHERE srs_id NOT IN (0, -1);");
+    			final ResultSet resultSet = statement.executeQuery("SELECT srs_id, definition, definition_12_063 FROM gpkg_spatial_ref_sys WHERE srs_id NOT IN (0, -1);");
+    			) {
 
-		// 2
-		while (resultSet.next()) {
-			// 3
-			assertTrue(!("undefined".equals(resultSet.getString("definition")) && "undefined".equals(resultSet.getString("definition_12_063"))), 
-					ErrorMessage.format(ErrorMessageKeys.UNDEFINED_SRS, resultSet.getString("srs_id")));
-		} 
+    		// 2
+    		while (resultSet.next()) {
+    			// 3
+    			assertTrue(!("undefined".equals(resultSet.getString("definition")) && "undefined".equals(resultSet.getString("definition_12_063"))), 
+    					ErrorMessage.format(ErrorMessageKeys.UNDEFINED_SRS, resultSet.getString("srs_id")));
+    		} 
+    	}
+		
     }
 }
