@@ -90,16 +90,16 @@ public class URIUtils {
         String suffix = (lastIndexOfDot > 0) ? uriRef.getPath().substring(lastIndexOfDot) : ".db";
         File destFile = File.createTempFile("gpkg-", suffix);
         if (rsp.hasEntity()) {
-            InputStream is = rsp.getEntityInputStream();
-            OutputStream os = new FileOutputStream(destFile);
-            byte[] buffer = new byte[8 * 1024];
-            int bytesRead;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                os.write(buffer, 0, bytesRead);
-            }
-            is.close();
-            os.flush();
-            os.close();
+        	try (
+                    InputStream is = rsp.getEntityInputStream();
+                    OutputStream os = new FileOutputStream(destFile);
+        			) {
+                byte[] buffer = new byte[8 * 1024];
+                int bytesRead;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    os.write(buffer, 0, bytesRead);
+                }
+        	}
         }
         TestSuiteLogger.log(Level.CONFIG,
                 "Wrote " + destFile.length() + " bytes to file at " + destFile.getAbsolutePath());

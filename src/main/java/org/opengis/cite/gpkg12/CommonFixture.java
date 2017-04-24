@@ -130,6 +130,8 @@ public class CommonFixture {
      *
      * @throws IOException
      *             If an I/O error occurs while trying to read the data file.
+     * @throws SQLException
+     *             on any SQL error
      *
      * @see <a href="http://www.geopackage.org/spec/#_requirement-2" target=
      *      "_blank">File Format - Requirement 2</a>
@@ -163,38 +165,40 @@ public class CommonFixture {
      * This function returns the name of a single primary key column for the given table
      * 
      * @return the name of the primary key column
-     * @param tableName
+     * @param tableName the name of the table
      * @throws SQLException on any error
      */
     protected String getPrimaryKeyColumn(String tableName) throws SQLException {
     	String result = null;
     	
-		final Statement statement = this.databaseConnection.createStatement();
-		// 1
-		final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName));
+    	try (
+    			final Statement statement = this.databaseConnection.createStatement();
+    			// 1
+    			final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName));
+    			) {
+    		// 2
+    		assertTrue(resultSet.next(),
+    				ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
+    		
+    		boolean pass = false;
+    		// 3
+    		do {
+    			final int pk = resultSet.getInt("pk");
+    			final String name = resultSet.getString("name");
+    			final String type = resultSet.getString("type");
+    			if (pk > 0) {
+    				assertTrue(pk == 1, 
+    						ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, 
+    								String.format("%s has an invalid primary key value of %d", name, pk)));
+    				assertTrue("INTEGER".equalsIgnoreCase(type), 
+    						ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));
+    				result = name;
+    				pass = true;
+    			}
+    		} while (resultSet.next());
 
-		// 2
-		assertTrue(resultSet.next(),
-				ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
-		
-		boolean pass = false;
-		// 3
-		do {
-			final int pk = resultSet.getInt("pk");
-			final String name = resultSet.getString("name");
-			final String type = resultSet.getString("type");
-			if (pk > 0) {
-				assertTrue(pk == 1, 
-						ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, 
-								String.format("%s has an invalid primary key value of %d", name, pk)));
-				assertTrue("INTEGER".equalsIgnoreCase(type), 
-						ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));
-				result = name;
-				pass = true;
-			}
-		} while (resultSet.next());
-
-		assertTrue(pass && (result != null), ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));
+    		assertTrue(pass && (result != null), ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));    		
+    	}
 		
 		return result;
     }
@@ -205,17 +209,20 @@ public class CommonFixture {
      * @param tableName the table name to inspect
      * @param columnName the column name to inspect
      * @return true: this table/column is an exception to Requirement 5 and should be skipped
-     * @throws SQLException
+     * @throws SQLException on any error
      */
     protected boolean isExtendedType(String tableName, String columnName) throws SQLException {
     	boolean result = false;
     	
     	// This accounts for the exception in Requirement 65
     	if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions")) {
-            final Statement statement  = this.databaseConnection.createStatement();
-            final ResultSet resultSet = statement.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = '%s' AND column_name = '%s' AND extension_name LIKE 'gpkg_geom_%%'",  tableName, columnName));
-        	resultSet.next();
-        	result |= (resultSet.getInt(1) > 0);
+    		try (
+    				final Statement statement  = this.databaseConnection.createStatement();
+    				final ResultSet resultSet = statement.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = '%s' AND column_name = '%s' AND extension_name LIKE 'gpkg_geom_%%'",  tableName, columnName));
+    				) {    			
+    			resultSet.next();
+    			result |= (resultSet.getInt(1) > 0);
+    		}
     	}
 
     	return result;
@@ -238,42 +245,50 @@ public class CommonFixture {
 			throw new IllegalArgumentException("tableName must not be null.");
 		}
 		
-		final Statement statement = this.databaseConnection.createStatement();
-		// 1
-		final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName));
-
-		// 2
-		assertTrue(resultSet.next(),
-				ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
-		
 		boolean pass = false;
-		// 3
-		do {
-			final int pk = resultSet.getInt("pk");
-			final String name = resultSet.getString("name");
-			final String type = resultSet.getString("type");
-			if (pk > 0) {
-				assertTrue(pk == 1, 
-						ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, 
-								String.format("%s is a primary key of %d", name, pk)));
-				assertTrue("INTEGER".equals(type), 
-						ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));
-				assertTrue(pkName.equals(name),
-						ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName,
-								"pk " + name));
-				pass = true;
-			}
-		} while (resultSet.next());
+		try (
+				final Statement statement = this.databaseConnection.createStatement();
+				// 1
+				final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName));
+				) {
+
+			// 2
+			assertTrue(resultSet.next(),
+					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
+
+			pass = false;
+			// 3
+			do {
+				final int pk = resultSet.getInt("pk");
+				final String name = resultSet.getString("name");
+				final String type = resultSet.getString("type");
+				if (pk > 0) {
+					assertTrue(pk == 1, 
+							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, 
+									String.format("%s is a primary key of %d", name, pk)));
+					assertTrue("INTEGER".equals(type), 
+							ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));
+					assertTrue(pkName.equals(name),
+							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName,
+									"pk " + name));
+					pass = true;
+				}
+			} while (resultSet.next());
+		}
+
+
 
 		assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));
 		
-		// 4
-		final Statement statement2 = this.databaseConnection.createStatement();
+		try (
+				// 4
+				final Statement statement2 = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct %s) - COUNT(*) from %s", pkName, tableName));
-		
-		// 5
-		assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.TABLE_PK_NOT_UNIQUE, tableName));
+				final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct %s) - COUNT(*) from %s", pkName, tableName));
+				) {
+			// 5
+			assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.TABLE_PK_NOT_UNIQUE, tableName));
+		}
     }
 
     public String getTestName() {

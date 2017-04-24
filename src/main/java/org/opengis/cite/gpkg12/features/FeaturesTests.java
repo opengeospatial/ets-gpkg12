@@ -43,15 +43,18 @@ public class FeaturesTests extends CommonFixture {
 	 */
 	@BeforeClass
 	public void setUp() throws SQLException {
-		final Statement statement = this.databaseConnection.createStatement();
-		final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type = 'features';");
-		while (resultSet.next()) {
-			this.featureTableNames.add(resultSet.getString(1));
+		try (
+				final Statement statement = this.databaseConnection.createStatement();
+				final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type = 'features';");
+				) {
+			while (resultSet.next()) {
+				this.featureTableNames.add(resultSet.getString(1));
+			}
 		}
-		
-        Assert.assertTrue(!this.featureTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));
+
+		Assert.assertTrue(!this.featureTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));
 	}
-    	
+
 	/**
 	 * A GeoPackage MAY contain tables or updateable views containing vector 
 	 * features. Every such feature table or view in a GeoPackage SHALL have 
@@ -71,14 +74,16 @@ public class FeaturesTests extends CommonFixture {
 	@Test(description = "See OGC 12-128r13: Requirement 29")
 	public void featureTableIntegerPrimaryKey() throws SQLException {
 		for (final String tableName : this.featureTableNames) {
-			final Statement statement = this.databaseConnection.createStatement();
-			// 1
-			final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName));
+			try (
+					final Statement statement = this.databaseConnection.createStatement();
+					// 1
+					final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName));
+					) {
+				// 2
+				assertTrue(resultSet.next(),
+						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));				
+			}
 
-			// 2
-			assertTrue(resultSet.next(),
-					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
-			
 			// 3
 			checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName));
 		}
@@ -100,62 +105,63 @@ public class FeaturesTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirements 19, 20")
 	public void featureGeometryEncodingTableBlob() throws SQLException {
-		// 1
-		final Statement statement1 = this.databaseConnection.createStatement();
+		try (
+				// 1
+				final Statement statement1 = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet1 = statement1.executeQuery("SELECT table_name AS tn, column_name AS cn FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = 'features');");
-
-		// 2
-		while (resultSet1.next()){
-			final Statement statement3 = this.databaseConnection.createStatement();
-			final String cn = resultSet1.getString("cn");
-			final String tn = resultSet1.getString("tn");
-			String pkColumn;
-			try {
-				pkColumn = getPrimaryKeyColumn(tn);
-			} catch (AssertionError exc) {
-				// If we don't find a primary key, just use the rowid;
-				pkColumn = "rowid";
-			}
-			
-			// 3a
-			final ResultSet resultSet3 = statement3.executeQuery(String.format("SELECT %s, %s FROM %s;", cn, pkColumn, tn));
-			
-			// 3b
-			while (resultSet3.next()){
-				final int pk = resultSet3.getInt(pkColumn);
-				
-				InputStream sgpb;
+				final ResultSet resultSet1 = statement1.executeQuery("SELECT table_name AS tn, column_name AS cn FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = 'features');");
+				) {
+			// 2
+			while (resultSet1.next()){
+				final String cn = resultSet1.getString("cn");
+				final String tn = resultSet1.getString("tn");
+				String pkColumn;
 				try {
-			        // 3c
-					sgpb = resultSet3.getBinaryStream(cn);
-					// This exception will be thrown if the geometry BLOB is NULL
-				} catch (NullPointerException npe) {
-					continue;
+					pkColumn = getPrimaryKeyColumn(tn);
+				} catch (AssertionError exc) {
+					// If we don't find a primary key, just use the rowid;
+					pkColumn = "rowid";
 				}
-	
-				// 3ci
-				final byte[] sgbpb = new byte[4];
-				try {
-					sgpb.read(sgbpb);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Couldn't read WKB prefix"));
-				}
-		        final byte[] gp = Arrays.copyOfRange(sgbpb, 0, 2);
-		        assertTrue(Arrays.equals(gp, GPKG12.BINARY_GP), ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "First two bytes of WKB are wrong."));
 
-		        // 3cii
-		        assertTrue(sgbpb[2] == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Third byte of WKB must be 0."));
-		        
-		        // 3ciii
-		        assertTrue((sgbpb[3] & 0b00100000) == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Sixth bit of byte 4 of WKB must be 0."));
-		        
-		        // 3civ
-		        final int envelope = (sgbpb[3] & 0b00001110) >> 1;
-		        assertTrue(envelope <= 4, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Envelope type of WKB (byte 4) is invalid."));
-		        
-		        // TODO: 3cv 
+				try (
+						final Statement statement3 = this.databaseConnection.createStatement();
+						// 3a
+						final ResultSet resultSet3 = statement3.executeQuery(String.format("SELECT %s, %s FROM %s;", cn, pkColumn, tn));
+						) {
+					// 3b
+					while (resultSet3.next()){
+						final int pk = resultSet3.getInt(pkColumn);
+						final byte[] sgbpb = new byte[4];
+
+						// 3c
+						try (InputStream sgpb = resultSet3.getBinaryStream(cn)) {
+							sgpb.read(sgbpb);
+						} catch (NullPointerException npe) {
+							// This exception will be thrown if the geometry BLOB is NULL
+							continue;
+						}
+						catch (IOException e) {
+							// TODO Auto-generated catch block
+							assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Couldn't read WKB prefix"));
+						}
+
+						// 3ci
+						final byte[] gp = Arrays.copyOfRange(sgbpb, 0, 2);
+						assertTrue(Arrays.equals(gp, GPKG12.BINARY_GP), ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "First two bytes of WKB are wrong."));
+
+						// 3cii
+						assertTrue(sgbpb[2] == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Third byte of WKB must be 0."));
+
+						// 3ciii
+						assertTrue((sgbpb[3] & 0b00100000) == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Sixth bit of byte 4 of WKB must be 0."));
+
+						// 3civ
+						final int envelope = (sgbpb[3] & 0b00001110) >> 1;
+						assertTrue(envelope <= 4, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, "Envelope type of WKB (byte 4) is invalid."));
+
+						// TODO: 3cv 
+					}					
+				}
 			}
 		}
 	}
@@ -172,51 +178,54 @@ public class FeaturesTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 21")
 	public void featureGeometryColumnsTableDef() throws SQLException {
-		// 1
-		final Statement statement = this.databaseConnection.createStatement();
+		try (
+				// 1
+				final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("PRAGMA table_info('gpkg_geometry_columns');");
+				final ResultSet resultSet = statement.executeQuery("PRAGMA table_info('gpkg_geometry_columns');");
+				) {
 
-		// 2
-		int passFlag = 0;
-		final int flagMask = 0b00111111;
-		
-		while (resultSet.next()) {
-			// 3
-			final String name = resultSet.getString("name");
-			if ("geometry_type_name".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				passFlag |= 1;
-			} else if ("table_name".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				assertTrue(resultSet.getInt("pk") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				passFlag |= (1 << 1);
-			} else if ("m".equals(name)){
-				assertTrue("TINYINT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				passFlag |= (1 << 2);
-			} else if ("z".equals(name)){
-				assertTrue("TINYINT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				passFlag |= (1 << 3);
-			} else if ("srs_id".equals(name)){
-				assertTrue("INTEGER".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				assertTrue(resultSet.getInt("pk") == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				passFlag |= (1 << 4);
-			} else if ("column_name".equals(name)){
-				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				assertTrue(resultSet.getInt("pk") == 2, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
-				passFlag |= (1 << 5);
-			}
-		} 
-		assertTrue((passFlag & flagMask) == flagMask, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+			// 2
+			int passFlag = 0;
+			final int flagMask = 0b00111111;
+
+			while (resultSet.next()) {
+				// 3
+				final String name = resultSet.getString("name");
+				if ("geometry_type_name".equals(name)){
+					assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					assertTrue(resultSet.getInt("pk") == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					passFlag |= 1;
+				} else if ("table_name".equals(name)){
+					assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					assertTrue(resultSet.getInt("pk") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					passFlag |= (1 << 1);
+				} else if ("m".equals(name)){
+					assertTrue("TINYINT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					assertTrue(resultSet.getInt("pk") == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					passFlag |= (1 << 2);
+				} else if ("z".equals(name)){
+					assertTrue("TINYINT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					assertTrue(resultSet.getInt("pk") == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					passFlag |= (1 << 3);
+				} else if ("srs_id".equals(name)){
+					assertTrue("INTEGER".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					assertTrue(resultSet.getInt("pk") == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					passFlag |= (1 << 4);
+				} else if ("column_name".equals(name)){
+					assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					assertTrue(resultSet.getInt("notnull") == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					assertTrue(resultSet.getInt("pk") == 2, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);
+					passFlag |= (1 << 5);
+				}
+			} 
+			assertTrue((passFlag & flagMask) == flagMask, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);			
+		}
 	}
 
 	/**
@@ -231,19 +240,23 @@ public class FeaturesTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 22")
 	public void featureGeometryColumnsDataValues() throws SQLException {
-		// 1
-		final Statement statement = this.databaseConnection.createStatement();
+		try (		
+				// 1
+				final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type = 'features';");
+				final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type = 'features';");
+				) {
+			// 2
+			if (resultSet.next()){
+				try (
+						// 3
+						final Statement statement2 = this.databaseConnection.createStatement();
 
-		// 2
-		if (resultSet.next()){
-			// 3
-			final Statement statement2 = this.databaseConnection.createStatement();
-			
-			final ResultSet resultSet2 = statement2.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type = 'features' AND table_name NOT IN (SELECT table_name FROM gpkg_geometry_columns);");
-			
-			assertTrue(!resultSet2.next(), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_MISMATCH);
+						final ResultSet resultSet2 = statement2.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type = 'features' AND table_name NOT IN (SELECT table_name FROM gpkg_geometry_columns);");
+						) {
+					assertTrue(!resultSet2.next(), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_MISMATCH);
+				}
+			}			
 		}
 	}
 
@@ -262,29 +275,31 @@ public class FeaturesTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 23, 26")
 	public void featureGeometryColumnsDataValuesTableName() throws SQLException {
-		// 1
-		final Statement statement = this.databaseConnection.createStatement();
+		try (
+				// 1
+				final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("PRAGMA foreign_key_list('gpkg_geometry_columns');");
-		
-		boolean foundContents = false;
-		boolean foundSpatialRefSys = false;
+				final ResultSet resultSet = statement.executeQuery("PRAGMA foreign_key_list('gpkg_geometry_columns');");
+				) {
+			boolean foundContents = false;
+			boolean foundSpatialRefSys = false;
 
-		// 2
-		while (resultSet.next()){
-			// 3
-			final String table = resultSet.getString("table");
-			if ("gpkg_spatial_ref_sys".equals(table)){
-				if ("srs_id".equals(resultSet.getString("from")) && "srs_id".equals(resultSet.getString("to"))){
-					foundSpatialRefSys = true;
-				}
-			} else if ("gpkg_contents".equals(table)){
-				if ("table_name".equals(resultSet.getString("from")) && "table_name".equals(resultSet.getString("to"))){
-					foundContents = true;
+			// 2
+			while (resultSet.next()){
+				// 3
+				final String table = resultSet.getString("table");
+				if ("gpkg_spatial_ref_sys".equals(table)){
+					if ("srs_id".equals(resultSet.getString("from")) && "srs_id".equals(resultSet.getString("to"))){
+						foundSpatialRefSys = true;
+					}
+				} else if ("gpkg_contents".equals(table)){
+					if ("table_name".equals(resultSet.getString("from")) && "table_name".equals(resultSet.getString("to"))){
+						foundContents = true;
+					}
 				}
 			}
+			assertTrue(foundContents && foundSpatialRefSys, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_NO_FK);
 		}
-		assertTrue(foundContents && foundSpatialRefSys, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_NO_FK);
 	}
 
 	/**
@@ -299,30 +314,34 @@ public class FeaturesTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 24")
 	public void featureGeometryColumnsDataValuesColumnName() throws SQLException {
-		// 1
-		final Statement statement = this.databaseConnection.createStatement();
+		try (
+				// 1
+				final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("SELECT table_name, column_name FROM gpkg_geometry_columns;");
-		
-		// 2
-		while (resultSet.next()){
-			final String tableName = resultSet.getString("table_name");
-			final String columnName = resultSet.getString("column_name");
+				final ResultSet resultSet = statement.executeQuery("SELECT table_name, column_name FROM gpkg_geometry_columns;");
+				) {
+			// 2
+			while (resultSet.next()){
+				final String tableName = resultSet.getString("table_name");
+				final String columnName = resultSet.getString("column_name");
 
-			final Statement statement2 = this.databaseConnection.createStatement();
+				try (
+						final Statement statement2 = this.databaseConnection.createStatement();
 
-			final ResultSet resultSet2 = statement2.executeQuery(String.format("PRAGMA table_info('%s');", tableName));
-			
-			boolean foundMatch = false;
-			
-			while (resultSet2.next()) {
-				if (resultSet2.getString("name").equals(columnName)){
-					foundMatch = true;
-					break;
+						final ResultSet resultSet2 = statement2.executeQuery(String.format("PRAGMA table_info('%s');", tableName));
+						) {
+					boolean foundMatch = false;
+
+					while (resultSet2.next()) {
+						if (resultSet2.getString("name").equals(columnName)){
+							foundMatch = true;
+							break;
+						}
+					}
+
+					assertTrue(foundMatch, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_COL, tableName, columnName));
 				}
-			}
-			
-			assertTrue(foundMatch, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_COL, tableName, columnName));
+			}	
 		}
 	}
 
@@ -338,37 +357,39 @@ public class FeaturesTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 25")
 	public void featureGeometryColumnsDataValuesGeometryType() throws SQLException {
-		// 1
-		final Statement statement = this.databaseConnection.createStatement();
+		try (
+				// 1
+				final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns");
-		
-		// 2
-		while (resultSet.next()){
-			// 3
-			final String geometryTypeName = resultSet.getString("geometry_type_name");
-			final String tableName = resultSet.getString("table_name");
-			final String columnName = resultSet.getString("column_name");
-			
-			boolean pass = false;
+				final ResultSet resultSet = statement.executeQuery("SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns");
+				) {
+			// 2
+			while (resultSet.next()){
+				// 3
+				final String geometryTypeName = resultSet.getString("geometry_type_name");
+				final String tableName = resultSet.getString("table_name");
+				final String columnName = resultSet.getString("column_name");
 
-			if (getGeopackageVersion().equals(GeoPackageVersion.V120)){
-				pass = ALLOWED_GEOMETRY_TYPES.contains(geometryTypeName);
-			} else {
-				final Iterator<String> iterator = ALLOWED_GEOMETRY_TYPES.iterator();
-				while(iterator.hasNext()){
-					if (geometryTypeName.equalsIgnoreCase(iterator.next())){
-						pass = true;
-						break;
+				boolean pass = false;
+
+				if (getGeopackageVersion().equals(GeoPackageVersion.V120)){
+					pass = ALLOWED_GEOMETRY_TYPES.contains(geometryTypeName);
+				} else {
+					final Iterator<String> iterator = ALLOWED_GEOMETRY_TYPES.iterator();
+					while(iterator.hasNext()){
+						if (geometryTypeName.equalsIgnoreCase(iterator.next())){
+							pass = true;
+							break;
+						}
 					}
 				}
+
+				if (!pass) {
+					pass = isExtendedType(tableName, columnName);
+				}
+
+				assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName, tableName));
 			}
-			
-			if (!pass) {
-				pass = isExtendedType(tableName, columnName);
-			}
-			
-			assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName, tableName));
 		}
 	}
 
@@ -384,20 +405,24 @@ public class FeaturesTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 27")
 	public void featureGeometryColumnsDataValuesZ() throws SQLException {
-		// 1
-		final Statement statement = this.databaseConnection.createStatement();
+		try (
+				// 1
+				final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("SELECT z FROM gpkg_geometry_columns");
-		
-		// 2
-		if (resultSet.next()){
-			// 3
-			final Statement statement2 = this.databaseConnection.createStatement();
+				final ResultSet resultSet = statement.executeQuery("SELECT z FROM gpkg_geometry_columns");
+				) {
+			// 2
+			if (resultSet.next()){
+				try (
+						// 3
+						final Statement statement2 = this.databaseConnection.createStatement();
 
-			final ResultSet resultSet2 = statement2.executeQuery("SELECT z FROM gpkg_geometry_columns WHERE z NOT IN (0,1,2)");
-			
-			if(resultSet2.next()){
-				assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_Z, resultSet2.getInt("z")));
+						final ResultSet resultSet2 = statement2.executeQuery("SELECT z FROM gpkg_geometry_columns WHERE z NOT IN (0,1,2)");
+						) {
+					if(resultSet2.next()){
+						assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_Z, resultSet2.getInt("z")));
+					}
+				}
 			}
 		}
 	}
@@ -414,20 +439,24 @@ public class FeaturesTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 28")
 	public void featureGeometryColumnsDataValuesM() throws SQLException {
-		// 1
-		final Statement statement = this.databaseConnection.createStatement();
+		try (
+				// 1
+				final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("SELECT m FROM gpkg_geometry_columns");
-		
-		// 2
-		if (resultSet.next()){
-			// 3
-			final Statement statement2 = this.databaseConnection.createStatement();
+				final ResultSet resultSet = statement.executeQuery("SELECT m FROM gpkg_geometry_columns");
+				) {
+			// 2
+			if (resultSet.next()){
+				try (
+						// 3
+						final Statement statement2 = this.databaseConnection.createStatement();
 
-			final ResultSet resultSet2 = statement2.executeQuery("SELECT m FROM gpkg_geometry_columns WHERE m NOT IN (0,1,2)");
-			
-			if(resultSet2.next()){
-				assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_M, resultSet2.getInt("m")));
+						final ResultSet resultSet2 = statement2.executeQuery("SELECT m FROM gpkg_geometry_columns WHERE m NOT IN (0,1,2)");
+						) {
+					if(resultSet2.next()){
+						assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_M, resultSet2.getInt("m")));
+					}
+				}
 			}
 		}
 	}
@@ -444,21 +473,25 @@ public class FeaturesTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 30")
 	public void featureTableOneGeometryColumn() throws SQLException {
-		// 1
-		final Statement statement = this.databaseConnection.createStatement();
+		try (		
+				// 1
+				final Statement statement = this.databaseConnection.createStatement();
 
-		final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type='features'");
-		
-		// 2
-		while (resultSet.next()){
-			// 3
-			final String tableName = resultSet.getString("table_name");
-			final Statement statement2 = this.databaseConnection.createStatement();
+				final ResultSet resultSet = statement.executeQuery("SELECT table_name FROM gpkg_contents WHERE data_type='features'");
+				) {
+			// 2
+			while (resultSet.next()){
+				// 3
+				final String tableName = resultSet.getString("table_name");
+				try (
+						final Statement statement2 = this.databaseConnection.createStatement();
 
-			final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT count(*) FROM gpkg_geometry_columns WHERE table_name = '%s'", tableName));
-			
-			resultSet2.next();
-			assertTrue(resultSet2.getInt(1) == 1, ErrorMessageKeys.FEATURES_ONE_GEOMETRY_COLUMN);
+						final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT count(*) FROM gpkg_geometry_columns WHERE table_name = '%s'", tableName));
+						) {
+					resultSet2.next();
+					assertTrue(resultSet2.getInt(1) == 1, ErrorMessageKeys.FEATURES_ONE_GEOMETRY_COLUMN);
+				}
+			}
 		}
 	}
 
@@ -476,37 +509,41 @@ public class FeaturesTests extends CommonFixture {
 	public void featureTableGeometryColumnType() throws SQLException {
 		// We're just going to skip this test on older GeoPackages and hope for the best.
 		if (getGeopackageVersion().equals(GeoPackageVersion.V120)){
-			// 1
-			final Statement statement = this.databaseConnection.createStatement();
-	
-			final ResultSet resultSet = statement.executeQuery("SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = 'features')");
-			
-			// 2
-			while (resultSet.next()){
-				// 2a
-				final String geometryTypeName = resultSet.getString("geometry_type_name");
-				// This assertion being removed as per https://github.com/opengeospatial/geopackage/issues/347
-//				assertTrue(allowedGeometryTypes.contains(geometryTypeName), ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
+			try (
+					// 1
+					final Statement statement = this.databaseConnection.createStatement();
 
-				//2b
-				final String tableName = resultSet.getString("table_name");
-				final String columnName = resultSet.getString("column_name");
-				final Statement statement2 = this.databaseConnection.createStatement();
-	
-				final ResultSet resultSet2 = statement2.executeQuery(String.format("PRAGMA table_info('%s')", tableName));
-				
-				while (resultSet2.next()){
-					if (columnName.equals(resultSet2.getString("name"))) {
-						assertTrue(geometryTypeName.equals(resultSet2.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_MISMATCH);
-						break;
+					final ResultSet resultSet = statement.executeQuery("SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = 'features')");
+					) {
+				// 2
+				while (resultSet.next()){
+					// 2a
+					final String geometryTypeName = resultSet.getString("geometry_type_name");
+					// This assertion being removed as per https://github.com/opengeospatial/geopackage/issues/347
+					//				assertTrue(allowedGeometryTypes.contains(geometryTypeName), ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
+
+					//2b
+					final String tableName = resultSet.getString("table_name");
+					final String columnName = resultSet.getString("column_name");
+					try (
+							final Statement statement2 = this.databaseConnection.createStatement();
+
+							final ResultSet resultSet2 = statement2.executeQuery(String.format("PRAGMA table_info('%s')", tableName));
+							) {
+						while (resultSet2.next()){
+							if (columnName.equals(resultSet2.getString("name"))) {
+								assertTrue(geometryTypeName.equals(resultSet2.getString("type")), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_MISMATCH);
+								break;
+							}
+						}
 					}
-				}
+				}				
 			}
 		}
 	}
-	
+
 	// TODO: Don't know how to test R32/33 as they require a spatial library
-	
+
 	private static final Collection<String> ALLOWED_GEOMETRY_TYPES = 
 			Arrays.asList("GEOMETRY","POINT","LINESTRING","POLYGON","MULTIPOINT","MULTILINESTRING","MULTIPOLYGON","GEOMETRYCOLLECTION");
 	protected static Collection<String> getAllowedGeometryTypes() {

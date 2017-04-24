@@ -29,6 +29,7 @@ public class ErrorMessageKeys {
     public static final String UNEXPECTED_COLUMN = "UnexpectedColumn";
     public static final String UNEXPECTED_VALUE = "UnexpectedValue";
     public static final String ILLEGAL_VALUE = "IllegalValue";
+    public static final String MISSING_REFERENCE = "MissingReference";
     public static final String NON_UNIQUE_VALUE = "NonUniqueValue";
     public static final String PRAGMA_INTEGRITY_CHECK_NOT_OK = "PragmaIntegrityCheckNotOk";
     public static final String INVALID_FOREIGN_KEY = "InvalidForeignKey";
@@ -103,7 +104,6 @@ public class ErrorMessageKeys {
     public static final String CONSTRAINT_MINMAX_INVALID = "ConstraintMinMaxInvalid";
     public static final String CONSTRAINT_INCLUSIVE_INVALID = "ConstraintInclusiveInvalid";
     public static final String COVERAGE_ANCILLARY_DATATYPE_INVALID = "CoverageAncillaryDatatypeInvalid";
-    public static final String COVERAGE_ANCILLARY_FLOAT_SCALE_OFFSET = "CoverageAncillaryFloatScaleOffset";
     public static final String TILE_ANCILLARY_REFERENCES = "TileAncillaryReferences";
     public static final String TILE_ANCILLARY_TABLE_REF_INVALID = "TileAncillaryTableRefInvalid";
 }

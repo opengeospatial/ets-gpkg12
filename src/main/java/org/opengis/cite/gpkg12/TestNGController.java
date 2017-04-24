@@ -87,12 +87,12 @@ public class TestNGController implements TestSuiteController {
      *            written; it will be created if it does not exist.
      */
     public TestNGController(String outputDir) {
-        InputStream is = getClass().getResourceAsStream("ets.properties");
-        try {
-            this.etsProperties.load(is);
-        } catch (IOException ex) {
-            TestSuiteLogger.log(Level.WARNING, "Unable to load ets.properties. " + ex.getMessage());
+        try (InputStream is = getClass().getResourceAsStream("ets.properties")) {
+                this.etsProperties.load(is);
         }
+        catch (IOException ex) {
+        	TestSuiteLogger.log(Level.WARNING, "Unable to load ets.properties. " + ex.getMessage());
+        } 
         URL tngSuite = TestNGController.class.getResource("testng.xml");
         File resultsDir = new File(outputDir);
         TestSuiteLogger.log(Level.CONFIG, "Using TestNG config: " + tngSuite);
