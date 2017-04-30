@@ -1,22 +1,23 @@
 
-# GeoPackage 1.0 Conformance Test Suite
+# GeoPackage 1.2 Conformance Test Suite
 
 ## Scope
 
-This conformance test suite verifies the structure and content of a GeoPackage 1.0 
-data container. The [GeoPackage 1.0 specification](http://www.opengis.net/doc/IS/geopackage/1.0) describes 
+This conformance test suite verifies the structure and content of a GeoPackage 1.2 
+data container. The [GeoPackage 1.2 encoding standard](http://www.geopackage.org/spec/) describes 
 how a platform-independent [SQLite database file](https://www.sqlite.org/fileformat2.html) 
 may contain various types of content, including:
 
-* vector geospatial features
+* vector features
 * tile matrix sets of imagery and raster maps at various scales
-* metadata
+* attributes
+* extensions
 
 The basic structure of a GeoPackage database is shown in Figure 1.
 
 **Figure 1: GeoPackage tables**
 
-![GeoPackage tables](img/geopackage-tables.png)
+![GeoPackage tables](../resources/img/geopackage-tables.png)
 
 The following conformance classes have being defined (In bold the classes that have been implemented):
 
@@ -24,15 +25,20 @@ The following conformance classes have being defined (In bold the classes that h
     - **SQLite Container**
     - **Spatial Reference Systems**
     - **Contents**
-* Features
+* **Features**
 * **Tiles**
-* Schema
-* **Metadata**
-* Registered Extensions
-    - Features
-    - Tiles
+* **Attributes**
+* **Registered Extensions**
+    - **Non-Linear Geometry Types**
+    - **RTree Spatial Indexes**
+    - Zoom Other Intervals
+    - Tiles Encoding WebP
+    - **Metadata**
+    - **Schema**
+    - **WKT for Coordinate Reference Systems**
+    - **Tiled Gridded Elevation Data**
     
-Note: This test doesn’t support GeoPackage 1.1. To follow the issue or support the development of a 1.1 test, please  provide a comment in the [GitHub issue tracker](https://github.com/opengeospatial/ets-gpkg12/issues/4).   
+Note: This test also supports GeoPackage 1.1 and 1.0. 
 
 ## Test requirements
 
