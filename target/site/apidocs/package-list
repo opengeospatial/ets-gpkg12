@@ -1,0 +1,13 @@
+org.opengis.cite.gpkg12
+org.opengis.cite.gpkg12.core
+org.opengis.cite.gpkg12.extensions
+org.opengis.cite.gpkg12.extensions.crswkt
+org.opengis.cite.gpkg12.extensions.elevation
+org.opengis.cite.gpkg12.extensions.metadata
+org.opengis.cite.gpkg12.extensions.nonlinear
+org.opengis.cite.gpkg12.extensions.rtreeindex
+org.opengis.cite.gpkg12.extensions.schema
+org.opengis.cite.gpkg12.extensions.webp
+org.opengis.cite.gpkg12.features
+org.opengis.cite.gpkg12.tiles
+org.opengis.cite.gpkg12.util
