@@ -17,7 +17,7 @@ The basic structure of a GeoPackage database is shown in Figure 1.
 
 **Figure 1: GeoPackage tables**
 
-![GeoPackage tables](../resources/img/geopackage-tables.png)
+![GeoPackage tables](./img/geopackage-tables.png)
 
 The following conformance classes have being defined (In bold the classes that have been implemented):
 
