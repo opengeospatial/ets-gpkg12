@@ -65,7 +65,7 @@ public class VerifyTestNGController {
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample.gpkg"), 0);
 //        runTests(ClassLoader.getSystemResource("gpkg/ERDC_Whitehorse_GeoPackage.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/elevation.gpkg"), 0); // These two are the id notnull thing
-//        runTests(ClassLoader.getSystemResource("gpkg/coastline-polyline-hydro-115mil-and-smaller.gpkg"), 1); // wrong date format
+        runTests(ClassLoader.getSystemResource("gpkg/coastline-polyline-hydro-115mil-and-smaller.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 1); // R77
         runTests(ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg"), 1); // This is an invalid 1.0 or 1.1 GPKG - it has an invalid metadata table (md_standard_URI instead of md_standard_uri) 
         runTests(ClassLoader.getSystemResource("gpkg/sample1_1.gpkg"), 1); // R77
