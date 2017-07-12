@@ -126,46 +126,47 @@ public final class TableVerifier
                     throw new RuntimeException(String.format("Required column: %s.%s is missing", tableName, column.getKey()));  // TODO this needs to be in the error string table
                 }
 
-                final ColumnDefinition columnDefinition = columns.get(column.getKey());
-
-                if(columnDefinition != null)
-                {
-                    if(!columnDefinition.equals(column.getValue()) ||
-                       !checkExpressionEquivalence(connection,
-                                                   columnDefinition.getDefaultValue(),
-                                                   column.getValue().getDefaultValue()))    // .equals() for ColumnDefinition skips comparing default values. It's better to check for functional equivalence rather than exact string equality. This avoids issues with difference in white space as well as other trivial annoyances
-                    {
-                        throw new RuntimeException(String.format("Required column %s is defined as:\n%s\nbut should be:\n%s",
-                                                                 column.getKey(),
-                                                                 columnDefinition.toString(),
-                                                                 column.getValue().toString()));
-                    }
-                }
+                // We shouldn't be picky on table defaults as long as the content is correct
+//                final ColumnDefinition columnDefinition = columns.get(column.getKey());
+//
+//                if(columnDefinition != null)
+//                {
+//                    if(!columnDefinition.equals(column.getValue()) ||
+//                       !checkExpressionEquivalence(connection,
+//                                                   columnDefinition.getDefaultValue(),
+//                                                   column.getValue().getDefaultValue()))    // .equals() for ColumnDefinition skips comparing default values. It's better to check for functional equivalence rather than exact string equality. This avoids issues with difference in white space as well as other trivial annoyances
+//                    {
+//                        throw new RuntimeException(String.format("Required column %s is defined as:\n%s\nbut should be:\n%s",
+//                                                                 column.getKey(),
+//                                                                 columnDefinition.toString(),
+//                                                                 column.getValue().toString()));
+//                    }
+//                }
             }
         }
     }
 
-    private static boolean checkExpressionEquivalence(final Connection connection,
-                                                      final String     expression1,
-                                                      final String     expression2) throws SQLException
-    {
-        if((expression1 == null) || (expression2 == null))
-        {
-            return (expression1 == null) && (expression2 == null);
-        }
-
-        try(final Statement statement = connection.createStatement())
-        {
-            final String query = String.format("SELECT (%s) = (%s);",
-                                               expression1,
-                                               expression2);
-
-            try(final ResultSet results = statement.executeQuery(query))
-            {
-                return results.next() && results.getBoolean(1);
-            }
-        }
-    }
+//    private static boolean checkExpressionEquivalence(final Connection connection,
+//                                                      final String     expression1,
+//                                                      final String     expression2) throws SQLException
+//    {
+//        if((expression1 == null) || (expression2 == null))
+//        {
+//            return (expression1 == null) && (expression2 == null);
+//        }
+//
+//        try(final Statement statement = connection.createStatement())
+//        {
+//            final String query = String.format("SELECT (%s) = (%s);",
+//                                               expression1,
+//                                               expression2);
+//
+//            try(final ResultSet results = statement.executeQuery(query))
+//            {
+//                return results.next() && results.getBoolean(1);
+//            }
+//        }
+//    }
 
     private static void verifyForeignKeys(final Connection                connection,
                                           final String                    tableName,
