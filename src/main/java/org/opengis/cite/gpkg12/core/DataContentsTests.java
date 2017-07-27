@@ -36,7 +36,7 @@ import org.testng.annotations.Test;
  * </p>
  * <ul>
  * <li><a href="http://www.geopackage.org/spec/#_contents" target= "_blank">
- * GeoPackage Encoding Standard - Contents</a> (OGC 12-128r12)</li>
+ * GeoPackage Encoding Standard - Contents</a> (OGC 12-128r14)</li>
  * </ul>
  *
  * @author Luke Lambert
@@ -49,13 +49,13 @@ public class DataContentsTests extends CommonFixture
      * "http://www.geopackage.org/spec/#table_column_data_types">GeoPackage
      * Data Types</a>.
      *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-5" target=
+     * @see <a href="http://www.geopackage.org/spec/#r5" target=
      *      "_blank">File Contents - Requirement 5</a>
      *
      * @throws SQLException
      *             If an SQL query causes an error
      */
-    @Test(description = "See OGC 12-128r12: Requirement 5")
+    @Test(description = "See OGC 12-128r14: Requirement 5")
     public void columnDataTypes() throws SQLException
     {
     	// 1
@@ -103,13 +103,13 @@ public class DataContentsTests extends CommonFixture
      * "http://www.geopackage.org/spec/#gpkg_contents_sql">gpkg_contents Table
      * Definition SQL</a>.
      *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-13" target=
+     * @see <a href="http://www.geopackage.org/spec/#_r13" target=
      *      "_blank">Table Definition - Requirement 13</a>
      *
      * @throws SQLException
      *             If an SQL query causes an error
      */
-    @Test(description = "See OGC 12-128r12: Requirement 13")
+    @Test(description = "See OGC 12-128r14: Requirement 13")
     public void contentsTableDefinition() throws SQLException
     {
         try
@@ -143,13 +143,13 @@ public class DataContentsTests extends CommonFixture
      * The {@code table_name} column value in a {@code gpkg_contents} table row
      * SHALL contain the name of a SQLite table or view.
      *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-14" target=
+     * @see <a href="http://www.geopackage.org/spec/#r14" target=
      *      "_blank">Table Data Values - Requirement 14</a>
      *
      * @throws SQLException
      *             If an SQL query causes an error
      */
-    @Test(description = "See OGC 12-128r12: Requirement 14")
+    @Test(description = "See OGC 12-128r14: Requirement 14")
     public void contentsTablesExist() throws SQLException
     {
         final String query = "SELECT DISTINCT table_name " +
@@ -182,13 +182,13 @@ public class DataContentsTests extends CommonFixture
      * and a decimal fraction of a second, with a 'Z' ('zulu') suffix
      * indicating UTC.
      *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-15" target=
+     * @see <a href="http://www.geopackage.org/spec/#r15" target=
      *      "_blank">Table Data Values - Requirement 15</a>
      *
      * @throws SQLException
      *             If an SQL query causes an error
      */
-    @Test(description = "See OGC 12-128r12: Requirement 15")
+    @Test(description = "See OGC 12-128r14: Requirement 15")
     public void timestampFormat() throws SQLException
     {
     	// 1
@@ -224,13 +224,13 @@ public class DataContentsTests extends CommonFixture
      * reference values in the {@code gpkg_spatial_ref_sys} table {@code
      * srs_id} column.
      *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-16" target=
+     * @see <a href="http://www.geopackage.org/spec/#r16" target=
      *      "_blank">Table Data Values - Requirement 16</a>
      *
      * @throws SQLException
      *             If an SQL query causes an error
      */
-    @Test(description = "See OGC 12-128r12: Requirement 16")
+    @Test(description = "See OGC 12-128r14: Requirement 16")
     public void srsIdReferencesSrsTable() throws SQLException
     {
         try(final Statement statement  = this.databaseConnection.createStatement();
@@ -245,13 +245,13 @@ public class DataContentsTests extends CommonFixture
      * Verify that a GeoPackage contains a features or tiles table and 
      * gpkg_contents table row describing it.
      *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-17" target=
+     * @see <a href="http://www.geopackage.org/spec/#_r17" target=
      *      "_blank">Options - Requirement 17</a>
      *
      * @throws SQLException
      *             If an SQL query causes an error
      */
-    @Test(description = "See OGC 12-128r12: Requirement 17")
+    @Test(description = "See OGC 12-128r14: Requirement 17")
     public void optValidGeoPackage() throws SQLException
     {
     	//no op: requirement removed
