@@ -132,13 +132,13 @@ public class ExtensionsTests extends CommonFixture
 				// 4
 				final Statement statement2 = this.databaseConnection.createStatement();
 
-				final ResultSet resultSet2 = statement2.executeQuery("SELECT DISTINCT ge.table_name AS ge_table, lower(sm.tbl_name) AS tbl_name FROM gpkg_extensions AS ge LEFT OUTER JOIN sqlite_master AS sm ON ge.table_name = lower(sm.tbl_name);");
+				final ResultSet resultSet2 = statement2.executeQuery("SELECT DISTINCT lower(ge.table_name) AS ge_table, lower(sm.tbl_name) AS tbl_name FROM gpkg_extensions AS ge LEFT OUTER JOIN sqlite_master AS sm ON lower(ge.table_name) = lower(sm.tbl_name);");
 				) {
 			while (resultSet2.next()) {
 				// 4a
 				final String geTable = resultSet2.getString("ge_table");
 				final String tableName = resultSet2.getString("tbl_name");
-				assertTrue(((geTable == null) && (tableName == null)) || tableName.equals(geTable), ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TABLE, "gpkg_extensions", geTable));
+				assertTrue(((geTable == null) && (tableName == null)) || ((tableName != null) && tableName.equals(geTable)), ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TABLE, "gpkg_extensions", geTable));
 			}
 		}
 	}   
