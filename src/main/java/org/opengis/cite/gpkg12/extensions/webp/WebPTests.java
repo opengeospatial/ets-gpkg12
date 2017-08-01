@@ -21,6 +21,7 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.tiles.TileTests;
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
@@ -57,6 +58,9 @@ public class WebPTests extends TileTests {
 	 */
     @BeforeClass
     public void a_ValidateExtensionPresent(ITestContext testContext) throws SQLException {
+		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
+				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "WebP Extension"));
+		
   		try (
   				final Statement statement1 = this.databaseConnection.createStatement();
   				ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions WHERE extension_name = 'gpkg_webp';");

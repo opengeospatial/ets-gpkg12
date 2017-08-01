@@ -52,7 +52,6 @@ public class MetadataTests extends CommonFixture
 	@BeforeClass
 	public void setUp() throws SQLException
 	{
-
 		this.metadataValues = new LinkedList<>();
 
 		try(final Statement statement = this.databaseConnection.createStatement())
@@ -100,6 +99,9 @@ public class MetadataTests extends CommonFixture
 			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_metadata"), 
 					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Metadata Option"));
 		} else {
+			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
+					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Metadata Extension"));
+	    	
 			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
 					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, "gpkg_extensions"));
 
@@ -255,6 +257,11 @@ public class MetadataTests extends CommonFixture
 	@Test(description = "See OGC 12-128r13: Requirement 140")
 	public void metadataExtensionTableValues() throws SQLException
 	{
+		// This requirement was not introduced until GPKG 1.2
+		if ((getGeopackageVersion() == GeoPackageVersion.V102) || (getGeopackageVersion() == GeoPackageVersion.V110)) {
+			return;
+		}
+
 		try (
 				// 1
 				final Statement statement = this.databaseConnection.createStatement();

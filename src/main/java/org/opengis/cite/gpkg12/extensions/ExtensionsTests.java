@@ -132,7 +132,7 @@ public class ExtensionsTests extends CommonFixture
 				// 4
 				final Statement statement2 = this.databaseConnection.createStatement();
 
-				final ResultSet resultSet2 = statement2.executeQuery("SELECT DISTINCT lower(ge.table_name) AS ge_table, sm.tbl_name FROM gpkg_extensions AS ge LEFT OUTER JOIN sqlite_master AS sm ON ge.table_name = sm.tbl_name;");
+				final ResultSet resultSet2 = statement2.executeQuery("SELECT DISTINCT ge.table_name AS ge_table, lower(sm.tbl_name) AS tbl_name FROM gpkg_extensions AS ge LEFT OUTER JOIN sqlite_master AS sm ON ge.table_name = lower(sm.tbl_name);");
 				) {
 			while (resultSet2.next()) {
 				// 4a

@@ -10,6 +10,7 @@ import java.util.Collection;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.features.FeaturesTests;
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
@@ -46,12 +47,15 @@ public class NonlinearTests extends FeaturesTests {
 	 */
 	@BeforeClass
 	public void validateExtensionPresent(ITestContext testContext) throws SQLException {
+		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
+				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Non-Linear Geometry Types Extension"));
+    	
 		try (
 				final Statement statement1 = this.databaseConnection.createStatement();
 				ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions WHERE extension_name LIKE 'gpkg_geom_%';");
 				) {
 			resultSet1.next();
-			Assert.assertTrue(resultSet1.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "RTree Spatial Index Extension"));
+			Assert.assertTrue(resultSet1.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Non-Linear Geometry Types Extension"));
 		}
 	}
 
