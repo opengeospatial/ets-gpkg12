@@ -42,8 +42,8 @@ public class SchemaTests extends CommonFixture
     		minIsInclusive = "minIsInclusive";
     		maxIsInclusive = "maxIsInclusive";
     	} else {
-			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
-					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, "gpkg_extensions"));
+    		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
+    				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Schema Extension"));
 			
 			try (
 					final Statement statement = this.databaseConnection.createStatement();

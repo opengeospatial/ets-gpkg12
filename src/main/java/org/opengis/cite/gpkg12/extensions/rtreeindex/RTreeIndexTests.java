@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.BeforeClass;
@@ -22,7 +23,7 @@ import org.testng.annotations.Test;
  * </p>
  * <ul>
  * <li><a href="http://www.geopackage.org/spec/#extension_rtree" target= "_blank">
- * GeoPackage Encoding Standard - Annex F.3 RTree Spatial Index</a> (OGC 12-128r13)</li>
+ * GeoPackage Encoding Standard - Annex F.3 RTree Spatial Index</a> (OGC 12-128r14)</li>
  * </ul>
  *
  * @author Jeff Yutzler
@@ -36,13 +37,16 @@ public class RTreeIndexTests extends CommonFixture {
 	 * implementation of spatial indexes on a geometry column.
 	 *
 	 * @see <a href="http://www.geopackage.org/spec/#r75" target=
-	 *      "_blank">F.8. Metadata - Requirement 75</a>
+	 *      "_blank">Requirement 75</a>
 	 *
 	 * @param testContext the ITestContext to use
 	 * @throws SQLException on any error
 	 */
 	@BeforeClass
 	public void validateExtensionPresent(ITestContext testContext) throws SQLException {
+		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
+				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "RTree Spatial Index Extension"));
+    	
 		try (
 				final Statement statement1 = this.databaseConnection.createStatement();
 				ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions WHERE extension_name = 'gpkg_rtree_index';");
@@ -65,29 +69,30 @@ public class RTreeIndexTests extends CommonFixture {
 
 	/**
 	 * A GeoPackage that implements spatial indexes SHALL have a 
-	 * gpkg_extensions table that contains a row for each spatially indexed 
-	 * column with extension_name "gpkg_rtree_index", the table_name of the 
-	 * table with a spatially indexed column, and the column_name of the 
-	 * spatially indexed column.
+	 * `gpkg_extensions` table that contains a row for each spatially 
+	 * indexed column with `extension_name` "gpkg_rtree_index", the 
+	 * `table_name` of the table with a spatially indexed column, the 
+	 * `column_name` of the spatially indexed column, and a `scope` of 
+	 * "write-only".
 	 * 
 	 * @throws SQLException on any error
 	 *
 	 * @see <a href="http://www.geopackage.org/spec/#r76" target=
-	 *      "_blank">F.8. Metadata - Requirement 76</a>
+	 *      "_blank">Requirement 76</a>
 	 *
 	 */
-	@Test(description = "See OGC 12-128r13: Requirement 76")
+	@Test(description = "See OGC 12-128r14: Requirement 76")
 	public void extensionsTableRows() throws SQLException 
 	{
 		try (
 				final Statement statement1 = this.databaseConnection.createStatement();
-				ResultSet resultSet1 = statement1.executeQuery("SELECT ge.table_name AS getn, ge.column_name AS gecn, ge.scope AS ges, ggc.column_name AS ggccn FROM gpkg_extensions ge LEFT OUTER JOIN gpkg_geometry_columns ggc ON ge.table_name = ggc.table_name WHERE extension_name = 'gpkg_rtree_index'");
+				ResultSet resultSet1 = statement1.executeQuery("SELECT table_name, column_name, scope FROM gpkg_extensions WHERE extension_name = 'gpkg_rtree_index'");
 				) {
 			while (resultSet1.next()){
-				resultSet1.getString("ggccn");
+				resultSet1.getString("column_name");
 				Assert.assertTrue(!resultSet1.wasNull(), 
-						ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_REFERENCE, resultSet1.getString("getn"), resultSet1.getString("gecn")));
-				Assert.assertTrue("write-only".equals(resultSet1.getString("ges")), 
+						ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_REFERENCE, resultSet1.getString("table_name"), resultSet1.getString("column_name")));
+				Assert.assertTrue("write-only".equals(resultSet1.getString("scope")), 
 						ErrorMessage.format(ErrorMessageKeys.ILLEGAL_EXTENSION_DATA_SCOPE, "gpkg_rtree_index", "write-only"));
 			}
 		}
@@ -107,10 +112,10 @@ public class RTreeIndexTests extends CommonFixture {
 	 * @throws SQLException on any error
 	 *
 	 * @see <a href="http://www.geopackage.org/spec/#r77" target=
-	 *      "_blank">F.8. Metadata - Requirement 77</a>
+	 *      "_blank">Requirement 77</a>
 	 *
 	 */
-	@Test(description = "See OGC 12-128r13: Requirement 77")
+	@Test(description = "See OGC 12-128r14: Requirement 77")
 	public void extensionIndexImplementation() throws SQLException 
 	{
 		try (

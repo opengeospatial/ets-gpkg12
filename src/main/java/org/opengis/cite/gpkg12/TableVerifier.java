@@ -126,6 +126,7 @@ public final class TableVerifier
                     throw new RuntimeException(String.format("Required column: %s.%s is missing", tableName, column.getKey()));  // TODO this needs to be in the error string table
                 }
 
+                // We shouldn't be picky on table defaults as long as the content is correct
                 final ColumnDefinition columnDefinition = columns.get(column.getKey());
 
                 if(columnDefinition != null)
@@ -133,7 +134,7 @@ public final class TableVerifier
                     if(!columnDefinition.equals(column.getValue()) ||
                        !checkExpressionEquivalence(connection,
                                                    columnDefinition.getDefaultValue(),
-                                                   column.getValue().getDefaultValue()))    // .equals() for ColumnDefinition skips comparing default values. It's better to check for functional equivalence rather than exact string equality. This avoids issues with difference in white space as well as other trivial annoyances
+                                                   column.getValue().getDefaultValue()))    
                     {
                         throw new RuntimeException(String.format("Required column %s is defined as:\n%s\nbut should be:\n%s",
                                                                  column.getKey(),
@@ -145,20 +146,40 @@ public final class TableVerifier
         }
     }
 
+	/** 
+	 * .equals() for ColumnDefinition skips comparing default values. 
+	 * It's better to check for functional equivalence 
+	 * rather than exact string equality. 
+	 * This avoids issues with difference in white space 
+	 * as well as other trivial annoyances.
+	 * @param connection
+	 * @param definition
+	 * @param required
+	 * @return
+	 * @throws SQLException
+	 */
     private static boolean checkExpressionEquivalence(final Connection connection,
-                                                      final String     expression1,
-                                                      final String     expression2) throws SQLException
+                                                      final String     definition,
+                                                      final String     required) throws SQLException
     {
-        if((expression1 == null) || (expression2 == null))
+        if((definition == null) || (required == null))
         {
-            return (expression1 == null) && (expression2 == null);
+            return (definition == null) && (required == null);
         }
 
+        // Sometimes people use a synonym here and functional equivalence 
+        // isn't possible because now is always changing
+        if(required.replaceAll("\\s+","").equalsIgnoreCase("strftime('%Y-%m-%dT%H:%M:%fZ','now')")){
+        	if (definition.replaceAll("\\s+","").equalsIgnoreCase("strftime('%Y-%m-%dT%H:%M:%fZ',current_timestamp)")){
+        		return true;
+        	}
+        }
+        
         try(final Statement statement = connection.createStatement())
         {
             final String query = String.format("SELECT (%s) = (%s);",
-                                               expression1,
-                                               expression2);
+                                               definition,
+                                               required);
 
             try(final ResultSet results = statement.executeQuery(query))
             {

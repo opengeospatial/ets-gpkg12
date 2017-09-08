@@ -14,3 +14,6 @@ testng/
 # IntelliJ files
 *.iml
 .idea/
+
+# MacOS
+.DS_Store

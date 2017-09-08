@@ -34,10 +34,8 @@ public class CRSWKT extends CommonFixture
     @BeforeClass
     public void activeExtension(ITestContext testContext) throws SQLException {
 		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
-				ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, "gpkg_extensions"));
-		
-		
-	
+				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "CRS WKT Extension"));
+    	
 		try (
 				final Statement statement = this.databaseConnection.createStatement();
 				final ResultSet resultSet = statement.executeQuery("SELECT count(*) from gpkg_extensions WHERE extension_name = 'gpkg_crs_wkt';");
