@@ -27,12 +27,12 @@ The following conformance classes have being defined (In bold the classes that h
     - **Contents**
 * **Features**
 * **Tiles**
-* **Attributes**
+* Attributes
 * **Registered Extensions**
     - **Non-Linear Geometry Types**
     - **RTree Spatial Indexes**
     - Zoom Other Intervals
-    - Tiles Encoding WebP
+    - **Tiles Encoding WebP**
     - **Metadata**
     - **Schema**
     - **WKT for Coordinate Reference Systems**
@@ -46,7 +46,10 @@ The documents listed below stipulate requirements that must be satisfied by a
 conforming implementation.
 
 1. [OGC GeoPackage Encoding Standard 1.2.0](http://www.geopackage.org/spec/)
-2. [SQLite Database File Format](http://sqlite.org/fileformat2.html)
+2. [OGC GeoPackage Encoding Standard 1.1.0](https://portal.opengeospatial.org/files/?artifact_id=64506)
+3. [OGC GeoPackage Encoding Standard 1.0.1](https://portal.opengeospatial.org/files/?artifact_id=63378)
+4. [OGC GeoPackage Encoding Standard 1.0.0](https://portal.opengeospatial.org/files/?artifact_id=56357)
+5. [SQLite Database File Format](http://sqlite.org/fileformat2.html)
 
 If any of the following preconditions are not satisfied then all tests in the 
 suite will be marked as skipped.
@@ -74,8 +77,44 @@ The general structure of the test suite is shown in Table 1.
       <td>org.opengis.cite.gpkg12.core.*</td>
     </tr>
     <tr>
+      <td>Features</td>
+      <td>org.opengis.cite.gpkg12.features.*</td>
+    </tr>
+    <tr>
       <td>Tiles</td>
       <td>org.opengis.cite.gpkg12.tiles.*</td>
+    </tr>
+    <tr>
+      <td>Registered Extensions</td>
+      <td>org.opengis.cite.gpkg12.extensions.*</td>
+    </tr>
+    <tr>
+      <td>Non-Linear Geometry Types</td>
+      <td>org.opengis.cite.gpkg12.extensions.nonlinear.*</td>
+    </tr>
+    <tr>
+      <td>RTree Spatial Indexes</td>
+      <td>org.opengis.cite.gpkg12.extensions.rtreeindex.*</td>
+    </tr>
+    <tr>
+      <td>Tiles Encoding WebP</td>
+      <td>org.opengis.cite.gpkg12.extensions.webp.*</td>
+    </tr>
+    <tr>
+      <td>Metadata</td>
+      <td>org.opengis.cite.gpkg12.extensions.metadata.*</td>
+    </tr>
+    <tr>
+      <td>Schema</td>
+      <td>org.opengis.cite.gpkg12.extensions.schema.*</td>
+    </tr>
+    <tr>
+      <td>WKT for Coordinate Reference Systems</td>
+      <td>org.opengis.cite.gpkg12.extensions.crswkt.*</td>
+    </tr>
+    <tr>
+      <td>Tiled Gridded Elevation Data</td>
+      <td>org.opengis.cite.gpkg12.extensions.elevation.*</td>
     </tr>
   </tbody>
 </table>
