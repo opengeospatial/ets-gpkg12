@@ -19,7 +19,7 @@
 
    <ctl:suite name="tns:ets-gpkg12-${version}">
      <ctl:title>GeoPackage 1.2 Conformance Test Suite</ctl:title>
-     <ctl:description>Verifies the structure and content of a GeoPackage 1.0 data container.</ctl:description>
+     <ctl:description>Verifies the structure and content of a GeoPackage 1.2 data container.</ctl:description>
      <ctl:starting-test>tns:Main</ctl:starting-test>
    </ctl:suite>
  
@@ -28,18 +28,16 @@
 	  <ctl:code>
         <xsl:variable name="form-data">
            <ctl:form method="POST" width="800" height="600" xmlns="http://www.w3.org/1999/xhtml">
-             <h2>GeoPackage 1.0 Conformance Test Suite</h2>
+             <h2>GeoPackage 1.2 Conformance Test Suite</h2>
              <div style="background:#F0F8FF" bgcolor="#F0F8FF">
+               <p>The test suite is backwards compatible and also considers GeoPackage versions 1.0.0, 1.0.1 and 1.1.0.</p>
                <p>A GeoPackage file is checked against the following specifications:</p>
                <ul>
                  <li><a href="http://www.geopackage.org/spec/">OGC GeoPackage Encoding Standard 1.2.0</a></li>
+                 <li><a href="https://portal.opengeospatial.org/files/?artifact_id=64506">OGC GeoPackage Encoding Standard 1.1.0</a></li>
+                 <li><a href="https://portal.opengeospatial.org/files/?artifact_id=63378">OGC GeoPackage Encoding Standard 1.0.1</a></li>
+                 <li><a href="https://portal.opengeospatial.org/files/?artifact_id=56357">OGC GeoPackage Encoding Standard 1.0.0</a></li>
                  <li><a href="http://sqlite.org/fileformat2.html">SQLite Database File Format</a></li>
-               </ul>
-               <p>Three conformance classes are covered:</p>
-               <ul>
-                 <li>Core</li>
-                 <li>Features</li>
-                 <li>Tiles</li>
                </ul>
              </div>
              <fieldset style="background:#ccffff">
@@ -50,22 +48,13 @@
                  <label for="uri">
                    <h4 style="margin-bottom: 0.5em">Location of GeoPackage (absolute http: or file: URI)</h4>
                  </label>
-                 <input id="uri" name="uri" size="128" type="text" value="http://www.geopackage.org/data/simple_sewer_features.gpkg" />
+                 <input id="uri" name="uri" size="128" type="text" />
                </p>
                <p>
                  <label for="doc">
                    <h4 style="margin-bottom: 0.5em">Upload GeoPackage</h4>
                  </label>
                  <input name="doc" id="doc" size="128" type="file" />
-               </p>
-               <p>
-                 <label for="level">Conformance class: </label>
-                 <input id="core" type="checkbox" name="level" value="1" checked="checked" onclick="return this.checked;" />
-                 <label for="core"> Core | </label>
-                 <input id="tiles" type="checkbox" name="level" value="2" />
-                 <label class="form-label" for="tiles"> Tiles | </label>
-                 <input id="metadata" type="checkbox" name="level" value="3" />
-                 <label class="form-label" for="metadata"> Metadata </label>
                </p>
              </fieldset>
              <p>
