@@ -30,7 +30,7 @@
            <ctl:form method="POST" width="800" height="600" xmlns="http://www.w3.org/1999/xhtml">
              <h2>GeoPackage 1.2 Conformance Test Suite</h2>
              <div style="background:#F0F8FF" bgcolor="#F0F8FF">
-               <p>The test suite is backwards compatible and also considers GeoPackage versions 1.0.0, 1.0.1 and 1.1.0.</p>
+               <p>The test suite is backwards compatible and also considers GeoPackage versions 1.1.0, 1.0.1 and 1.0.0.</p>
                <p>A GeoPackage file is checked against the following specifications:</p>
                <ul>
                  <li><a href="http://www.geopackage.org/spec/">OGC GeoPackage Encoding Standard 1.2.0</a></li>
