@@ -3,7 +3,7 @@ package org.opengis.cite.gpkg12;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Provides various constants pertaining to GeoPackage 1.0 data containers.
+ * Provides various constants pertaining to GeoPackage 1.2 data containers.
  */
 public class GPKG12 {
 
