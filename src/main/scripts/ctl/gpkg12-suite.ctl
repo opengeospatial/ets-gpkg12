@@ -76,7 +76,7 @@
               </xsl:otherwise>
             </xsl:choose>
           </entry>
-          <entry key="ics"><xsl:value-of select="$form-data/values/value[@key='level']"/></entry>
+          <entry key="ics">Core,Tiles,Features,Extensions,Non-linear Geometries,RTree Index,Webp,Metadata,Schema,CRS WKT,Tiled Gridded Elevation Data</entry>
 		    </properties>
 		   </xsl:variable>
        <xsl:variable name="testRunDir">
