@@ -29,7 +29,7 @@ import org.testng.annotations.Test;
  * </p>
  * <ul>
  * <li><a href="http://www.geopackage.org/spec/#features" target= "_blank">
- * GeoPackage Encoding Standard - 2.1. Tiles</a> (OGC 12-128r13)</li>
+ * GeoPackage Encoding Standard - 2.1 Features</a> (OGC 12-128r13)</li>
  * </ul>
  *
  * @author Jeff Yutzler
