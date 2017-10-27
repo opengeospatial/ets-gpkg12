@@ -10,8 +10,8 @@
         <namespace-uri>http://www.opengis.net/cite/gpkg12</namespace-uri>
         <prefix>tns</prefix>
         <local-name>ets-gpkg12-${version}</local-name>
-        <title>GeoPackage 1.0 Conformance Test Suite</title>
-        <description>Verifies the structure and content of a GeoPackage 1.0 data container.</description>
+        <title>GeoPackage 1.2 Conformance Test Suite</title>
+        <description>Verifies the structure and content of a GeoPackage 1.2 data container.</description>
       </suite>
       <revision>
         <name>${version}</name>

@@ -1,5 +1,5 @@
 /**
- * This package contains tests covering the <strong>features</strong> conformance
+ * This package contains tests covering the <strong>WKT for Coordinate Reference Systems</strong> conformance
  * class. A GeoPackage must contain entries for feature data if it does not contain
  * any feature data. A GeoPackage can store multiple feature
  * data sets in different tables or views in the same container.
