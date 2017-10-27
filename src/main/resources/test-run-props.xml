@@ -3,5 +3,5 @@
 <properties version="1.0">
     <comment>Test run arguments</comment>
     <entry key="iut">http://www.geopackage.org/data/simple_sewer_features.gpkg</entry>
-  <entry key="ics">Core,Tiles,Features,Extensions,Non-linear Geometries,RTree Index,Webp,Metadata,Schema,CRS WKT,Tiled Gridded Elevation Data</entry>
+  <entry key="ics">Core,Tiles,Features,Attributes,Extensions,Non-linear Geometries,RTree Index,Webp,Metadata,Schema,CRS WKT,Tiled Gridded Elevation Data</entry>
 </properties>
