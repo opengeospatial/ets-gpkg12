@@ -28,6 +28,11 @@
       <package name="org.opengis.cite.gpkg12.tiles" />
     </packages>
   </test>
+  <test name="Attributes">
+    <packages>
+      <package name="org.opengis.cite.gpkg12.attributes" />
+    </packages>
+  </test>
   <test name="Extensions">
     <packages>
       <package name="org.opengis.cite.gpkg12.extensions" />

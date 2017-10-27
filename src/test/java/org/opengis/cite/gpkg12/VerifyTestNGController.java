@@ -53,7 +53,6 @@ public class VerifyTestNGController {
     @Test
     public void cleanTestRun() throws Exception {
     	
-//        runTests(ClassLoader.getSystemResource("gpkg/ek7demo-osm_tiles-20170526.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/gpkg-test-5208.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_spi_nonlinear_webp_elevation.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_spatial_index_extension.gpkg"), 0);
@@ -63,9 +62,9 @@ public class VerifyTestNGController {
         runTests(ClassLoader.getSystemResource("gpkg/states10.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/bluemarble.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample.gpkg"), 0);
-//        runTests(ClassLoader.getSystemResource("gpkg/ERDC_Whitehorse_GeoPackage.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/elevation.gpkg"), 0); // These two are the id notnull thing
         runTests(ClassLoader.getSystemResource("gpkg/coastline-polyline-hydro-115mil-and-smaller.gpkg"), 0);
+        runTests(ClassLoader.getSystemResource("gpkg/v12_bad_attributes.gpkg"), 1); // R119
         runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 1); // R77
         runTests(ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg"), 1); // This is an invalid 1.0 or 1.1 GPKG - it has an invalid metadata table (md_standard_URI instead of md_standard_uri) 
         runTests(ClassLoader.getSystemResource("gpkg/sample1_1.gpkg"), 1); // R77
@@ -74,7 +73,6 @@ public class VerifyTestNGController {
         runTests(ClassLoader.getSystemResource("gpkg/geonames_belgium.gpkg"), 3); // lower case data types, R77
         runTests(ClassLoader.getSystemResource("gpkg/haiti-vectors-split.gpkg"), 3); // lower case data types, R77
         runTests(ClassLoader.getSystemResource("gpkg/bentiu_southsudan-osm-20170213.gpkg"), 2); //R5, R29
-//        runTests(ClassLoader.getSystemResource("gpkg/ek7demo.gpkg"), 7);
     }
     private void runTests(URL testSubject, int fails) throws Exception {
         this.testRunProps.setProperty(TestRunArg.IUT.toString(), testSubject.toURI().toString());
