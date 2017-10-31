@@ -12,6 +12,21 @@
         <local-name>ets-gpkg12-${version}</local-name>
         <title>GeoPackage 1.2 Conformance Test Suite</title>
         <description>Verifies the structure and content of a GeoPackage 1.2 data container.</description>
+        <BasicConformanceClasses>
+          <conformanceClass>Core</conformanceClass>
+          <conformanceClass>Tiles</conformanceClass>
+          <conformanceClass>Features</conformanceClass>
+          <conformanceClass>Attributes</conformanceClass>
+          <conformanceClass>Extensions</conformanceClass>
+          <conformanceClass>Non-linear Geometries</conformanceClass>
+          <conformanceClass>RTree Index</conformanceClass>
+          <conformanceClass>Webp</conformanceClass>
+          <conformanceClass>Metadata</conformanceClass>
+          <conformanceClass>Schema</conformanceClass>
+          <conformanceClass>CRS WKT</conformanceClass>
+          <conformanceClass>Tiled Gridded Elevation Data</conformanceClass>
+        </BasicConformanceClasses>
+  <entry key="ics">Core,Tiles,Features,Attributes,Extensions,Non-linear Geometries,RTree Index,Webp,Metadata,Schema,CRS WKT,Tiled Gridded Elevation Data</entry>
       </suite>
       <revision>
         <name>${version}</name>
