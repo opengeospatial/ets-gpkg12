@@ -26,7 +26,6 @@
           <conformanceClass>CRS WKT</conformanceClass>
           <conformanceClass>Tiled Gridded Elevation Data</conformanceClass>
         </BasicConformanceClasses>
-  <entry key="ics">Core,Tiles,Features,Attributes,Extensions,Non-linear Geometries,RTree Index,Webp,Metadata,Schema,CRS WKT,Tiled Gridded Elevation Data</entry>
       </suite>
       <revision>
         <name>${version}</name>
