@@ -1,5 +1,8 @@
 # Release Notes GeoPackage (gpkg) 1.2
 
+## 0.3 (2017-11-17)
+* Fix [#26](https://github.com/opengeospatial/ets-gpkg12/issues/26): Encoding Conformance Classes
+
 ## 0.2 (2017-10-30)
 * Fix [#25](https://github.com/opengeospatial/ets-gpkg12/pull/25): Attributes
 * Fix [#22](https://github.com/opengeospatial/ets-gpkg12/pull/22): Implement attribute tests, and tests for those tests.
