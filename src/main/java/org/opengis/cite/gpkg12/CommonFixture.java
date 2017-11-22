@@ -45,6 +45,7 @@ public class CommonFixture {
 	}
 	
 	private GeoPackageVersion[] allowedVersions = {GeoPackageVersion.V102, GeoPackageVersion.V110, GeoPackageVersion.V120};
+	private final String ICS = "Core,Tiles,Features,Extensions,Non-linear Geometries,RTree Index,Webp,Metadata,Schema,CRS WKT,Tiled Gridded Elevation Data";
 	
 	protected GeoPackageVersion[] getAllowedVersions() {
 		return allowedVersions;
@@ -111,9 +112,12 @@ public class CommonFixture {
     @BeforeTest
     public void validateClassEnabled(ITestContext testContext) throws IOException {
       Map<String, String> params = testContext.getSuite().getXmlSuite().getParameters();
-      final String pstr = params.get(TestRunArg.ICS.toString());
+      String pstr = params.get(TestRunArg.ICS.toString());
       final String testName = testContext.getName();
       setTestName(testName);
+      if(pstr == null || pstr.isEmpty()){
+    	  pstr = this.ICS;
+      }
       HashSet<String> set = new HashSet<String>(Arrays.asList(pstr.split(",")));
       Assert.assertTrue(set.contains(testName), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, testName));
     }
