@@ -323,9 +323,9 @@ public class SchemaTests extends CommonFixture
     			try (
     					final Statement statement2 = this.databaseConnection.createStatement();
 
-    					final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_data_column_constraints WHERE constraint_name = %s", constraintName));
+    					final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_data_column_constraints WHERE constraint_name = '%s'", constraintName));
     					) {
-    				Assert.assertTrue(resultSet2.getInt("1") <= 1, 
+    				Assert.assertTrue(resultSet2.getInt(1) <= 1, 
     						ErrorMessage.format(ErrorMessageKeys.NON_UNIQUE_VALUE, "constraint_name", "gpkg_data_column_constraints", constraintName));
     			}
     		}
