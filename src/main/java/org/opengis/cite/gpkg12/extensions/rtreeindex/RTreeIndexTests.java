@@ -147,7 +147,7 @@ public class RTreeIndexTests extends CommonFixture {
 						final Statement statement3d = this.databaseConnection.createStatement();
 						ResultSet resultSet3d = statement3d.executeQuery(String.format("SELECT sql FROM sqlite_master WHERE type='trigger' AND name = 'rtree_%s_%s_delete'", tableName, columnName));
 						) {
-					String trigger3d = "CREATE\\sTRIGGER\\s\"?rtree_<t>_<c>_delete\"?\\sAFTER\\sDELETE\\sON\\s\"?<t>\"?\\s?WHEN\\sOLD.\"?<c>\"?\\sNOT\\sNULL\\sBEGIN\\sDELETE\\sFROM\\s\"?rtree_<t>_<c>\"?\\sWHERE\\s\\w*\\s?=\\s?OLD.\"?\\w*\"?;\\s?END";
+					String trigger3d = "CREATE\\sTRIGGER\\s\"?rtree_<t>_<c>_delete\"?\\sAFTER\\sDELETE\\sON\\s\"?<t>\"?\\s*WHEN\\sOLD.\"?<c>\"?\\sNOT\\sNULL\\s*BEGIN\\s*DELETE\\sFROM\\s\"?rtree_<t>_<c>\"?\\sWHERE\\s\\w*\\s?=\\s?OLD.\"?\\w*\"?;\\s*END";
 					trigger3d = trigger3d.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					final String sql3d = resultSet3d.getString("sql");
 					if(!Pattern.compile(trigger3d, Pattern.CASE_INSENSITIVE).matcher(sql3d).matches()){
@@ -165,7 +165,7 @@ public class RTreeIndexTests extends CommonFixture {
 					// Update 1
 					resultSet3c.next();
 					final String sql3c1 = resultSet3c.getString("sql");
-					String trigger1 = "CREATE\\sTRIGGER\\s\"?rtree_<t>_<c>_update1\"?\\sAFTER\\sUPDATE\\sOF\\s\"?<c>\"?\\sON\\s\"?<t>\"?\\sWHEN\\sOLD.\"?\\w*\"?\\s?=\\s?NEW.\"?\\w*\"?\\sAND\\s\\(NEW.\"?<c>\"?\\sNOT\\s?NULL\\sAND\\sNOT\\sST_IsEmpty\\s?\\(NEW.\"?<c>\"?\\)\\)\\sBEGIN\\sINSERT\\sOR\\sREPLACE\\sINTO\\s\"?rtree_<t>_<c>\"?\\sVALUES\\s?\\(\\s?NEW.\"?\\w*\"?,\\s?ST_MinX\\(NEW.\"?<c>\"?\\),\\s?ST_MaxX\\(NEW.\"?<c>\"?\\),\\s?ST_MinY\\(NEW.\"?<c>\"?\\),\\s?ST_MaxY\\(NEW.\"?<c>\"?\\)\\);\\s?END;?";
+					String trigger1 = "CREATE\\sTRIGGER\\s\"?rtree_<t>_<c>_update1\"?\\sAFTER\\sUPDATE\\sOF\\s\"?<c>\"?\\sON\\s\"?<t>\"?\\s*WHEN\\sOLD.\"?\\w*\"?\\s?=\\s?NEW.\"?\\w*\"?\\sAND\\s*\\(NEW.\"?<c>\"?\\sNOT\\s?NULL\\sAND\\sNOT\\sST_IsEmpty\\s?\\(NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s*INSERT\\sOR\\sREPLACE\\sINTO\\s\"?rtree_<t>_<c>\"?\\sVALUES\\s?\\(\\s*NEW.\"?\\w*\"?,\\s*ST_MinX\\(NEW.\"?<c>\"?\\),\\s?ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(NEW.\"?<c>\"?\\),\\s?ST_MaxY\\(NEW.\"?<c>\"?\\)\\s*\\);\\s*END;?";
 					trigger1 = trigger1.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					if(!Pattern.compile(trigger1, Pattern.CASE_INSENSITIVE).matcher(sql3c1).matches()){
 						Assert.assertTrue(false, 
@@ -175,7 +175,7 @@ public class RTreeIndexTests extends CommonFixture {
 					// Update 2
 					resultSet3c.next();
 					final String sql3c2 = resultSet3c.getString("sql");
-					String trigger2 = "CREATE\\sTRIGGER\\s\"?rtree_<t>_<c>_update2\"?\\sAFTER\\sUPDATE\\sOF\\s\"?<c>\"?\\sON\\s\"?<t>\"?\\sWHEN\\sOLD.\"?\\w*\"?\\s?=\\s?NEW.\"?\\w*\"?\\sAND\\s\\(\\s?NEW.\"?<c>\"?\\sIS\\s?NULL\\sOR\\sST_IsEmpty\\s?\\(\\s?NEW.\"?<c>\"?\\)\\)\\sBEGIN\\sDELETE\\sFROM\\s\"?rtree_<t>_<c>\"?\\sWHERE\\s\\w*\\s?=\\s?OLD.\"?\\w*\"?;\\s?END";
+					String trigger2 = "CREATE\\sTRIGGER\\s\"?rtree_<t>_<c>_update2\"?\\sAFTER\\sUPDATE\\sOF\\s\"?<c>\"?\\sON\\s\"?<t>\"?\\s*WHEN\\sOLD.\"?\\w*\"?\\s?=\\s?NEW.\"?\\w*\"?\\sAND\\s*\\(\\s?NEW.\"?<c>\"?\\sIS\\s?NULL\\sOR\\sST_IsEmpty\\s?\\(\\s?NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s*DELETE\\sFROM\\s\"?rtree_<t>_<c>\"?\\sWHERE\\s\\w*\\s?=\\s?OLD.\"?\\w*\"?;\\s*END";
 					trigger2 = trigger2.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					if(!Pattern.compile(trigger2, Pattern.CASE_INSENSITIVE).matcher(sql3c2).matches()){
 						Assert.assertTrue(false, 
@@ -185,7 +185,7 @@ public class RTreeIndexTests extends CommonFixture {
 					// Update 3
 					resultSet3c.next();
 					final String sql3c3 = resultSet3c.getString("sql");
-					String trigger3 = "CREATE\\sTRIGGER\\s\"?rtree_<t>_<c>_update3\"?\\sAFTER\\sUPDATE\\sOF\\s\"?<c>\"?\\sON\\s\"?<t>\"?\\sWHEN\\sOLD.\"?\\w*\"?\\s?!=\\s?NEW.\"?\\w*\"?\\sAND\\s\\(\\s?NEW.\"?<c>\"?\\sNOT\\s?NULL\\sAND\\sNOT\\sST_IsEmpty\\s?\\(\\s?NEW.\"?<c>\"?\\)\\)\\sBEGIN\\sDELETE\\sFROM\\s\"?rtree_<t>_<c>\"?\\sWHERE\\s\\w*\\s?=\\s?OLD.\"?\\w*\"?;\\sINSERT\\sOR\\sREPLACE\\sINTO\\s\"?rtree_<t>_<c>\"?\\sVALUES\\s?\\(\\s?NEW.\"?\\w*\"?,\\s?ST_MinX\\(\\s?NEW.\"?<c>\"?\\),\\s?ST_MaxX\\(NEW.\"?<c>\"?\\),\\s?ST_MinY\\(\\s?NEW.\"?<c>\"?\\),\\s?ST_MaxY\\(\\s?NEW.\"?<c>\"?\\)\\);\\s?END";
+					String trigger3 = "CREATE\\sTRIGGER\\s\"?rtree_<t>_<c>_update3\"?\\sAFTER\\sUPDATE\\sOF\\s\"?<c>\"?\\sON\\s\"?<t>\"?\\s*WHEN\\sOLD.\"?\\w*\"?\\s?!=\\s?NEW.\"?\\w*\"?\\sAND\\s*\\(\\s?NEW.\"?<c>\"?\\sNOT\\s?NULL\\sAND\\sNOT\\sST_IsEmpty\\s?\\(\\s?NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s*DELETE\\sFROM\\s\"?rtree_<t>_<c>\"?\\sWHERE\\s\\w*\\s?=\\s?OLD.\"?\\w*\"?;\\s*INSERT\\sOR\\sREPLACE\\sINTO\\s\"?rtree_<t>_<c>\"?\\sVALUES\\s?\\(\\s*NEW.\"?\\w*\"?,\\s*ST_MinX\\(\\s?NEW.\"?<c>\"?\\),\\s?ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(\\s?NEW.\"?<c>\"?\\),\\s?ST_MaxY\\(\\s?NEW.\"?<c>\"?\\)\\s*\\);\\s*END";
 					trigger3 = trigger3.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					if(!Pattern.compile(trigger3, Pattern.CASE_INSENSITIVE).matcher(sql3c3).matches()){
 						Assert.assertTrue(false, 
@@ -195,7 +195,7 @@ public class RTreeIndexTests extends CommonFixture {
 					// Update 4
 					resultSet3c.next();
 					final String sql3c4 = resultSet3c.getString("sql");
-					String trigger4 = "CREATE\\sTRIGGER\\s\"?rtree_<t>_<c>_update4\"?\\sAFTER\\sUPDATE\\sON\\s\"?<t>\"?\\sWHEN\\sOLD.\"?\\w*\"?\\s?!=\\s?NEW.\"?\\w*\"?\\sAND\\s\\(\\s?NEW.\"?<c>\"?\\sIS\\s?NULL\\sOR\\sST_IsEmpty\\s?\\(\\s?NEW.\"?<c>\"?\\)\\)\\sBEGIN\\sDELETE\\sFROM\\s\"?rtree_<t>_<c>\"?\\sWHERE\\s\\w*\\sIN\\s?\\(\\s?OLD.\"?\\w*\"?\\s?,\\s?NEW.\"?\\w*\"?\\);\\s?END";
+					String trigger4 = "CREATE\\sTRIGGER\\s\"?rtree_<t>_<c>_update4\"?\\sAFTER\\sUPDATE\\sON\\s\"?<t>\"?\\s*WHEN\\sOLD.\"?\\w*\"?\\s?!=\\s?NEW.\"?\\w*\"?\\sAND\\s*\\(\\s?NEW.\"?<c>\"?\\sIS\\s?NULL\\sOR\\sST_IsEmpty\\s?\\(\\s?NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s*DELETE\\sFROM\\s\"?rtree_<t>_<c>\"?\\sWHERE\\s\\w*\\sIN\\s?\\(\\s?OLD.\"?\\w*\"?\\s?,\\s?NEW.\"?\\w*\"?\\);\\s*END";
 					trigger4 = trigger4.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					if(!Pattern.compile(trigger4, Pattern.CASE_INSENSITIVE).matcher(sql3c4).matches()){
 						Assert.assertTrue(false, 
@@ -208,7 +208,7 @@ public class RTreeIndexTests extends CommonFixture {
 						final Statement statement3b = this.databaseConnection.createStatement();
 						ResultSet resultSet3b = statement3b.executeQuery(String.format("SELECT sql FROM sqlite_master WHERE type='trigger' AND name = 'rtree_%s_%s_insert'", tableName, columnName));
 						) {
-					String trigger3b = "CREATE\\sTRIGGER\\s\"?rtree_<t>_<c>_insert\"?\\sAFTER\\sINSERT\\sON\\s\"?<t>\"?\\sWHEN\\s?\\(new.\"?<c>\"?\\sNOT\\s?NULL\\sAND\\sNOT\\sST_IsEmpty\\(NEW.\"?<c>\"?\\)\\)\\sBEGIN\\sINSERT\\sOR\\sREPLACE\\sINTO\\s\"?rtree_<t>_<c>\"?\\sVALUES\\s\\(NEW.\"?\\w+\"?,\\s?ST_MinX\\(NEW.\"?<c>\"?\\),\\s?ST_MaxX\\(NEW.\"?<c>\"?\\),\\s?ST_MinY\\(NEW.\"?<c>\"?\\),\\s?ST_MaxY\\(NEW.\"?<c>\"?\\)\\);\\s?END;?";
+					String trigger3b = "CREATE\\sTRIGGER\\s\"?rtree_<t>_<c>_insert\"?\\sAFTER\\sINSERT\\sON\\s\"?<t>\"?\\s*WHEN\\s?\\(new.\"?<c>\"?\\sNOT\\s?NULL\\sAND\\sNOT\\sST_IsEmpty\\(NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s*INSERT\\sOR\\sREPLACE\\sINTO\\s\"?rtree_<t>_<c>\"?\\sVALUES\\s\\(\\s*NEW.\"?\\w+\"?,\\s*ST_MinX\\(NEW.\"?<c>\"?\\),\\s?ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(NEW.\"?<c>\"?\\),\\s?ST_MaxY\\(NEW.\"?<c>\"?\\)\\s*\\);\\s*END;?";
 					trigger3b = trigger3b.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					final String sql3b = resultSet3b.getString("sql");
 					if(!Pattern.compile(trigger3b, Pattern.CASE_INSENSITIVE).matcher(sql3b).matches()){
