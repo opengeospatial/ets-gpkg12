@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:nas="http://metadata.ces.mil/dse/ns/GSIP/5.0/nas" xmlns:ism="urn:us:gov:ic:ism" xmlns:ntk="urn:us:gov:ic:ntk" targetNamespace="http://metadata.ces.mil/dse/ns/GSIP/5.0/nas" elementFormDefault="qualified" attributeFormDefault="qualified" version="2.1.0">
+	<!-- select IC-ISM version (and thus NTK version) in current use -->
+	<!--
+        IC-ISM V4
+            ISM V4 doesn't include the Notice element that appears in ISM V7
+                therefore this element may not be used with the NMIS with this version of IC-ISM
+    -->
+	<!-- 
+    <xs:import namespace="urn:us:gov:ic:ism" schemaLocation="http://metadata.ces.mil/dse/ns/GSIP/schema/ic/ism/4.0.0/IC-ISM.xsd"/>
+    <xs:import namespace="urn:us:gov:ic:ism" schemaLocation="../ic/ism/4.0.0/IC-ISM.xsd"/>
+    <xs:attributeGroup name="NMISRootNodeAttributeGroup">
+        <xs:attributeGroup ref="ism:ISMRootNodeAttributeGroup"/>
+        <xs:attributeGroup ref="ism:ResourceNodeAttributeGroup"/>
+    </xs:attributeGroup>
+    -->
+	<!--
+        IC-ISM V5
+            ISM V5 doesn't include the Notice element that appears in ISM V7
+                therefore this element may not be used with the NMIS with this version of IC-ISM
+    -->
+	<!--
+    <xs:import namespace="urn:us:gov:ic:ism" schemaLocation="http://metadata.ces.mil/dse/ns/GSIP/schema/ic/ism/5.0.0/IC-ISM.xsd"/>
+    <xs:import namespace="urn:us:gov:ic:ism" schemaLocation="../ic/ism/5.0.0/IC-ISM.xsd"/>
+    <xs:attributeGroup name="NMISRootNodeAttributeGroup">
+        <xs:attributeGroup ref="ism:ISMRootNodeAttributeGroup"/>
+        <xs:attributeGroup ref="ism:ResourceNodeAttributeGroup"/>
+    </xs:attributeGroup>
+    -->
+	<!--
+        IC-ISM V6 and NTK V4
+            ISM V6 doesn't include the Notice element that appears in ISM V7
+                therefore this element may not be used with the NMIS with this version of IC-ISM
+    -->
+	<!--
+    <xs:import namespace="urn:us:gov:ic:ism" schemaLocation="http://metadata.ces.mil/dse/ns/GSIP/schema/ic/ism/6.0.0/IC-ISM.xsd"/>
+    <xs:import namespace="urn:us:gov:ic:ntk" schemaLocation="http://metadata.ces.mil/dse/ns/GSIP/schema/ic/ntk/4.0.0/IC-NTK.xsd"/>
+    <xs:import namespace="urn:us:gov:ic:ism" schemaLocation="../ic/ism/6.0.0/IC-ISM.xsd"/>
+    <xs:import namespace="urn:us:gov:ic:ntk" schemaLocation="../ic/ntk/4.0.0/IC-NTK.xsd"/>
+    <xs:attributeGroup name="NMISRootNodeAttributeGroup">
+        <xs:attributeGroup ref="ism:ISMRootNodeAttributeGroup"/>
+        <xs:attributeGroup ref="ism:ResourceNodeAttributeGroup"/>
+        <xs:attributeGroup ref="ntk:NTKRootNodeAttributeGroup"/>
+    </xs:attributeGroup>
+    <xs:element name="needToKnow">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ntk:Access"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+  -->
+	<!--
+        IC-ISM V7 and NTK V5
+    -->
+	<!--
+    <xs:import namespace="urn:us:gov:ic:ism" schemaLocation="http://metadata.ces.mil/dse/ns/GSIP/schema/ic/ism/7.0.0/IC-ISM.xsd"/>
+    <xs:import namespace="urn:us:gov:ic:ntk" schemaLocation="http://metadata.ces.mil/dse/ns/GSIP/schema/ic/ntk/5.0.0/IC-NTK.xsd"/>
+	<xs:import namespace="urn:us:gov:ic:ism" schemaLocation="../ic/ism/7.0.0/IC-ISM.xsd"/>
+	<xs:import namespace="urn:us:gov:ic:ntk" schemaLocation="../ic/ntk/5.0.0/IC-NTK.xsd"/>
+	<xs:attributeGroup name="NMISRootNodeAttributeGroup">
+		<xs:attributeGroup ref="ism:ISMRootNodeAttributeGroup"/>
+		<xs:attributeGroup ref="ism:ResourceNodeAttributeGroup"/>
+		<xs:attributeGroup ref="ntk:NTKRootNodeAttributeGroup"/>
+	</xs:attributeGroup>
+	<xs:element name="needToKnow">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="ntk:Access"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="notices">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="ism:Notice" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+    -->
+	<!--
+        IC-ISM V8  and NTK V6
+    -->
+	<!--
+    <xs:import namespace="urn:us:gov:ic:ism" schemaLocation="http://metadata.ces.mil/dse/ns/GSIP/schema/ic/ism/8.0.0/IC-ISM.xsd"/>   
+    <xs:import namespace="urn:us:gov:ic:ntk" schemaLocation="http://metadata.ces.mil/dse/ns/GSIP/schema/ic/ntk/6.0.0/IC-NTK.xsd"/>
+   <xs:import namespace="urn:us:gov:ic:ism" schemaLocation="../ic/ism/8.0.0/IC-ISM.xsd"/>
+   <xs:import namespace="urn:us:gov:ic:ntk" schemaLocation="../ic/ntk/6.0.0/IC-NTK.xsd"/>
+    <xs:attributeGroup name="NMISRootNodeAttributeGroup">
+        <xs:attributeGroup ref="ism:ISMRootNodeAttributeGroup"/>
+        <xs:attributeGroup ref="ism:ResourceNodeAttributeGroup"/>
+        <xs:attributeGroup ref="ntk:NTKRootNodeAttributeGroup"/>
+    </xs:attributeGroup>
+    <xs:element name="needToKnow">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ntk:Access"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="notices">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ism:Notice" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    -->
+	<!--
+        IC-ISM V9  and NTK V7
+    -->
+	<!--
+    <xs:import namespace="urn:us:gov:ic:ism" schemaLocation="http://metadata.ces.mil/dse/ns/GSIP/schema/ic/ism/9.0.0/IC-ISM.xsd" (TBR)/>   
+    <xs:import namespace="urn:us:gov:ic:ntk" schemaLocation="http://metadata.ces.mil/dse/ns/GSIP/schema/ic/ntk/7.0.0/IC-NTK.xsd" (TBR)/>    -->
+   <xs:import namespace="urn:us:gov:ic:ism" schemaLocation="../ic/ism/9.0.0/IC-ISM.xsd"/>
+   <xs:import namespace="urn:us:gov:ic:ntk" schemaLocation="../ic/ntk/7.0.0/IC-NTK.xsd"/>
+    <xs:attributeGroup name="NMISRootNodeAttributeGroup">
+        <xs:attributeGroup ref="ism:ISMRootNodeAttributeGroup"/>
+        <xs:attributeGroup ref="ism:ResourceNodeAttributeGroup"/>
+        <xs:attributeGroup ref="ntk:NTKRootNodeAttributeGroup"/>
+    </xs:attributeGroup>
+    <xs:element name="needToKnow">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ntk:Access"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="notices">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="ism:Notice" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+	<!-- end select -->
+	<xs:attributeGroup name="SecurityAttributesOptionGroup">
+		<xs:attributeGroup ref="ism:SecurityAttributesOptionGroup"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="SecurityAttributesGroup">
+		<xs:attributeGroup ref="ism:SecurityAttributesGroup"/>
+	</xs:attributeGroup>
+</xs:schema>

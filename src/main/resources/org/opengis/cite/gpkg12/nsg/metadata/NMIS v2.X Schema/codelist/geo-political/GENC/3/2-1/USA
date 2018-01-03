@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genc:GeopoliticalEntityEntry 
+    xmlns:genc="http://api.nsgreg.nga.mil/schema/genc/2.0" 
+    xmlns:genc-cmn="http://api.nsgreg.nga.mil/schema/genc/2.0/genc-cmn" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://api.nsgreg.nga.mil/schema/genc/2.0 http://api.nsgreg.nga.mil/schema/genc/2.0.0/genc.xsd">
+    <genc:encoding>
+        <genc:char3Code>USA</genc:char3Code>
+        <genc:char3CodeURISet>
+            <genc-cmn:codespaceURL>http://api.nsgreg.nga.mil/geo-political/GENC/3/2-1</genc-cmn:codespaceURL>
+            <genc-cmn:codespaceURN>urn:us:gov:dod:nga:def:geo-political:GENC:3:2-1</genc-cmn:codespaceURN>
+            <genc-cmn:codespaceURNBased>geo-political:GENC:3:2-1</genc-cmn:codespaceURNBased>
+            <genc-cmn:codespaceURNBasedShort>ge:GENC:3:2-1</genc-cmn:codespaceURNBasedShort>
+        </genc:char3CodeURISet>
+        <genc:char2Code>US</genc:char2Code>
+        <genc:char2CodeURISet>
+            <genc-cmn:codespaceURL>http://api.nsgreg.nga.mil/geo-political/GENC/2/2-1</genc-cmn:codespaceURL>
+            <genc-cmn:codespaceURN>urn:us:gov:dod:nga:def:geo-political:GENC:2:2-1</genc-cmn:codespaceURN>
+            <genc-cmn:codespaceURNBased>geo-political:GENC:2:2-1</genc-cmn:codespaceURNBased>
+            <genc-cmn:codespaceURNBasedShort>ge:GENC:2:2-1</genc-cmn:codespaceURNBasedShort>
+        </genc:char2CodeURISet>
+        <genc:numericCode>840</genc:numericCode>
+        <genc:numericCodeURISet>
+            <genc-cmn:codespaceURL>http://api.nsgreg.nga.mil/geo-political/GENC/n/2-1</genc-cmn:codespaceURL>
+            <genc-cmn:codespaceURN>urn:us:gov:dod:nga:def:geo-political:GENC:n:2-1</genc-cmn:codespaceURN>
+            <genc-cmn:codespaceURNBased>geo-political:GENC:n:2-1</genc-cmn:codespaceURNBased>
+            <genc-cmn:codespaceURNBasedShort>ge:GENC:n:2-1</genc-cmn:codespaceURNBasedShort>
+        </genc:numericCodeURISet>
+    </genc:encoding>
+    <genc:char3CodeStatus>officiallyAssigned</genc:char3CodeStatus>
+    <genc:char2CodeStatus>officiallyAssigned</genc:char2CodeStatus>
+    <genc:numericCodeStatus>officiallyAssigned</genc:numericCodeStatus>
+    <genc:name><![CDATA[UNITED STATES]]></genc:name>
+    <genc:shortName><![CDATA[United States]]></genc:shortName>
+    <genc:fullName><![CDATA[United States of America]]></genc:fullName>
+    <genc:unLegalStatus>independent</genc:unLegalStatus>
+    <genc:gencStatus>exception</genc:gencStatus>
+    <genc:entryDate>2014-06-30</genc:entryDate>
+    <genc:successorEntryDate>2014-09-30</genc:successorEntryDate>
+    <genc:entryType>unchanged</genc:entryType>
+    <genc:usRecognition>independent</genc:usRecognition>
+    <genc:entryNotesOnNaming><![CDATA[
+        The GENC Standard specifies the full name "United States of America" where instead ISO 3166-1 specifies "the United States of America". The GENC Standard specifies the local short name for 'en'/'eng' as "United States", removing the definite article, where instead ISO 3166-1 specifies "United States (the)".
+        ]]></genc:entryNotesOnNaming>
+    <genc:entryNotesOnTerritory><![CDATA[
+        The entry for this geopolitical entity is assigned the GENC status of 'Exception' because GENC Standard considers the entry named "UNITED STATES" as specifically excluding the geographic territory of American Samoa, Guam, the Northern Mariana Islands, Puerto Rico, and the U.S. Virgin Islands. Each of those territories has a distinct entry in the GENC Standard. Note that the ISO 3166/MA considers the entry named "UNITED STATES" as including all of those territories, because ISO 3166-2 specifies code elements for a corresponding administrative subdivision in each case. (See ISO 3166-1:2013, Clause 4.3 "Overlaps"; and ISO 3166-2:2013, Clause 4.1.2 (on subdivision).) The GENC Standard also considers the entry named "UNITED STATES" as specifically excluding the geographic territory of Baker Island, Howland Island, Jarvis Island, Johnson Atoll, Kingman Reef, the Midway Islands, Navassa Island, Palmyra Atoll, and Wake Island; each of those territories has a distinct entry in the GENC Standard. Note that ISO 3166-2 includes each of those geographic territories as an administrative subdivision (of type "islands, groups of islands") under the entry named "UNITED STATES MINOR OUTLYING ISLANDS", which in turn is also represented in ISO 3166-2 as a corresponding administrative subdivision (of type "outlying area") of the entry named "UNITED STATES".
+        ]]></genc:entryNotesOnTerritory>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-AK</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-AL</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-AR</genc:subdivision>
+    <genc:subdivision codeSpace="as:GENC:6:2-1">US-AS</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-AZ</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-CA</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-CO</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-CT</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-DC</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-DE</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-FL</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-GA</genc:subdivision>
+    <genc:subdivision codeSpace="as:GENC:6:2-1">US-GU</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-HI</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-IA</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-ID</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-IL</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-IN</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-KS</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-KY</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-LA</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-MA</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-MD</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-ME</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-MI</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-MN</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-MO</genc:subdivision>
+    <genc:subdivision codeSpace="as:GENC:6:2-1">US-MP</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-MS</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-MT</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-NC</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-ND</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-NE</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-NH</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-NJ</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-NM</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-NV</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-NY</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-OH</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-OK</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-OR</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-PA</genc:subdivision>
+    <genc:subdivision codeSpace="as:GENC:6:2-1">US-PR</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-RI</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-SC</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-SD</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-TN</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-TX</genc:subdivision>
+    <genc:subdivision codeSpace="as:GENC:6:2-1">US-UM</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-UT</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-VA</genc:subdivision>
+    <genc:subdivision codeSpace="as:GENC:6:2-1">US-VI</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-VT</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-WA</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-WI</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-WV</genc:subdivision>
+    <genc:subdivision codeSpace="as:ISO2:6:ed3">US-WY</genc:subdivision>
+    <genc:localShortName>
+        <genc:nameLanguage2Char>en</genc:nameLanguage2Char>
+        <genc:nameLanguage3Char>eng</genc:nameLanguage3Char>
+        <genc:name><![CDATA[United States]]></genc:name>
+        <genc:iso6393Char3Code>eng</genc:iso6393Char3Code>
+    </genc:localShortName>
+</genc:GeopoliticalEntityEntry>

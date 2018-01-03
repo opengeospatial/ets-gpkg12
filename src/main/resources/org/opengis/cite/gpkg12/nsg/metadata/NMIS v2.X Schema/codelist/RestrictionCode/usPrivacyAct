@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reg:ListedValue 
+    xmlns:reg="http://api.nsgreg.nga.mil/schema/register/1.0" 
+    xmlns:dt="http://api.nsgreg.nga.mil/schema/register/1.0/dt" 
+    xmlns:gml="http://www.opengis.net/gml/3.2" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://api.nsgreg.nga.mil/schema/register/1.0 http://api.nsgreg.nga.mil/schema/register/1.0.0/register.xsd" 
+    gml:id="usPrivacyAct">
+    <gml:description>The resource is categorized as containing personal information subject to protection by the (US) Privacy Act of 1974 (as subsequently amended), being Title 5 of the United States Code, Section 552a.</gml:description>
+    <gml:identifier codeSpace="http://api.nsgreg.nga.mil/codelist/RestrictionCode">usPrivacyAct</gml:identifier>
+    <gml:name>U.S. Privacy Act</gml:name>
+    <gml:remarks>The act states, in part, that no agency shall disclose any record which is contained in a system of records by any means of communication to any person, or to another agency, except pursuant to a written request by, or with the prior written consent of, t</gml:remarks>
+    <dt:integerCode>10</dt:integerCode>
+    <reg:status>
+        <reg:itemStatus>valid</reg:itemStatus>
+        <reg:dateAccepted>2011-09-15</reg:dateAccepted>
+        <reg:registeredItem>http://nsgreg.nga.mil/ir/view?i=110466</reg:registeredItem>
+    </reg:status>
+</reg:ListedValue>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reg:VerticalCRS 
+    xmlns:reg="http://api.nsgreg.nga.mil/schema/register/1.0" 
+    xmlns:gml="http://www.opengis.net/gml/3.2" 
+    xmlns:xlink="http://www.w3.org/1999/xlink" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:gmd="http://www.isotc211.org/2005/gmd" 
+    xmlns:gco="http://www.isotc211.org/2005/gco" 
+    xsi:schemaLocation="http://api.nsgreg.nga.mil/schema/register/1.0 http://api.nsgreg.nga.mil/schema/register/1.0.0/register.xsd" 
+    gml:id="EGM96_H">
+    <gml:description>The distance above the geopotential surface defined by the Earth Gravity Model 1996 (EGM96) that is closely associated with the mean ocean surface.</gml:description>
+    <gml:identifier codeSpace="http://api.nsgreg.nga.mil/coord-ref-system">EGM96_H</gml:identifier>
+    <gml:name>Earth Gravity Model 1996 (EGM96) Height </gml:name>
+    <gml:remarks>The height is determined along the direction of the geoid surface normal with positive values being above the geoid.</gml:remarks>
+    <gml:domainOfValidity>
+        <gmd:EX_Extent>
+            <gmd:geographicElement>
+                <gmd:EX_GeographicBoundingBox>
+                    <gmd:westBoundLongitude>
+                        <gco:Decimal>-180.0</gco:Decimal>
+                    </gmd:westBoundLongitude>
+                    <gmd:eastBoundLongitude>
+                        <gco:Decimal>180.0</gco:Decimal>
+                    </gmd:eastBoundLongitude>
+                    <gmd:southBoundLatitude>
+                        <gco:Decimal>-90.0</gco:Decimal>
+                    </gmd:southBoundLatitude>
+                    <gmd:northBoundLatitude>
+                        <gco:Decimal>90.0</gco:Decimal>
+                    </gmd:northBoundLatitude>
+                </gmd:EX_GeographicBoundingBox>
+            </gmd:geographicElement>
+        </gmd:EX_Extent>
+    </gml:domainOfValidity>
+    <gml:scope>Used worldwide for vertical positioning.</gml:scope>
+    <gml:verticalCS>
+        <gml:VerticalCS gml:id="Altitude">
+            <gml:description>A one-dimensional vertical coordinate system where the position of points are relative to a single straight axis and the positive direction of that axis is upward.</gml:description>
+            <gml:identifier codeSpace="http://api.nsgreg.nga.mil/term">Altitude</gml:identifier>
+            <gml:name>Altitude</gml:name>
+            <gml:axis>
+                <gml:CoordinateSystemAxis uom="http://api.nsgreg.nga.mil/physical-quantity/length/metre" gml:id="GravimetricAltitude">
+                    <gml:description>The distance of a point from a specified gravity-related reference surface measured upward along a line of force.</gml:description>
+                    <gml:identifier codeSpace="http://api.nsgreg.nga.mil/coord-system-axis">GravimetricAltitude</gml:identifier>
+                    <gml:name>Gravimetric Altitude</gml:name>
+                    <gml:remarks>Conventionally measured from Mean Sea level (MSL) or a geoid (for example: Earth Gravity Model 1996 (EGM96)). Also known as an "orthometric height".</gml:remarks>
+                    <gml:axisAbbrev>h </gml:axisAbbrev>
+                    <gml:axisDirection codeSpace="http://api.nsgreg.nga.mil/term">up</gml:axisDirection>
+                </gml:CoordinateSystemAxis>
+            </gml:axis>
+        </gml:VerticalCS>
+    </gml:verticalCS>
+    <gml:verticalDatum>
+        <gml:VerticalDatum gml:id="EGM96_Datum">
+            <gml:description>The geopotential surface defined by the World Geodetic System (WGS) 1984 EGM96 Earth Gravity Model that is closely associated with the mean ocean surface.</gml:description>
+            <gml:identifier codeSpace="http://api.nsgreg.nga.mil/datum">EGM96_Datum</gml:identifier>
+            <gml:name>WGS84 EGM96 Geoid</gml:name>
+            <gml:remarks>This datum is defined by Department of Defense World Geodetic System 1984 - Its Definition and Relationships with Local Geodetic Systems, NIMA TR8350.2, Third Edition, Amendment 1, 3 January 2000.</gml:remarks>
+            <gml:domainOfValidity>
+                <gmd:EX_Extent>
+                    <gmd:geographicElement>
+                        <gmd:EX_GeographicBoundingBox>
+                            <gmd:westBoundLongitude>
+                                <gco:Decimal>-180.0</gco:Decimal>
+                            </gmd:westBoundLongitude>
+                            <gmd:eastBoundLongitude>
+                                <gco:Decimal>180.0</gco:Decimal>
+                            </gmd:eastBoundLongitude>
+                            <gmd:southBoundLatitude>
+                                <gco:Decimal>-90.0</gco:Decimal>
+                            </gmd:southBoundLatitude>
+                            <gmd:northBoundLatitude>
+                                <gco:Decimal>90.0</gco:Decimal>
+                            </gmd:northBoundLatitude>
+                        </gmd:EX_GeographicBoundingBox>
+                    </gmd:geographicElement>
+                </gmd:EX_Extent>
+            </gml:domainOfValidity>
+            <gml:scope>Used for vertical positioning worldwide.</gml:scope>
+            <gml:anchorDefinition>WGS 84 ellipsoid.</gml:anchorDefinition>
+        </gml:VerticalDatum>
+    </gml:verticalDatum>
+    <reg:status>
+        <reg:itemStatus>valid</reg:itemStatus>
+        <reg:dateAccepted>2010-03-08</reg:dateAccepted>
+        <reg:registeredItem>http://nsgreg.nga.mil/ir/view?i=200054</reg:registeredItem>
+    </reg:status>
+</reg:VerticalCRS>

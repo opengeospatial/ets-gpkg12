@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--UNCLASSIFIED--><xsd:schema xmlns:ismdissem="urn:us:gov:ic:cvenum:ism:dissem"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:ism="urn:us:gov:ic:ism"
+            elementFormDefault="qualified"
+            xml:lang="en"
+            ism:ownerProducer="USA"
+            ism:classification="U"
+            ism:DESVersion="8"
+            ism:resourceElement="true"
+            ism:createDate="2012-01-04"
+            targetNamespace="urn:us:gov:ic:cvenum:ism:dissem">
+   <xsd:annotation>
+      <xsd:documentation>
+                    The W3C XML Schema fragment encoding types for CVEnumISMDissem Version 1 controlled vocabulary enumerations. This file is generated, so edits should be made to the CVEnumISMDissem.xml CVE it is based on, instead of here.
+                </xsd:documentation>
+   </xsd:annotation>
+   <!--*************************************************************-->
+<!--Generated TYPE DEFINITIONS ..................................-->
+<!--*************************************************************-->
+<xsd:simpleType name="CVEnumISMDissemValues">
+      <xsd:annotation>
+         <xsd:documentation>(U) All currently valid Dissemination controls from the published register
+                         PERMISSIBLE VALUES
+                         
+                         The permissible values for this simple type are defined in the Controlled Value Enumeration:
+                         
+                         CVEnumISMDissem.xml
+                         
+                     </xsd:documentation>
+      </xsd:annotation>
+      <xsd:restriction base="xsd:token"><!--(U) The value "RS" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="RS">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) RISK SENSITIVE</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "FOUO" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="FOUO">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) FOR OFFICIAL USE ONLY</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "OC" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="OC">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) ORIGINATOR CONTROLLED</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "IMC" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="IMC">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) CONTROLLED IMAGERY</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "NF" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="NF">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) NOT RELEASABLE TO FOREIGN NATIONALS</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "PR" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="PR">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) CAUTION-PROPRIETARY INFORMATION INVOLVED</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "REL" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="REL">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) AUTHORIZED FOR RELEASE TO</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "RELIDO" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="RELIDO">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) RELEASABLE BY INFORMATION DISCLOSURE OFFICIAL</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "EYES" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="EYES">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) EYES ONLY</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "DSEN" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="DSEN">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) DEA SENSITIVE</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "FISA" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="FISA">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) FOREIGN INTELLIGENCE SURVEILLANCE ACT</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "DISPLAYONLY" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="DISPLAYONLY">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) AUTHORIZED FOR DISPLAY BUT NOT RELEASE TO</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+      </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="CVEnumISMDissem">
+      <xsd:restriction>
+         <xsd:simpleType>
+            <xsd:list itemType="ismdissem:CVEnumISMDissemValues"/>
+         </xsd:simpleType>
+         <xsd:maxLength value="12"/>
+      </xsd:restriction>
+   </xsd:simpleType>
+</xsd:schema>

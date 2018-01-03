@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--UNCLASSIFIED--><xsd:schema xmlns:ismcomplies="urn:us:gov:ic:cvenum:ism:complieswith"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:ism="urn:us:gov:ic:ism"
+            elementFormDefault="qualified"
+            xml:lang="en"
+            ism:ownerProducer="USA"
+            ism:classification="U"
+            ism:DESVersion="8"
+            ism:resourceElement="true"
+            ism:createDate="2011-09-01"
+            targetNamespace="urn:us:gov:ic:cvenum:ism:complieswith">
+   <xsd:annotation>
+      <xsd:documentation>
+                    The W3C XML Schema fragment encoding types for CVEnumISMCompliesWith Version 1 controlled vocabulary enumerations. This file is generated, so edits should be made to the CVEnumISMCompliesWith.xml CVE it is based on, instead of here.
+                </xsd:documentation>
+   </xsd:annotation>
+   <!--*************************************************************-->
+<!--Generated TYPE DEFINITIONS ..................................-->
+<!--*************************************************************-->
+<xsd:simpleType name="CVEnumISMCompliesWithValues">
+      <xsd:annotation>
+         <xsd:documentation>(U) Current rule set names that documents may comply with
+                         PERMISSIBLE VALUES
+                         
+                         The permissible values for this simple type are defined in the Controlled Value Enumeration:
+                         
+                         CVEnumISMCompliesWith.xml
+                         
+                     </xsd:documentation>
+      </xsd:annotation>
+      <xsd:restriction base="xsd:token"><!--(U) The value "ICDocument" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="ICDocument">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) Document claims compliance with IC rules 
+				that have been encoded into ISM. Currently this includes: ICD-710, DNI-ORCON Memo, and the DNI Revision-Recall Memo </xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "DoD5230.24" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="DoD5230.24">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) Document claims compliance with the rules in DoD5230.24 that have been encoded into ISM</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+      </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="CVEnumISMCompliesWith">
+      <xsd:restriction>
+         <xsd:simpleType>
+            <xsd:list itemType="ismcomplies:CVEnumISMCompliesWithValues"/>
+         </xsd:simpleType>
+         <xsd:maxLength value="2"/>
+      </xsd:restriction>
+   </xsd:simpleType>
+</xsd:schema>

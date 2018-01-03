@@ -37,6 +37,7 @@ The following conformance classes have being defined (In bold the classes that h
     - **Schema**
     - **WKT for Coordinate Reference Systems**
     - **Tiled Gridded Elevation Data**
+    - **NSG**
     
 Note: This test also supports GeoPackage 1.1 and 1.0. 
 
@@ -50,6 +51,7 @@ conforming implementation.
 3. [OGC GeoPackage Encoding Standard 1.0.1](https://portal.opengeospatial.org/files/?artifact_id=63378)
 4. [OGC GeoPackage Encoding Standard 1.0.0](https://portal.opengeospatial.org/files/?artifact_id=56357)
 5. [SQLite Database File Format](http://sqlite.org/fileformat2.html)
+6. [National System for Geospatial-Intelligence (NSG) GeoPackage Encoding Standard 2.1 Interoperability Standard](https://nsgreg.nga.mil/doc/view?i=4379)
 
 If any of the following preconditions are not satisfied then all tests in the 
 suite will be marked as skipped.
@@ -115,6 +117,10 @@ The general structure of the test suite is shown in Table 1.
     <tr>
       <td>Tiled Gridded Elevation Data</td>
       <td>org.opengis.cite.gpkg12.extensions.elevation.*</td>
+    </tr>
+    <tr>
+      <td>NSG</td>
+      <td>org.opengis.cite.gpkg12.nsg.*</td>
     </tr>
   </tbody>
 </table>

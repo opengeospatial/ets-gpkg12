@@ -25,6 +25,7 @@
           <conformanceClass>Schema</conformanceClass>
           <conformanceClass>CRS WKT</conformanceClass>
           <conformanceClass>Tiled Gridded Elevation Data</conformanceClass>
+          <conformanceClass>NSG</conformanceClass>
         </BasicConformanceClasses>
       </suite>
       <revision>

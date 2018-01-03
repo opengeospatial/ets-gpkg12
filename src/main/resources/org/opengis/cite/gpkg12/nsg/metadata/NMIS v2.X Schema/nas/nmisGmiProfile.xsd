@@ -1,0 +1,853 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2013 rel. 2 sp1 (http://www.altova.com) by Barbara Devenny (THE SI ORGANIZATION INC) -->
+<xs:schema xmlns:gco="http://www.isotc211.org/2005/gco" xmlns:gmi="http://www.isotc211.org/2005/gmi" xmlns:gmd="http://www.isotc211.org/2005/gmd" xmlns:gmx="http://www.isotc211.org/2005/gmx" xmlns:gss="http://www.isotc211.org/2005/gss" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.isotc211.org/2005/gmi" elementFormDefault="qualified" attributeFormDefault="unqualified" version="0.1">
+	<!-- ================================= Annotations ================================ -->
+	<xs:annotation>
+		<xs:documentation>GMI Subset schema for: gmi:xxx</xs:documentation>
+	</xs:annotation>
+	<!-- - - - - - - -  GMD Subset Resources - - - - - - - - -->
+	<xs:import namespace="http://www.isotc211.org/2005/gmd" schemaLocation="./nmisGmdProfile.xsd"/>
+	<xs:import namespace="http://www.isotc211.org/2005/gco" schemaLocation="../iso/19139/20070417/gco/gco.xsd"/>
+	<xs:import namespace="http://www.isotc211.org/2005/gss" schemaLocation="../iso/19139/20070417/gss/gss.xsd"/>
+	<!-- - - - - - - - - GML 3.2.1 Resources - - - - - - - - - -->
+	<xs:import namespace="http://www.opengis.net/gml/3.2" schemaLocation="../ogc/gml/3.2.1/gml.xsd"/>
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<!--             gmi/metadataEntitySet.xsd                -->
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<xs:complexType name="MI_Metadata_Type">
+		<xs:annotation>
+			<xs:documentation>Description: Root entity that defines information about imagery or gridded data - shortName: IMetadata</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gmd:MD_Metadata_Type">
+				<xs:sequence>
+					<xs:element name="acquisitionInformation" type="gmi:MI_AcquisitionInformation_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ................................................................... -->
+	<xs:element name="MI_Metadata" type="gmi:MI_Metadata_Type" substitutionGroup="gmd:MD_Metadata"/>
+	<!-- ................................................................... -->
+	<xs:complexType name="MI_Metadata_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_Metadata" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<!--            gmi/acquisitionInformation.xsd             -->
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<xs:complexType name="MI_Requirement_Type">
+		<xs:annotation>
+			<xs:documentation>Description: requirement to be satisfied by the planned data acquisition - shortName: Requirement</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="citation" type="gmd:CI_Citation_PropertyType" minOccurs="0"/>
+					<xs:element name="identifier" type="gmd:MD_Identifier_PropertyType"/>
+					<xs:element name="requestor" type="gmd:CI_ResponsibleParty_PropertyType" maxOccurs="unbounded"/>
+					<xs:element name="recipient" type="gmd:CI_ResponsibleParty_PropertyType" maxOccurs="unbounded"/>
+					<xs:element name="priority" type="gmi:MI_PriorityCode_PropertyType"/>
+					<xs:element name="requestedDate" type="gmi:MI_RequestedDate_PropertyType"/>
+					<xs:element name="expiryDate" type="gco:DateTime_PropertyType"/>
+					<xs:element name="satisifiedPlan" type="gmi:MI_Plan_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_Requirement" type="gmi:MI_Requirement_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_Requirement_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_Requirement" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_Objective_Type">
+		<xs:annotation>
+			<xs:documentation>Description: Describes the characteristics, spatial and temporal extent of the intended object to be observed  - shortName: TargetId</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="identifier" type="gmd:MD_Identifier_PropertyType" maxOccurs="unbounded"/>
+					<xs:element name="priority" type="gco:CharacterString_PropertyType" minOccurs="0"/>
+					<xs:element name="type" type="gmi:MI_ObjectiveTypeCode_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="function" type="gco:CharacterString_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="extent" type="gmd:EX_Extent_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="pass" type="gmi:MI_PlatformPass_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="sensingInstrument" type="gmi:MI_Instrument_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="objectiveOccurrence" type="gmi:MI_Event_PropertyType" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_Objective" type="gmi:MI_Objective_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_Objective_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_Objective" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_AcquisitionInformation_Type">
+		<xs:annotation>
+			<xs:documentation>Description: Designations for the measuring instruments and their bands, the platform carrying them, and the mission to which the data contributes - FGDC: Platform_and_Instrument_Identification, Mission_Information - shortName: PltfrmInstId</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="acquisitionRequirement" type="gmi:MI_Requirement_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="objective" type="gmi:MI_Objective_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="instrument" type="gmi:MI_Instrument_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="acquisitionPlan" type="gmi:MI_Plan_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="operation" type="gmi:MI_Operation_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="platform" type="gmi:MI_Platform_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="environmentalConditions" type="gmi:MI_EnvironmentalRecord_PropertyType" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_AcquisitionInformation" type="gmi:MI_AcquisitionInformation_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_AcquisitionInformation_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_AcquisitionInformation" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_Plan_Type">
+		<xs:annotation>
+			<xs:documentation>Description: Designations for the planning information related to meeting requirements - shortName: PlanId</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="type" type="gmi:MI_GeometryTypeCode_PropertyType" minOccurs="0"/>
+					<xs:element name="status" type="gmd:MD_ProgressCode_PropertyType"/>
+					<xs:element name="citation" type="gmd:CI_Citation_PropertyType"/>
+					<xs:element name="satisfiedRequirement" type="gmi:MI_Requirement_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="operation" type="gmi:MI_Operation_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_Plan" type="gmi:MI_Plan_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_Plan_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_Plan" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_Operation_Type">
+		<xs:annotation>
+			<xs:documentation>Description: Designations for the operation used to acquire the dataset - shortName: MssnId</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="description" type="gco:CharacterString_PropertyType" minOccurs="0"/>
+					<xs:element name="citation" type="gmd:CI_Citation_PropertyType" minOccurs="0"/>
+					<xs:element name="identifier" type="gmd:MD_Identifier_PropertyType">
+						<xs:annotation>
+							<xs:documentation>NMIS: Attribute minOccurs changed from 0 to 1</xs:documentation>
+						</xs:annotation>
+					</xs:element>
+					<xs:element name="status" type="gmd:MD_ProgressCode_PropertyType"/>
+					<xs:element name="type" type="gmi:MI_OperationTypeCode_PropertyType" minOccurs="0"/>
+					<xs:element name="childOperation" type="gmi:MI_Operation_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="objective" type="gmi:MI_Objective_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="parentOperation" type="gmi:MI_Operation_PropertyType"/>
+					<xs:element name="plan" type="gmi:MI_Plan_PropertyType" minOccurs="0"/>
+					<xs:element name="significantEvent" type="gmi:MI_Event_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="platform" type="gmi:MI_Platform_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_Operation" type="gmi:MI_Operation_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_Operation_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_Operation" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_Instrument_Type">
+		<xs:annotation>
+			<xs:documentation>Description: Designations for the measuring instruments - FGDC: Platform_and_Instrument_Identification - shortName: PltfrmInstId</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="citation" type="gmd:CI_Citation_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="identifier" type="gmd:MD_Identifier_PropertyType"/>
+					<xs:element name="type" type="gco:CharacterString_PropertyType"/>
+					<xs:element name="description" type="gco:CharacterString_PropertyType" minOccurs="0"/>
+					<xs:element name="mountedOn" type="gmi:MI_Platform_PropertyType" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_Instrument" type="gmi:MI_Instrument_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_Instrument_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_Instrument" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_Platform_Type">
+		<xs:annotation>
+			<xs:documentation>Description: Designations for the platform used to acquire the dataset - shortName: PltfrmId</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="citation" type="gmd:CI_Citation_PropertyType" minOccurs="0" maxOccurs="unbounded">
+					<!--<xs:annotation>
+						<xs:documentation>NMIS: Attribute maxOccurs changed from unbounded to 1</xs:documentation>
+					</xs:annotation>-->
+					</xs:element>
+					<xs:element name="identifier" type="gmd:MD_Identifier_PropertyType"/>
+					<xs:element name="description" type="gco:CharacterString_PropertyType"/>
+					<xs:element name="sponsor" type="gmd:CI_ResponsibleParty_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="instrument" type="gmi:MI_Instrument_PropertyType" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_Platform" type="gmi:MI_Platform_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_Platform_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_Platform" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_EnvironmentalRecord_Type">
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="averageAirTemperature" type="gco:Real_PropertyType"/>
+					<xs:element name="maxRelativeHumidity" type="gco:Real_PropertyType"/>
+					<xs:element name="maxAltitude" type="gco:Real_PropertyType"/>
+					<xs:element name="meterologicalConditions" type="gco:CharacterString_PropertyType"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_EnvironmentalRecord" type="gmi:MI_EnvironmentalRecord_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_EnvironmentalRecord_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_EnvironmentalRecord" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_Event_Type">
+		<xs:annotation>
+			<xs:documentation>Description: identification of a significant collection point within an operation - shortName: Event</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="identifier" type="gmd:MD_Identifier_PropertyType"/>
+					<xs:element name="trigger" type="gmi:MI_TriggerCode_PropertyType"/>
+					<xs:element name="context" type="gmi:MI_ContextCode_PropertyType"/>
+					<xs:element name="sequence" type="gmi:MI_SequenceCode_PropertyType"/>
+					<xs:element name="time" type="gco:DateTime_PropertyType"/>
+					<xs:element name="expectedObjective" type="gmi:MI_Objective_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="relatedSensor" type="gmi:MI_Instrument_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="relatedPass" type="gmi:MI_PlatformPass_PropertyType" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_Event" type="gmi:MI_Event_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_Event_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_Event" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_RequestedDate_Type">
+		<xs:annotation>
+			<xs:documentation>Description: range of date validity - shortName: ReqstDate</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="requestedDateOfCollection" type="gco:DateTime_PropertyType"/>
+					<xs:element name="latestAcceptableDate" type="gco:DateTime_PropertyType"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_RequestedDate" type="gmi:MI_RequestedDate_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_RequestedDate_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_RequestedDate" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_PlatformPass_Type">
+		<xs:annotation>
+			<xs:documentation>Description: identification of collection coverage - shortName: PlatformPass</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="identifier" type="gmd:MD_Identifier_PropertyType"/>
+					<xs:element name="extent" type="gss:GM_Object_PropertyType" minOccurs="0"/>
+					<xs:element name="relatedEvent" type="gmi:MI_Event_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_PlatformPass" type="gmi:MI_PlatformPass_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_PlatformPass_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_PlatformPass" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- ........................................................................ -->
+	<xs:element name="MI_SequenceCode" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_SequenceCode_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_SequenceCode" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- ........................................................................ -->
+	<xs:element name="MI_TriggerCode" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_TriggerCode_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_TriggerCode" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- ........................................................................ -->
+	<xs:element name="MI_PriorityCode" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_PriorityCode_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_PriorityCode" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- ........................................................................ -->
+	<xs:element name="MI_GeometryTypeCode" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_GeometryTypeCode_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_GeometryTypeCode" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- ........................................................................ -->
+	<!--<xs:element name="MI_SensorTypeCode" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>-->
+	<!-- ........................................................................ -->
+	<!--<xs:complexType name="MI_SensorTypeCode_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_SensorTypeCode" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>-->
+	<!-- =========================================================================== -->
+	<!-- ........................................................................ -->
+	<xs:element name="MI_ObjectiveTypeCode" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_ObjectiveTypeCode_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_ObjectiveTypeCode" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- ........................................................................ -->
+	<xs:element name="MI_OperationTypeCode" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_OperationTypeCode_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_OperationTypeCode" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- ........................................................................ -->
+	<xs:element name="MI_ContextCode" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_ContextCode_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_ContextCode" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<!--                    gmi/dataQualityInformation.xsd                   -->
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<xs:complexType name="LE_ProcessStep_Type">
+		<xs:annotation>
+			<xs:documentation>Description: Information about an event or transformation in the life of the dataset including details of the algorithm and software used for processing - FGDC:  - shortName: DetailProcStep</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gmd:LI_ProcessStep_Type">
+				<xs:sequence>
+					<xs:element name="output" type="gmi:LE_Source_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="report" type="gmi:LE_ProcessStepReport_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="processingInformation" type="gmi:LE_Processing_PropertyType" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="LE_ProcessStep" type="gmi:LE_ProcessStep_Type" substitutionGroup="gmd:LI_ProcessStep"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="LE_ProcessStep_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:LE_ProcessStep" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="LE_Processing_Type">
+		<xs:annotation>
+			<xs:documentation>Description: Comprehensive information about the procedure(s), process(es) and algorithm(s) applied in the process step - shortName: Procsg</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="identifier" type="gmd:MD_Identifier_PropertyType"/>
+					<xs:element name="softwareReference" type="gmd:CI_Citation_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="procedureDescription" type="gco:CharacterString_PropertyType" minOccurs="0"/>
+					<xs:element name="documentation" type="gmd:CI_Citation_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+					<xs:element name="runTimeParameters" type="gco:CharacterString_PropertyType" minOccurs="0"/>
+					<xs:element name="algorithm" type="gmi:LE_Algorithm_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="LE_Processing" type="gmi:LE_Processing_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="LE_Processing_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:LE_Processing" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="LE_ProcessStepReport_Type">
+		<xs:annotation>
+			<xs:documentation>Description: Report of what occurred during the process step - shortName: ProcStepRep</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="name" type="gco:CharacterString_PropertyType"/>
+					<xs:element name="description" type="gco:CharacterString_PropertyType" minOccurs="0"/>
+					<xs:element name="fileType" type="gco:CharacterString_PropertyType" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="LE_ProcessStepReport" type="gmi:LE_ProcessStepReport_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="LE_ProcessStepReport_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:LE_ProcessStepReport" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="LE_Algorithm_Type">
+		<xs:annotation>
+			<xs:documentation>Description: Details of the methodology by which geographic information was derived from the instrument readings - FGDC: Algorithm_Information - shortName: Algorithm</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="citation" type="gmd:CI_Citation_PropertyType"/>
+					<xs:element name="description" type="gco:CharacterString_PropertyType"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="LE_Algorithm" type="gmi:LE_Algorithm_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="LE_Algorithm_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:LE_Algorithm" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="LE_Source_Type">
+		<xs:annotation>
+			<xs:documentation>Description: information on source of data sets for processing step - shortName: SrcDataset</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gmd:LI_Source_Type">
+				<xs:sequence>
+					<xs:element name="processedLevel" type="gmd:MD_Identifier_PropertyType" minOccurs="0"/>
+					<xs:element name="resolution" type="gmi:LE_NominalResolution_PropertyType" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="LE_Source" type="gmi:LE_Source_Type" substitutionGroup="gmd:LI_Source"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="LE_Source_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:LE_Source" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="QE_Usability_Type">
+		<xs:annotation>
+			<xs:documentation>Description: to: degree of adherence of a dataset to a specific set of user requirements - shortName: Usability</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gmd:AbstractDQ_Element_Type"/>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="QE_Usability" type="gmi:QE_Usability_Type" substitutionGroup="gmd:AbstractDQ_Element"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="QE_Usability_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:QE_Usability" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="LE_NominalResolution_Type">
+		<xs:annotation>
+			<xs:documentation>Description: Distance between adjacent pixels - shortName: nomRes</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="scanningResolution" type="gco:Distance_PropertyType"/>
+			<xs:element name="groundResolution" type="gco:Distance_PropertyType"/>
+		</xs:choice>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="LE_NominalResolution" type="gmi:LE_NominalResolution_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="LE_NominalResolution_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:LE_NominalResolution" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<!--               gmi/spatialRepresentationInformation.xsd              -->
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<xs:complexType name="MI_Georeferenceable_Type">
+		<xs:annotation>
+			<xs:documentation>Description: Description of information provided in metadata that allows the geographic or map location raster points to be located - FGDC: Georeferencing_Description - shortName: IGeoref</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gmd:MD_Georeferenceable_Type">
+				<xs:sequence>
+					<xs:element name="geolocationInformation" type="gmi:MI_GeolocationInformation_PropertyType" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_Georeferenceable" type="gmi:MI_Georeferenceable_Type" substitutionGroup="gmd:MD_Georeferenceable"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_Georeferenceable_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_Georeferenceable" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_GCP_Type">
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="geographicCoordinates" type="gmi:DirectPosition_PropertyType"/>
+					<xs:element name="accuracyReport" type="gmd:DQ_Element_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_GCP" type="gmi:MI_GCP_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_GCP_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_GCP" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_GCPCollection_Type">
+		<xs:complexContent>
+			<xs:extension base="gmi:AbstractMI_GeolocationInformation_Type">
+				<xs:sequence>
+					<xs:element name="collectionIdentification" type="gco:Integer_PropertyType"/>
+					<xs:element name="collectionName" type="gco:CharacterString_PropertyType"/>
+					<xs:element name="coordinateReferenceSystem" type="gmd:MD_ReferenceSystem_PropertyType"/>
+					<xs:element name="gcp" type="gmi:MI_GCP_PropertyType" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_GCPCollection" type="gmi:MI_GCPCollection_Type" substitutionGroup="gmi:AbstractMI_GeolocationInformation"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_GCPCollection_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_GCPCollection" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="AbstractMI_GeolocationInformation_Type" abstract="true">
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="qualityInfo" type="gmd:DQ_DataQuality_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="AbstractMI_GeolocationInformation" type="gmi:AbstractMI_GeolocationInformation_Type" abstract="true"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_GeolocationInformation_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:AbstractMI_GeolocationInformation" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_Georectified_Type">
+		<xs:annotation>
+			<xs:documentation>Description: extends georectified grid description to include associated checkpoints - shortName: IGeorect</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gmd:MD_Georectified_Type">
+				<xs:sequence>
+					<xs:element name="checkPoint" type="gmi:MI_GCP_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_Georectified" type="gmi:MI_Georectified_Type" substitutionGroup="gmd:MD_Georectified"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_Georectified_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_Georectified" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!--==XCGE: gml:DirectPosition==-->
+	<!-- ........................................................................ -->
+	<xs:complexType name="DirectPosition_PropertyType">
+		<xs:sequence minOccurs="0">
+			<xs:element ref="gml:pos"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<!--                      gmi/contentInformation.xsd                     -->
+	<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+	<xs:complexType name="MI_RangeElementDescription_Type">
+		<xs:annotation>
+			<xs:documentation>Description: description of specific range elements - shortName: RgEltDesc</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gco:AbstractObject_Type">
+				<xs:sequence>
+					<xs:element name="name" type="gco:CharacterString_PropertyType"/>
+					<xs:element name="definition" type="gco:CharacterString_PropertyType"/>
+					<xs:element name="rangeElement" type="gco:Record_PropertyType" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_RangeElementDescription" type="gmi:MI_RangeElementDescription_Type"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_RangeElementDescription_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_RangeElementDescription" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_Band_Type">
+		<xs:annotation>
+			<xs:documentation>Description: extensions to electromagnetic spectrum wavelength description - shortName: BandExt</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gmd:MD_Band_Type">
+				<xs:sequence>
+					<xs:element name="bandBoundaryDefinition" type="gmi:MI_BandDefinition_PropertyType" minOccurs="0"/>
+					<xs:element name="nominalSpatialResolution" type="gco:Real_PropertyType" minOccurs="0"/>
+					<xs:element name="transferFunctionType" type="gmi:MI_TransferFunctionTypeCode_PropertyType" minOccurs="0"/>
+					<xs:element name="transmittedPolarisation" type="gmi:MI_PolarisationOrientationCode_PropertyType" minOccurs="0"/>
+					<xs:element name="detectedPolarisation" type="gmi:MI_PolarisationOrientationCode_PropertyType" minOccurs="0"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_Band" type="gmi:MI_Band_Type" substitutionGroup="gmd:MD_Band"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_Band_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_Band" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_CoverageDescription_Type">
+		<xs:annotation>
+			<xs:documentation>Description: information about the content of a coverage, including the description of specific range elements - shortName: CCovDesc</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gmd:MD_CoverageDescription_Type">
+				<xs:sequence>
+					<xs:element name="rangeElementDescription" type="gmi:MI_RangeElementDescription_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_CoverageDescription" type="gmi:MI_CoverageDescription_Type" substitutionGroup="gmd:MD_CoverageDescription"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_CoverageDescription_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_CoverageDescription" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<xs:complexType name="MI_ImageDescription_Type">
+		<xs:annotation>
+			<xs:documentation>Description: information about the content of an image, including the description of specific range elements - shortName: ICovDesc</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent>
+			<xs:extension base="gmd:MD_ImageDescription_Type">
+				<xs:sequence>
+					<xs:element name="rangeElementDescription" type="gmi:MI_RangeElementDescription_PropertyType" minOccurs="0" maxOccurs="unbounded"/>
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<!-- ........................................................................ -->
+	<xs:element name="MI_ImageDescription" type="gmi:MI_ImageDescription_Type" substitutionGroup="gmd:MD_ImageDescription"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_ImageDescription_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_ImageDescription" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attributeGroup ref="gco:ObjectReference"/>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- ........................................................................ -->
+	<xs:element name="MI_PolarisationOrientationCode" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_PolarisationOrientationCode_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_PolarisationOrientationCode" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- ........................................................................ -->
+	<xs:element name="MI_TransferFunctionTypeCode" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_TransferFunctionTypeCode_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_TransferFunctionTypeCode" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+	<!-- =========================================================================== -->
+	<!-- ........................................................................ -->
+	<xs:element name="MI_BandDefinition" type="gco:CodeListValue_Type" substitutionGroup="gco:CharacterString"/>
+	<!-- ........................................................................ -->
+	<xs:complexType name="MI_BandDefinition_PropertyType">
+		<xs:sequence>
+			<xs:element ref="gmi:MI_BandDefinition" minOccurs="0"/>
+		</xs:sequence>
+		<xs:attribute ref="gco:nilReason"/>
+	</xs:complexType>
+</xs:schema>
