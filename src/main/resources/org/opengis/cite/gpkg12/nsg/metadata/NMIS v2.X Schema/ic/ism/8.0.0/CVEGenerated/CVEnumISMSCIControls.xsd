@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--UNCLASSIFIED//FOUO--><xsd:schema xmlns:ismscicon="urn:us:gov:ic:cvenum:ism:scicontrols"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:ism="urn:us:gov:ic:ism"
+            elementFormDefault="qualified"
+            xml:lang="en"
+            ism:ownerProducer="USA"
+            ism:classification="U"
+            ism:DESVersion="8"
+            ism:disseminationControls="FOUO"
+            ism:resourceElement="true"
+            ism:createDate="2012-01-01"
+            targetNamespace="urn:us:gov:ic:cvenum:ism:scicontrols">
+   <xsd:annotation>
+      <xsd:documentation>
+                    The W3C XML Schema fragment encoding types for CVEnumISMSCIControls Version 1 controlled vocabulary enumerations. This file is generated, so edits should be made to the CVEnumISMSCIControls.xml CVE it is based on, instead of here.
+                </xsd:documentation>
+   </xsd:annotation>
+   <!--*************************************************************-->
+<!--Generated TYPE DEFINITIONS ..................................-->
+<!--*************************************************************-->
+<xsd:simpleType name="CVEnumISMSCIControlsValues">
+      <xsd:annotation>
+         <xsd:documentation>(U) All currently valid SCI controls from the published register
+                         PERMISSIBLE VALUES
+                         
+                         The permissible values for this simple type are defined in the Controlled Value Enumeration:
+                         
+                         CVEnumISMSCIControls.xml
+                         
+                     </xsd:documentation>
+      </xsd:annotation>
+      <xsd:union>
+         <xsd:simpleType>
+            <xsd:restriction base="xsd:token"><!--(U//FOUO) The pattern "HCS-O-[A-Z0-9]{1,6}" is classified (U//FOUO) --><xsd:pattern ism:classification="U" ism:ownerProducer="USA" ism:disseminationControls="FOUO"
+                            value="HCS-O-[A-Z0-9]{1,6}">
+                  <xsd:annotation ism:classification="U" ism:ownerProducer="USA" ism:disseminationControls="FOUO">
+                     <xsd:documentation>(U//FOUO) HCS-OPERATIONS-xxxxxx, xxxxxx represents up to 6 alpha characters indicating a sub Operation compartment</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:pattern>
+               <!--(U//FOUO) The pattern "HCS-P-[A-Z0-9]{1,6}" is classified (U//FOUO) --><xsd:pattern ism:classification="U" ism:ownerProducer="USA" ism:disseminationControls="FOUO"
+                            value="HCS-P-[A-Z0-9]{1,6}">
+                  <xsd:annotation ism:classification="U" ism:ownerProducer="USA" ism:disseminationControls="FOUO">
+                     <xsd:documentation>(U//FOUO) HCS-PRODUCT-xxxxxx, xxxxxx represents up to 6 alpha characters indicating a sub Product compartment</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:pattern>
+               <!--(U) The pattern "RSV" is classified (U) --><xsd:pattern ism:classification="U" ism:ownerProducer="USA" value="RSV">
+                  <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+                     <xsd:documentation>(U) RESERVE</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:pattern>
+               <!--(U) The pattern "RSV-[A-Z0-9]{3}" is classified (U) --><xsd:pattern ism:classification="U" ism:ownerProducer="USA" value="RSV-[A-Z0-9]{3}">
+                  <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+                     <xsd:documentation>(U) RSV-XXX, XXX represents 3 alpha numeric characters to indicate sub Reserve compartments</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:pattern>
+               <!--(U) The pattern "SI-G-[A-Z]{4}" is classified (U) --><xsd:pattern ism:classification="U" ism:ownerProducer="USA" value="SI-G-[A-Z]{4}">
+                  <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+                     <xsd:documentation>(U) G-AAAA, AAAA represents 4 alpha characters to indicate sub Gamma compartments</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:pattern>
+            </xsd:restriction>
+         </xsd:simpleType>
+         <xsd:simpleType>
+            <xsd:restriction base="xsd:token"><!--(U) The value "HCS" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="HCS">
+                  <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+                     <xsd:documentation>(U) HCS</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <!--(U//FOUO) The value "HCS-O" is classified (U//FOUO) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" ism:disseminationControls="FOUO"
+                                value="HCS-O">
+                  <xsd:annotation ism:classification="U" ism:disseminationControls="FOUO" ism:ownerProducer="USA">
+                     <xsd:documentation>(U//FOUO) HCS-OPERATIONS</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <!--(U//FOUO) The value "HCS-P" is classified (U//FOUO) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" ism:disseminationControls="FOUO"
+                                value="HCS-P">
+                  <xsd:annotation ism:classification="U" ism:ownerProducer="USA" ism:disseminationControls="FOUO">
+                     <xsd:documentation>(U//FOUO) HCS-PRODUCT</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <!--(U) The value "KDK" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="KDK">
+                  <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+                     <xsd:documentation>(U) KLONDIKE</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <!--(U) The value "SI" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="SI">
+                  <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+                     <xsd:documentation>(U) SPECIAL INTELLIGENCE</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <!--(U) The value "SI-G" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="SI-G">
+                  <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+                     <xsd:documentation>(U) SI-GAMMA</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <!--(U) The value "SI-[A-Z]{3}" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="SI-[A-Z]{3}">
+                  <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+                     <xsd:documentation>(U) SPECIAL INTELLIGENCE compartment</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <!--(U) The value "SI-[A-Z]{3}-[A-Z]{4}" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="SI-[A-Z]{3}-[A-Z]{4}">
+                  <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+                     <xsd:documentation>(U) SPECIAL INTELLIGENCE sub-compartment</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <!--(U) The value "TK" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="TK">
+                  <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+                     <xsd:documentation>(U) TALENT KEYHOLE</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+            </xsd:restriction>
+         </xsd:simpleType>
+      </xsd:union>
+   </xsd:simpleType>
+   <xsd:simpleType name="CVEnumISMSCIControls">
+      <xsd:restriction>
+         <xsd:simpleType>
+            <xsd:list itemType="ismscicon:CVEnumISMSCIControlsValues"/>
+         </xsd:simpleType>
+         <xsd:maxLength value="1000"/>
+      </xsd:restriction>
+   </xsd:simpleType>
+</xsd:schema>

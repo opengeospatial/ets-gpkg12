@@ -78,7 +78,46 @@
       <artifactId>jai-imageio-core</artifactId>
       <version>1.3.1</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.geotools/gt-epsg-hsql -->
+	<dependency>
+	    <groupId>org.geotools</groupId>
+	    <artifactId>gt-epsg-hsql</artifactId>
+	    <version>18.0</version>
+	    <scope>test</scope>
+	</dependency>
+	<dependency>
+	  <groupId>org.geotools</groupId>
+	  <artifactId>gt-referencing</artifactId>
+	  <version>18.0</version>
+	</dependency>
+
+	<dependency>
+	    <groupId>javax.media</groupId>
+	    <artifactId>jai_core</artifactId>
+	    <version>1.1.3</version>
+	</dependency>
+
   </dependencies>
+
+  <repositories>
+	<repository>
+         <snapshots>
+           <enabled>true</enabled>
+         </snapshots>
+         <id>boundless</id>
+         <name>Boundless Maven Repository</name>
+         <url>http://repo.boundlessgeo.com/main</url>
+       </repository>
+
+       	<repository>
+         <snapshots>
+           <enabled>true</enabled>
+         </snapshots>
+         <id>javax</id>
+         <name>Geotools Javax</name>
+         <url>http://download.osgeo.org/webdav/geotools</url>
+       </repository>
+  </repositories>
 
   <build>
     <plugins>

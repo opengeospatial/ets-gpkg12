@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reg:GeodeticCRS 
+    xmlns:reg="http://api.nsgreg.nga.mil/schema/register/1.0" 
+    xmlns:gml="http://www.opengis.net/gml/3.2" 
+    xmlns:xlink="http://www.w3.org/1999/xlink" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:gmd="http://www.isotc211.org/2005/gmd" 
+    xmlns:gco="http://www.isotc211.org/2005/gco" 
+    xsi:schemaLocation="http://api.nsgreg.nga.mil/schema/register/1.0 http://api.nsgreg.nga.mil/schema/register/1.0.0/register.xsd" 
+    gml:id="WGS84E_2D">
+    <gml:description>Geodetic (geographic) position based on World Geodetic System 1984 (WGS84).</gml:description>
+    <gml:identifier codeSpace="http://api.nsgreg.nga.mil/coord-ref-system">WGS84E_2D</gml:identifier>
+    <gml:name>World Geodetic System 1984 - Geographic 2D</gml:name>
+    <gml:remarks>Since its establishment for epoch 1984, additional higher accuracy reference frame realizations have been established based on specific Global Positioning System (GPS) weeks (for example: Week 873, denoted as "G873"); these revised realizations of the ref</gml:remarks>
+    <gml:domainOfValidity>
+        <gmd:EX_Extent>
+            <gmd:geographicElement>
+                <gmd:EX_GeographicBoundingBox>
+                    <gmd:westBoundLongitude>
+                        <gco:Decimal>-180.0</gco:Decimal>
+                    </gmd:westBoundLongitude>
+                    <gmd:eastBoundLongitude>
+                        <gco:Decimal>180.0</gco:Decimal>
+                    </gmd:eastBoundLongitude>
+                    <gmd:southBoundLatitude>
+                        <gco:Decimal>-90.0</gco:Decimal>
+                    </gmd:southBoundLatitude>
+                    <gmd:northBoundLatitude>
+                        <gco:Decimal>90.0</gco:Decimal>
+                    </gmd:northBoundLatitude>
+                </gmd:EX_GeographicBoundingBox>
+            </gmd:geographicElement>
+        </gmd:EX_Extent>
+    </gml:domainOfValidity>
+    <gml:scope>Used worldwide for horizontal positioning.</gml:scope>
+    <gml:ellipsoidalCS>
+        <gml:EllipsoidalCS aggregationType="sequence" gml:id="GeoEllipsoidal">
+            <gml:description>A two-dimensional geodetic ellipsoidal coordinate system in which position is specified by geodetic latitude and geodetic longitude.</gml:description>
+            <gml:identifier codeSpace="http://api.nsgreg.nga.mil/term">GeoEllipsoidal</gml:identifier>
+            <gml:name>Geodetic Ellipsoidal</gml:name>
+            <gml:axis>
+                <gml:CoordinateSystemAxis uom="http://api.nsgreg.nga.mil/physical-quantity/planeAngle/arcDegree" gml:id="GeodeticLatitude">
+                    <gml:description>The angle from the equatorial plane to the perpendicular to the ellipsoid through a given point with northwards treated as positive. [ISO 19111:2007]</gml:description>
+                    <gml:identifier codeSpace="http://api.nsgreg.nga.mil/coord-system-axis">GeodeticLatitude</gml:identifier>
+                    <gml:name>Geodetic Latitude </gml:name>
+                    <gml:remarks>The axis direction is positive towards the pole about which the Earth rotates in a counter-clockwise direction. It is symbolized using the small Greek letter phi.</gml:remarks>
+                    <gml:axisAbbrev>Lat</gml:axisAbbrev>
+                    <gml:axisDirection codeSpace="http://api.nsgreg.nga.mil/term">north</gml:axisDirection>
+                </gml:CoordinateSystemAxis>
+            </gml:axis>
+            <gml:axis>
+                <gml:CoordinateSystemAxis uom="http://api.nsgreg.nga.mil/physical-quantity/planeAngle/arcDegree" gml:id="GeodeticLongitude">
+                    <gml:description>The angle from the prime meridian plane to the meridian plane of a given point with eastwards treated as positive. [ISO 19111:2007]</gml:description>
+                    <gml:identifier codeSpace="http://api.nsgreg.nga.mil/coord-system-axis">GeodeticLongitude</gml:identifier>
+                    <gml:name>Geodetic Longitude </gml:name>
+                    <gml:remarks>The axis direction is positive in the direction of the Earth's rotation. It is symbolized using the small Greek letter lambda.</gml:remarks>
+                    <gml:axisAbbrev>Lon</gml:axisAbbrev>
+                    <gml:axisDirection codeSpace="http://api.nsgreg.nga.mil/term">east</gml:axisDirection>
+                </gml:CoordinateSystemAxis>
+            </gml:axis>
+        </gml:EllipsoidalCS>
+    </gml:ellipsoidalCS>
+    <gml:geodeticDatum>
+        <gml:GeodeticDatum gml:id="WGS84_Datum">
+            <gml:description>A global geodetic reference system for the Earth intended for practical applications of mapping, charting, geopositioning and navigation.</gml:description>
+            <gml:identifier codeSpace="http://api.nsgreg.nga.mil/datum">WGS84_Datum</gml:identifier>
+            <gml:name>World Geodetic System 1984 </gml:name>
+            <gml:remarks>This datum is defined by Department of Defense World Geodetic System 1984 - Its Definition and Relationships with Local Geodetic Systems, NIMA TR8350.2, Third Edition, Amendment 1, 3 January 2000.</gml:remarks>
+            <gml:domainOfValidity>
+                <gmd:EX_Extent>
+                    <gmd:geographicElement>
+                        <gmd:EX_GeographicBoundingBox>
+                            <gmd:westBoundLongitude>
+                                <gco:Decimal>-180.0</gco:Decimal>
+                            </gmd:westBoundLongitude>
+                            <gmd:eastBoundLongitude>
+                                <gco:Decimal>180.0</gco:Decimal>
+                            </gmd:eastBoundLongitude>
+                            <gmd:southBoundLatitude>
+                                <gco:Decimal>-90.0</gco:Decimal>
+                            </gmd:southBoundLatitude>
+                            <gmd:northBoundLatitude>
+                                <gco:Decimal>90.0</gco:Decimal>
+                            </gmd:northBoundLatitude>
+                        </gmd:EX_GeographicBoundingBox>
+                    </gmd:geographicElement>
+                </gmd:EX_Extent>
+            </gml:domainOfValidity>
+            <gml:scope>Used for horizontal positioning worldwide.</gml:scope>
+            <gml:primeMeridian>
+                <gml:PrimeMeridian gml:id="Greenwich">
+                    <gml:description>The zero meridian (0 arc degrees East and West) passing through Greenwich, England, the site of the Royal Greenwich Observatory, that is used as a reference line from which geodetic longitude is measured east and west.</gml:description>
+                    <gml:identifier codeSpace="http://api.nsgreg.nga.mil/prime-meridian">Greenwich</gml:identifier>
+                    <gml:name>Greenwich</gml:name>
+                    <gml:greenwichLongitude uom="http://api.nsgreg.nga.mil/physical-quantity/planeAngle/arcDegree">0.0</gml:greenwichLongitude>
+                </gml:PrimeMeridian>
+            </gml:primeMeridian>
+            <gml:ellipsoid>
+                <gml:Ellipsoid gml:id="WGS84_Ellipsoid">
+                    <gml:description>A reference ellipsoid that may be denoted by the two-character code 'WE' per Appendix A.1 of [NIMA TR8350.2, DoD World Geodetic System 1984 - Its Definition and Relationships with Local Geodetic Systems, Third Edition, Amendment 1, 3 January 2000].</gml:description>
+                    <gml:identifier codeSpace="http://api.nsgreg.nga.mil/ellipsoid">WGS84_Ellipsoid</gml:identifier>
+                    <gml:name>World Geodetic System 1984</gml:name>
+                    <gml:semiMajorAxis uom="http://api.nsgreg.nga.mil/physical-quantity/length/metre">6378137</gml:semiMajorAxis>
+                    <gml:secondDefiningParameter>
+                        <gml:SecondDefiningParameter>
+                            <gml:inverseFlattening uom="http://api.nsgreg.nga.mil/physical-quantity/pureNumber/ratio">298.257223563</gml:inverseFlattening>
+                        </gml:SecondDefiningParameter>
+                    </gml:secondDefiningParameter>
+                </gml:Ellipsoid>
+            </gml:ellipsoid>
+        </gml:GeodeticDatum>
+    </gml:geodeticDatum>
+    <reg:status>
+        <reg:itemStatus>valid</reg:itemStatus>
+        <reg:dateAccepted>2010-03-08</reg:dateAccepted>
+        <reg:registeredItem>http://nsgreg.nga.mil/ir/view?i=200955</reg:registeredItem>
+    </reg:status>
+</reg:GeodeticCRS>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reg:ListedValue 
+    xmlns:reg="http://api.nsgreg.nga.mil/schema/register/1.0" 
+    xmlns:dt="http://api.nsgreg.nga.mil/schema/register/1.0/dt" 
+    xmlns:gml="http://www.opengis.net/gml/3.2" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://api.nsgreg.nga.mil/schema/register/1.0 http://api.nsgreg.nga.mil/schema/register/1.0.0/register.xsd" 
+    gml:id="topographicFeatures">
+    <gml:description>Aspects of GEOINT relating to the topographic characteristics of the terrestrial environment.</gml:description>
+    <gml:identifier codeSpace="http://api.nsgreg.nga.mil/codelist/ResourceCategoryCode">topographicFeatures</gml:identifier>
+    <gml:name>Topographic Features</gml:name>
+    <gml:remarks>These aspects include naturally occurring features such as mountains, valleys, plains, and bodies of water, as well as human-made features such as roads, railroads, and landfills.</gml:remarks>
+    <dt:integerCode>8</dt:integerCode>
+    <reg:status>
+        <reg:itemStatus>valid</reg:itemStatus>
+        <reg:dateAccepted>2012-06-19</reg:dateAccepted>
+        <reg:registeredItem>http://nsgreg.nga.mil/ir/view?i=110566</reg:registeredItem>
+    </reg:status>
+</reg:ListedValue>

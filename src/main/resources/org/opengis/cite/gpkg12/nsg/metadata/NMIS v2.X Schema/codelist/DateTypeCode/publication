@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reg:ListedValue 
+    xmlns:reg="http://api.nsgreg.nga.mil/schema/register/1.0" 
+    xmlns:dt="http://api.nsgreg.nga.mil/schema/register/1.0/dt" 
+    xmlns:gml="http://www.opengis.net/gml/3.2" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://api.nsgreg.nga.mil/schema/register/1.0 http://api.nsgreg.nga.mil/schema/register/1.0.0/register.xsd" 
+    gml:id="publication">
+    <gml:description>The date identifies when the resource was published (issued).</gml:description>
+    <gml:identifier codeSpace="http://api.nsgreg.nga.mil/codelist/DateTypeCode">publication</gml:identifier>
+    <gml:name>Publication</gml:name>
+    <dt:integerCode>2</dt:integerCode>
+    <reg:status>
+        <reg:itemStatus>valid</reg:itemStatus>
+        <reg:dateAccepted>2011-09-15</reg:dateAccepted>
+        <reg:registeredItem>http://nsgreg.nga.mil/ir/view?i=109961</reg:registeredItem>
+    </reg:status>
+</reg:ListedValue>

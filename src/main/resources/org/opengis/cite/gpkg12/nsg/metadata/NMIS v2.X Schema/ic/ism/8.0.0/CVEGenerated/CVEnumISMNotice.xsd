@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--UNCLASSIFIED--><xsd:schema xmlns:ismnotice="urn:us:gov:ic:cvenum:ism:notice"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:ism="urn:us:gov:ic:ism"
+            elementFormDefault="qualified"
+            xml:lang="en"
+            ism:ownerProducer="USA"
+            ism:classification="U"
+            ism:DESVersion="8"
+            ism:resourceElement="true"
+            ism:createDate="2011-09-01"
+            targetNamespace="urn:us:gov:ic:cvenum:ism:notice">
+   <xsd:annotation>
+      <xsd:documentation>
+                    The W3C XML Schema fragment encoding types for CVEnumISMNotice Version 1 controlled vocabulary enumerations. This file is generated, so edits should be made to the CVEnumISMNotice.xml CVE it is based on, instead of here.
+                </xsd:documentation>
+   </xsd:annotation>
+   <!--*************************************************************-->
+<!--Generated TYPE DEFINITIONS ..................................-->
+<!--*************************************************************-->
+<xsd:simpleType name="CVEnumISMNoticeValues">
+      <xsd:annotation>
+         <xsd:documentation>(U) All currently authorized Notice values
+                         PERMISSIBLE VALUES
+                         
+                         The permissible values for this simple type are defined in the Controlled Value Enumeration:
+                         
+                         CVEnumISMNotice.xml
+                         
+                     </xsd:documentation>
+      </xsd:annotation>
+      <xsd:restriction base="xsd:token"><!--(U) The value "FISA" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="FISA">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) FISA Warning statement</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "IMC" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="IMC">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) IMCON Warning statement</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "CNWDI" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="CNWDI">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) Controled Nuclear Weapon Design Information Warning statement</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "RD" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="RD">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) RD Warning statement</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "FRD" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="FRD">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) FRD Warning statement</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "DS" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="DS">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) LIMDIS caveat</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "LES" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="LES">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) LES Notice</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "LES-NF" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="LES-NF">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) LES Notice</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "DSEN" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="DSEN">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) DSEN Notice</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "DoD-Dist-A" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="DoD-Dist-A">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) DoD Distribution statement A from DoD Directive 5230.24</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "DoD-Dist-B" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="DoD-Dist-B">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) DoD Distribution statement B from DoD Directive 5230.24</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "DoD-Dist-C" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="DoD-Dist-C">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) DoD Distribution statement C from DoD Directive 5230.24</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "DoD-Dist-D" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="DoD-Dist-D">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) DoD Distribution statement D from DoD Directive 5230.24</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "DoD-Dist-E" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="DoD-Dist-E">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) DoD Distribution statement E from DoD Directive 5230.24</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "DoD-Dist-F" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="DoD-Dist-F">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) DoD Distribution statement F from DoD Directive 5230.24</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "DoD-Dist-X" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="DoD-Dist-X">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) DoD Distribution statement X from DoD Directive 5230.24</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "US-Person" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="US-Person">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) US Person info Notice</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "pre13526ORCON" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="pre13526ORCON">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) Indicates that an instance document must abide by rules pertaining to ORIGINATOR CONTROLLED data issued prior to Executive Order 13526.</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+         <!--(U) The value "POC" is classified (U) --><xsd:enumeration ism:classification="U" ism:ownerProducer="USA" value="POC">
+            <xsd:annotation ism:classification="U" ism:ownerProducer="USA">
+               <xsd:documentation>(U) Indicates that the contents of this notice specify the contact information for a required point-of-contact.</xsd:documentation>
+            </xsd:annotation>
+         </xsd:enumeration>
+      </xsd:restriction>
+   </xsd:simpleType>
+   <xsd:simpleType name="CVEnumISMNotice">
+      <xsd:restriction>
+         <xsd:simpleType>
+            <xsd:list itemType="ismnotice:CVEnumISMNoticeValues"/>
+         </xsd:simpleType>
+         <xsd:maxLength value="19"/>
+      </xsd:restriction>
+   </xsd:simpleType>
+</xsd:schema>

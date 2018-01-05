@@ -43,7 +43,7 @@ public class TestNGController implements TestSuiteController {
      * <p>
      * <strong>Synopsis</strong>
      * </p>
-     * 
+     *
      * <pre>
      * ets-*-aio.jar [-o|--outputDir $TMPDIR] [test-run-props.xml]
      * </pre>
@@ -82,7 +82,7 @@ public class TestNGController implements TestSuiteController {
 
     /**
      * Construct a controller that writes results to the given output directory.
-     * 
+     *
      * @param outputDir
      *            The location of the directory in which test results will be
      *            written; it will be created if it does not exist.
@@ -93,9 +93,16 @@ public class TestNGController implements TestSuiteController {
         }
         catch (IOException ex) {
         	TestSuiteLogger.log(Level.WARNING, "Unable to load ets.properties. " + ex.getMessage());
-        } 
+        }
         URL tngSuite = TestNGController.class.getResource("testng.xml");
-        File resultsDir = new File(URI.create(outputDir));
+        File resultsDir;
+        if (null == outputDir || outputDir.isEmpty()) {
+            resultsDir = new File(System.getProperty("user.home"));
+        } else if (outputDir.startsWith("file:")) {
+            resultsDir = new File(URI.create(outputDir));
+        } else {
+            resultsDir = new File(outputDir);
+        }
         TestSuiteLogger.log(Level.CONFIG, "Using TestNG config: " + tngSuite);
         TestSuiteLogger.log(Level.CONFIG, "Using outputDirPath: " + resultsDir.getAbsolutePath());
         // NOTE: setting third argument to 'true' enables the default listeners

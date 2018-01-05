@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<reg:ListedValue 
+    xmlns:reg="http://api.nsgreg.nga.mil/schema/register/1.0" 
+    xmlns:dt="http://api.nsgreg.nga.mil/schema/register/1.0/dt" 
+    xmlns:gml="http://www.opengis.net/gml/3.2" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://api.nsgreg.nga.mil/schema/register/1.0 http://api.nsgreg.nga.mil/schema/register/1.0.0/register.xsd" 
+    gml:id="controlledImagery">
+    <gml:description>Aspects of GEOINT relating to the capture, positioning, rectification, processing, and distribution of imagery (still and motion) data, to include electromagnetic spectral bands extending from electro-optical and infrared through microwave and radar.</gml:description>
+    <gml:identifier codeSpace="http://api.nsgreg.nga.mil/codelist/ResourceCategoryCode">controlledImagery</gml:identifier>
+    <gml:name>Controlled Imagery</gml:name>
+    <gml:remarks>Imagery includes any of sensor-related data that is organized in a two- or three-dimensional formats for the purpose of exploitation.</gml:remarks>
+    <dt:integerCode>2</dt:integerCode>
+    <reg:status>
+        <reg:itemStatus>valid</reg:itemStatus>
+        <reg:dateAccepted>2012-06-19</reg:dateAccepted>
+        <reg:registeredItem>http://nsgreg.nga.mil/ir/view?i=110560</reg:registeredItem>
+    </reg:status>
+</reg:ListedValue>

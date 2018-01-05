@@ -117,6 +117,7 @@ public class MetadataTests extends CommonFixture
 		}		
 	}
 
+
 	/**
 	 * A GeoPackage MAY contain a table named gpkg_metadata. If present it
 	 * SHALL be defined per clauses <a href=
