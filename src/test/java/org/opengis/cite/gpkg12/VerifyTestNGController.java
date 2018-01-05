@@ -54,25 +54,26 @@ public class VerifyTestNGController {
     public void cleanTestRun() throws Exception {
     	
         runTests(ClassLoader.getSystemResource("gpkg/gpkg-test-5208.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_spi_nonlinear_webp_elevation.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_spatial_index_extension.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_no_extensions.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_no_extensions_with_gpkg_ogr_contents.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/empty.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/states10.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/bluemarble.gpkg"), 0);
+        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_spi_nonlinear_webp_elevation.gpkg"), 6);
+        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_spatial_index_extension.gpkg"), 4);
+        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_no_extensions.gpkg"), 4);
+        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_no_extensions_with_gpkg_ogr_contents.gpkg"), 4);
+        runTests(ClassLoader.getSystemResource("gpkg/empty.gpkg"), 1);
+        runTests(ClassLoader.getSystemResource("gpkg/states10.gpkg"), 3);
+        runTests(ClassLoader.getSystemResource("gpkg/bluemarble.gpkg"), 3);
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/elevation.gpkg"), 0); // These two are the id notnull thing
-        runTests(ClassLoader.getSystemResource("gpkg/coastline-polyline-hydro-115mil-and-smaller.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/v12_bad_attributes.gpkg"), 1); // R119
-        runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 1); // R77
-        runTests(ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg"), 1); // This is an invalid 1.0 or 1.1 GPKG - it has an invalid metadata table (md_standard_URI instead of md_standard_uri) 
-        runTests(ClassLoader.getSystemResource("gpkg/sample1_1.gpkg"), 1); // R77
-        runTests(ClassLoader.getSystemResource("gpkg/sample1_2.gpkg"), 1); // R77
-        runTests(ClassLoader.getSystemResource("gpkg/sample1_2F10.gpkg"), 2); // Default "undefined", R77
-        runTests(ClassLoader.getSystemResource("gpkg/geonames_belgium.gpkg"), 3); // lower case data types, R77
-        runTests(ClassLoader.getSystemResource("gpkg/haiti-vectors-split.gpkg"), 3); // lower case data types, R77
-        runTests(ClassLoader.getSystemResource("gpkg/bentiu_southsudan-osm-20170213.gpkg"), 2); //R5, R29
+        runTests(ClassLoader.getSystemResource("gpkg/elevation.gpkg"), 4); // These two are the id notnull thing
+        runTests(ClassLoader.getSystemResource("gpkg/coastline-polyline-hydro-115mil-and-smaller.gpkg"), 2);
+        runTests(ClassLoader.getSystemResource("gpkg/v12_bad_attributes.gpkg"), 4); // R119
+        runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 4); // R77
+        runTests(ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg"), 4); // This is an invalid 1.0 or 1.1 GPKG - it has an invalid metadata table (md_standard_URI instead of md_standard_uri) 
+        runTests(ClassLoader.getSystemResource("gpkg/sample1_1.gpkg"), 4); // R77
+        runTests(ClassLoader.getSystemResource("gpkg/sample1_2.gpkg"), 4); // R77
+        runTests(ClassLoader.getSystemResource("gpkg/sample1_2F10.gpkg"), 5); // Default "undefined", R77
+        runTests(ClassLoader.getSystemResource("gpkg/geonames_belgium.gpkg"), 6); // lower case data types, R77
+        runTests(ClassLoader.getSystemResource("gpkg/haiti-vectors-split.gpkg"), 6); // lower case data types, R77
+        runTests(ClassLoader.getSystemResource("gpkg/bentiu_southsudan-osm-20170213.gpkg"), 5); //R5, R29       
+        runTests(ClassLoader.getSystemResource("gpkg/AGC_NAIP_DonaAnaRange_NM_13_16_10_11MAY2017.gpkg"), 1);
     }
     private void runTests(URL testSubject, int fails) throws Exception {
         this.testRunProps.setProperty(TestRunArg.IUT.toString(), testSubject.toURI().toString());

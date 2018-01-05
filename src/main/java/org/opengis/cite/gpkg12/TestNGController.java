@@ -95,7 +95,14 @@ public class TestNGController implements TestSuiteController {
         	TestSuiteLogger.log(Level.WARNING, "Unable to load ets.properties. " + ex.getMessage());
         }
         URL tngSuite = TestNGController.class.getResource("testng.xml");
-        File resultsDir = new File(URI.create(outputDir));
+        File resultsDir;
+        if (null == outputDir || outputDir.isEmpty()) {
+            resultsDir = new File(System.getProperty("user.home"));
+        } else if (outputDir.startsWith("file:")) {
+            resultsDir = new File(URI.create(outputDir));
+        } else {
+            resultsDir = new File(outputDir);
+        }
         TestSuiteLogger.log(Level.CONFIG, "Using TestNG config: " + tngSuite);
         TestSuiteLogger.log(Level.CONFIG, "Using outputDirPath: " + resultsDir.getAbsolutePath());
         // NOTE: setting third argument to 'true' enables the default listeners
