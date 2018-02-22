@@ -45,7 +45,7 @@ public class CommonFixture {
 	}
 	
 	private GeoPackageVersion[] allowedVersions = {GeoPackageVersion.V102, GeoPackageVersion.V110, GeoPackageVersion.V120};
-	private final String ICS = "Core,Tiles,Features,Attributes,Extensions,Non-linear Geometries,RTree Index,Webp,Metadata,Schema,CRS WKT,Tiled Gridded Elevation Data";
+	private final String ICS = "Core,Tiles,Features,Attributes,Extension Mechanism,Non-Linear Geometry Types,RTree Spatial Indexes,Tiles Encoding WebP,Metadata,Schema,WKT for Coordinate Reference Systems,Tiled Gridded Elevation Data";
 	
 	protected GeoPackageVersion[] getAllowedVersions() {
 		return allowedVersions;
