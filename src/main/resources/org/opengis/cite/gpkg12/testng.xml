@@ -33,22 +33,22 @@
       <package name="org.opengis.cite.gpkg12.attributes" />
     </packages>
   </test>
-  <test name="Extensions">
+  <test name="Extension Mechanism">
     <packages>
       <package name="org.opengis.cite.gpkg12.extensions" />
     </packages>
   </test>
-  <test name="Non-linear Geometries">
+  <test name="Non-Linear Geometry Types">
     <packages>
       <package name="org.opengis.cite.gpkg12.extensions.nonlinear" />
     </packages>
   </test>
-  <test name="RTree Index">
+  <test name="RTree Spatial Indexes">
     <packages>
       <package name="org.opengis.cite.gpkg12.extensions.rtreeindex" />
     </packages>
   </test>
-  <test name="Webp">
+  <test name="Tiles Encoding WebP">
     <packages>
       <package name="org.opengis.cite.gpkg12.extensions.webp" />
     </packages>
@@ -63,7 +63,7 @@
       <package name="org.opengis.cite.gpkg12.extensions.schema" />
     </packages>
   </test>
-  <test name="CRS WKT">
+  <test name="WKT for Coordinate Reference Systems">
     <packages>
       <package name="org.opengis.cite.gpkg12.extensions.crswkt" />
     </packages>

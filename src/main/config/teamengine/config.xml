@@ -17,13 +17,13 @@
           <conformanceClass>Tiles</conformanceClass>
           <conformanceClass>Features</conformanceClass>
           <conformanceClass>Attributes</conformanceClass>
-          <conformanceClass>Extensions</conformanceClass>
-          <conformanceClass>Non-linear Geometries</conformanceClass>
-          <conformanceClass>RTree Index</conformanceClass>
-          <conformanceClass>Webp</conformanceClass>
+          <conformanceClass>Extension Mechanism</conformanceClass>
+          <conformanceClass>Non-Linear Geometry Types</conformanceClass>
+          <conformanceClass>RTree Spatial Indexes</conformanceClass>
+          <conformanceClass>Tiles Encoding WebP</conformanceClass>
           <conformanceClass>Metadata</conformanceClass>
           <conformanceClass>Schema</conformanceClass>
-          <conformanceClass>CRS WKT</conformanceClass>
+          <conformanceClass>WKT for Coordinate Reference Systems</conformanceClass>
           <conformanceClass>Tiled Gridded Elevation Data</conformanceClass>
         </BasicConformanceClasses>
       </suite>
