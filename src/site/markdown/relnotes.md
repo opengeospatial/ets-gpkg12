@@ -1,5 +1,10 @@
 # Release Notes GeoPackage (gpkg) 1.2
 
+## 0.4 (2018-02-28)
+* Fix [#37](https://github.com/opengeospatial/ets-gpkg12/issues/37): Review list of implemented conformance classes in test report and documentation
+* Merge [#39](https://github.com/opengeospatial/ets-gpkg12/pull/39): 1.2 Test Suite Input Conformance Classes
+* Fix [#27](https://github.com/opengeospatial/ets-gpkg12/issues/27): REST API: All tests are skipped
+
 ## 0.3 (2017-11-17)
 * Fix [#26](https://github.com/opengeospatial/ets-gpkg12/issues/26): Encoding Conformance Classes
 
