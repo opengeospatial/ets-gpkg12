@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>GPKG12.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12</a> &gt; <span class="el_source">GPKG12.java</span></div><h1>GPKG12.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12;
+
+import java.nio.charset.StandardCharsets;
+
+/**
+ * Provides various constants pertaining to GeoPackage 1.2 data containers.
+ */
+<span class="nc" id="L8">public class GPKG12 {</span>
+
+    /** Length of SQLite database file header (bytes). */
+    public static final int DB_HEADER_LENGTH = 100;
+    /** Starting offset of &quot;Application ID&quot; field in file header (4 bytes). */
+    public static final int APP_ID_OFFSET = 68;
+    /** SQLite v3 header string (terminated with a NULL character). */
+<span class="fc" id="L15">    public static final byte[] SQLITE_MAGIC_HEADER = new String(&quot;SQLite format 3\0&quot;)</span>
+<span class="fc" id="L16">            .getBytes(StandardCharsets.US_ASCII);</span>
+    /** Application id for OGC GeoPackage 1.0. */
+<span class="fc" id="L18">    public static final byte[] APP_GP10 = new String(&quot;GP10&quot;).getBytes(StandardCharsets.US_ASCII);</span>
+    /** Application id for OGC GeoPackage 1.1. */
+<span class="fc" id="L20">    public static final byte[] APP_GP11 = new String(&quot;GP11&quot;).getBytes(StandardCharsets.US_ASCII);</span>
+    /** Application id for OGC GeoPackage 1.2. */
+<span class="fc" id="L22">    public static final byte[] APP_GPKG = new String(&quot;GPKG&quot;).getBytes(StandardCharsets.US_ASCII);</span>
+    /** GeoPackage file name extension. */
+    public static final String GPKG_FILENAME_SUFFIX = &quot;.gpkg&quot;;
+    // String that must be returned upon a pragma integrity check
+    public static final String PRAGMA_INTEGRITY_CHECK = &quot;ok&quot;;
+    // Prefix for a GeoPackage Standard Binary
+<span class="fc" id="L28">    public static final byte[] BINARY_GP = new String(&quot;GP&quot;).getBytes(StandardCharsets.US_ASCII);</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

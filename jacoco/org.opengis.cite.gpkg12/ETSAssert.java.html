@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ETSAssert.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12</a> &gt; <span class="el_source">ETSAssert.java</span></div><h1>ETSAssert.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12;
+
+import java.net.URL;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.xml.namespace.QName;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Validator;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
+import org.opengis.cite.gpkg12.util.NamespaceBindings;
+import org.opengis.cite.gpkg12.util.XMLUtils;
+import org.opengis.cite.validation.SchematronValidator;
+import org.opengis.cite.validation.ValidationErrorHandler;
+import org.testng.Assert;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import com.sun.jersey.api.client.ClientResponse;
+
+/**
+ * Provides a set of custom assertion methods.
+ */
+public class ETSAssert {
+
+<span class="fc" id="L35">    private static final Logger LOGR = Logger.getLogger(ETSAssert.class.getPackage().getName());</span>
+
+<span class="nc" id="L37">    private ETSAssert() {</span>
+<span class="nc" id="L38">    }</span>
+
+    /**
+     * Asserts that the qualified name of a DOM Node matches the expected value.
+     * 
+     * @param node
+     *            The Node to check.
+     * @param qName
+     *            A QName object containing a namespace name (URI) and a local
+     *            part.
+     */
+    public static void assertQualifiedName(Node node, QName qName) {
+<span class="nc" id="L50">        Assert.assertEquals(node.getLocalName(), qName.getLocalPart(), ErrorMessage.get(ErrorMessageKeys.LOCAL_NAME));</span>
+<span class="nc" id="L51">        Assert.assertEquals(node.getNamespaceURI(), qName.getNamespaceURI(),</span>
+<span class="nc" id="L52">                ErrorMessage.get(ErrorMessageKeys.NAMESPACE_NAME));</span>
+<span class="nc" id="L53">    }</span>
+
+    /**
+     * Asserts that an XPath 1.0 expression holds true for the given evaluation
+     * context. The following standard namespace bindings do not need to be
+     * explicitly declared:
+     * 
+     * &lt;ul&gt;
+     * &lt;li&gt;ows: {@value org.opengis.cite.gpkg12.Namespaces#OWS}&lt;/li&gt;
+     * &lt;li&gt;xlink: {@value org.opengis.cite.gpkg12.Namespaces#XLINK}&lt;/li&gt;
+     * &lt;li&gt;gml: {@value org.opengis.cite.gpkg12.Namespaces#GML}&lt;/li&gt;
+     * &lt;/ul&gt;
+     * 
+     * @param expr
+     *            A valid XPath 1.0 expression.
+     * @param context
+     *            The context node.
+     * @param namespaceBindings
+     *            A collection of namespace bindings for the XPath expression,
+     *            where each entry maps a namespace URI (key) to a prefix
+     *            (value). It may be {@code null}.
+     */
+    public static void assertXPath(String expr, Node context, Map&lt;String, String&gt; namespaceBindings) {
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        if (null == context) {</span>
+<span class="nc" id="L77">            throw new NullPointerException(&quot;Context node is null.&quot;);</span>
+        }
+<span class="fc" id="L79">        NamespaceBindings bindings = NamespaceBindings.withStandardBindings();</span>
+<span class="fc" id="L80">        bindings.addAllBindings(namespaceBindings);</span>
+<span class="fc" id="L81">        XPath xpath = XPathFactory.newInstance().newXPath();</span>
+<span class="fc" id="L82">        xpath.setNamespaceContext(bindings);</span>
+        Boolean result;
+        try {
+<span class="fc" id="L85">            result = (Boolean) xpath.evaluate(expr, context, XPathConstants.BOOLEAN);</span>
+<span class="nc" id="L86">        } catch (XPathExpressionException xpe) {</span>
+<span class="nc" id="L87">            String msg = ErrorMessage.format(ErrorMessageKeys.XPATH_ERROR, expr);</span>
+<span class="nc" id="L88">            LOGR.log(Level.WARNING, msg, xpe);</span>
+<span class="nc" id="L89">            throw new AssertionError(msg);</span>
+<span class="fc" id="L90">        }</span>
+        Element elemNode;
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (Document.class.isInstance(context)) {</span>
+<span class="fc" id="L93">            elemNode = Document.class.cast(context).getDocumentElement();</span>
+        } else {
+<span class="nc" id="L95">            elemNode = (Element) context;</span>
+        }
+<span class="fc" id="L97">        Assert.assertTrue(result, ErrorMessage.format(ErrorMessageKeys.XPATH_RESULT, elemNode.getNodeName(), expr));</span>
+<span class="fc" id="L98">    }</span>
+
+    /**
+     * Asserts that an XML resource is schema-valid.
+     * 
+     * @param validator
+     *            The Validator to use.
+     * @param source
+     *            The XML Source to be validated.
+     */
+    public static void assertSchemaValid(Validator validator, Source source) {
+<span class="fc" id="L109">        ValidationErrorHandler errHandler = new ValidationErrorHandler();</span>
+<span class="fc" id="L110">        validator.setErrorHandler(errHandler);</span>
+        try {
+<span class="fc" id="L112">            validator.validate(source);</span>
+<span class="nc" id="L113">        } catch (Exception e) {</span>
+<span class="nc" id="L114">            throw new AssertionError(ErrorMessage.format(ErrorMessageKeys.XML_ERROR, e.getMessage()));</span>
+<span class="fc" id="L115">        }</span>
+<span class="pc" id="L116">        Assert.assertFalse(errHandler.errorsDetected(), ErrorMessage.format(ErrorMessageKeys.NOT_SCHEMA_VALID,</span>
+<span class="fc" id="L117">                errHandler.getErrorCount(), errHandler.toString()));</span>
+<span class="nc" id="L118">    }</span>
+
+    /**
+     * Asserts that an XML resource satisfies all applicable constraints defined
+     * for the specified phase in a Schematron (ISO 19757-3) schema. The &quot;xslt2&quot;
+     * query language binding is supported. Two phase names have special
+     * meanings:
+     * &lt;ul&gt;
+     * &lt;li&gt;&quot;#ALL&quot;: All patterns are active&lt;/li&gt;
+     * &lt;li&gt;&quot;#DEFAULT&quot;: The phase identified by the defaultPhase attribute on the
+     * schema element should be used.&lt;/li&gt;
+     * &lt;/ul&gt;
+     * 
+     * @param schemaRef
+     *            A URL that denotes the location of a Schematron schema.
+     * @param xmlSource
+     *            The XML Source to be validated.
+     * @param activePhase
+     *            The active phase (pattern set) whose patterns are used for
+     *            validation; this is set to &quot;#ALL&quot; if not specified.
+     */
+    public static void assertSchematronValid(URL schemaRef, Source xmlSource, String activePhase) {
+<span class="nc bnc" id="L140" title="All 4 branches missed.">        String phase = (null == activePhase || activePhase.isEmpty()) ? &quot;#ALL&quot; : activePhase;</span>
+        SchematronValidator validator;
+        try {
+<span class="nc" id="L143">            validator = new SchematronValidator(new StreamSource(schemaRef.toString()), phase);</span>
+<span class="nc" id="L144">        } catch (Exception e) {</span>
+<span class="nc" id="L145">            StringBuilder msg = new StringBuilder(&quot;Failed to process Schematron schema at &quot;);</span>
+<span class="nc" id="L146">            msg.append(schemaRef).append('\n');</span>
+<span class="nc" id="L147">            msg.append(e.getMessage());</span>
+<span class="nc" id="L148">            throw new AssertionError(msg);</span>
+<span class="nc" id="L149">        }</span>
+<span class="nc" id="L150">        Result result = validator.validate(xmlSource);</span>
+<span class="nc" id="L151">        Assert.assertFalse(validator.ruleViolationsDetected(), ErrorMessage.format(ErrorMessageKeys.NOT_SCHEMA_VALID,</span>
+<span class="nc" id="L152">                validator.getRuleViolationCount(), XMLUtils.resultToString(result)));</span>
+<span class="nc" id="L153">    }</span>
+
+    /**
+     * Asserts that the given XML entity contains the expected number of
+     * descendant elements having the specified name.
+     * 
+     * @param xmlEntity
+     *            A Document representing an XML entity.
+     * @param elementName
+     *            The qualified name of the element.
+     * @param expectedCount
+     *            The expected number of occurrences.
+     */
+    public static void assertDescendantElementCount(Document xmlEntity, QName elementName, int expectedCount) {
+<span class="nc" id="L167">        NodeList features = xmlEntity.getElementsByTagNameNS(elementName.getNamespaceURI(), elementName.getLocalPart());</span>
+<span class="nc" id="L168">        Assert.assertEquals(features.getLength(), expectedCount,</span>
+<span class="nc" id="L169">                String.format(&quot;Unexpected number of %s descendant elements.&quot;, elementName));</span>
+<span class="nc" id="L170">    }</span>
+
+    /**
+     * Asserts that the given response message contains an OGC exception report.
+     * The message body must contain an XML document that has a document element
+     * with the following properties:
+     *
+     * &lt;ul&gt;
+     * &lt;li&gt;[local name] = &quot;ExceptionReport&quot;&lt;/li&gt;
+     * &lt;li&gt;[namespace name] = &quot;http://www.opengis.net/ows/2.0&quot;&lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @param rsp
+     *            A ClientResponse object representing an HTTP response message.
+     * @param exceptionCode
+     *            The expected OGC exception code.
+     * @param locator
+     *            A case-insensitive string value expected to occur in the
+     *            locator attribute (e.g. a parameter name); the attribute value
+     *            will be ignored if the argument is null or empty.
+     */
+    public static void assertExceptionReport(ClientResponse rsp, String exceptionCode, String locator) {
+<span class="nc" id="L192">        Assert.assertEquals(rsp.getStatus(), ClientResponse.Status.BAD_REQUEST.getStatusCode(),</span>
+<span class="nc" id="L193">                ErrorMessage.get(ErrorMessageKeys.UNEXPECTED_STATUS));</span>
+<span class="nc" id="L194">        Document doc = rsp.getEntity(Document.class);</span>
+<span class="nc" id="L195">        String expr = String.format(&quot;//ows:Exception[@exceptionCode = '%s']&quot;, exceptionCode);</span>
+<span class="nc" id="L196">        NodeList nodeList = null;</span>
+        try {
+<span class="nc" id="L198">            nodeList = XMLUtils.evaluateXPath(doc, expr, null);</span>
+<span class="nc" id="L199">        } catch (XPathExpressionException xpe) {</span>
+            // won't happen
+<span class="nc" id="L201">        }</span>
+<span class="nc bnc" id="L202" title="All 2 branches missed.">        Assert.assertTrue(nodeList.getLength() &gt; 0, &quot;Exception not found in response: &quot; + expr);</span>
+<span class="nc bnc" id="L203" title="All 4 branches missed.">        if (null != locator &amp;&amp; !locator.isEmpty()) {</span>
+<span class="nc" id="L204">            Element exception = (Element) nodeList.item(0);</span>
+<span class="nc" id="L205">            String locatorValue = exception.getAttribute(&quot;locator&quot;).toLowerCase();</span>
+<span class="nc" id="L206">            Assert.assertTrue(locatorValue.contains(locator.toLowerCase()),</span>
+<span class="nc" id="L207">                    String.format(&quot;Expected locator attribute to contain '%s']&quot;, locator));</span>
+        }
+<span class="nc" id="L209">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

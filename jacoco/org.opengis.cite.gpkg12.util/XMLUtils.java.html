@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>XMLUtils.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.util</a> &gt; <span class="el_source">XMLUtils.java</span></div><h1>XMLUtils.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.util;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import net.sf.saxon.s9api.DOMDestination;
+import net.sf.saxon.s9api.DocumentBuilder;
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.SaxonApiException;
+import net.sf.saxon.s9api.XPathCompiler;
+import net.sf.saxon.s9api.XPathSelector;
+import net.sf.saxon.s9api.XQueryCompiler;
+import net.sf.saxon.s9api.XQueryEvaluator;
+import net.sf.saxon.s9api.XQueryExecutable;
+import net.sf.saxon.s9api.XdmNode;
+import net.sf.saxon.s9api.XdmValue;
+import net.sf.saxon.s9api.XsltCompiler;
+import net.sf.saxon.s9api.XsltExecutable;
+import net.sf.saxon.s9api.XsltTransformer;
+
+/**
+ * Provides various utility methods for accessing or manipulating XML
+ * representations.
+ */
+<span class="nc" id="L65">public class XMLUtils {</span>
+
+<span class="fc" id="L67">    private static final Logger LOGR = Logger.getLogger(XMLUtils.class.getPackage().getName());</span>
+<span class="fc" id="L68">    private static final XMLInputFactory STAX_FACTORY = initXMLInputFactory();</span>
+<span class="fc" id="L69">    private static final XPathFactory XPATH_FACTORY = initXPathFactory();</span>
+
+    private static XPathFactory initXPathFactory() {
+<span class="fc" id="L72">        XPathFactory factory = XPathFactory.newInstance();</span>
+<span class="fc" id="L73">        return factory;</span>
+    }
+
+    private static XMLInputFactory initXMLInputFactory() {
+<span class="fc" id="L77">        XMLInputFactory factory = XMLInputFactory.newInstance();</span>
+<span class="fc" id="L78">        factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.TRUE);</span>
+<span class="fc" id="L79">        return factory;</span>
+    }
+
+    /**
+     * Writes the content of a DOM Node to a string. The XML declaration is
+     * omitted and the character encoding is set to &quot;US-ASCII&quot; (any character
+     * outside of this set is serialized as a numeric character reference).
+     *
+     * @param node
+     *            The DOM Node to be serialized.
+     * @return A String representing the content of the given node.
+     */
+    public static String writeNodeToString(Node node) {
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (null == node) {</span>
+<span class="nc" id="L93">            return &quot;&quot;;</span>
+        }
+<span class="fc" id="L95">        Writer writer = null;</span>
+        try {
+<span class="fc" id="L97">            Transformer idTransformer = TransformerFactory.newInstance().newTransformer();</span>
+<span class="fc" id="L98">            Properties outProps = new Properties();</span>
+<span class="fc" id="L99">            outProps.setProperty(OutputKeys.ENCODING, &quot;US-ASCII&quot;);</span>
+<span class="fc" id="L100">            outProps.setProperty(OutputKeys.OMIT_XML_DECLARATION, &quot;yes&quot;);</span>
+<span class="fc" id="L101">            outProps.setProperty(OutputKeys.INDENT, &quot;yes&quot;);</span>
+<span class="fc" id="L102">            idTransformer.setOutputProperties(outProps);</span>
+<span class="fc" id="L103">            writer = new StringWriter();</span>
+<span class="fc" id="L104">            idTransformer.transform(new DOMSource(node), new StreamResult(writer));</span>
+<span class="nc" id="L105">        } catch (TransformerException ex) {</span>
+<span class="nc" id="L106">            TestSuiteLogger.log(Level.WARNING, &quot;Failed to serialize node &quot; + node.getNodeName(), ex);</span>
+<span class="fc" id="L107">        }</span>
+<span class="fc" id="L108">        return writer.toString();</span>
+    }
+
+    /**
+     * Writes the content of a DOM Node to a byte stream. An XML declaration is
+     * always omitted.
+     * 
+     * @param node
+     *            The DOM Node to be serialized.
+     * @param outputStream
+     *            The destination OutputStream reference.
+     */
+    public static void writeNode(Node node, OutputStream outputStream) {
+        try {
+<span class="nc" id="L122">            Transformer idTransformer = TransformerFactory.newInstance().newTransformer();</span>
+<span class="nc" id="L123">            Properties outProps = new Properties();</span>
+<span class="nc" id="L124">            outProps.setProperty(OutputKeys.METHOD, &quot;xml&quot;);</span>
+<span class="nc" id="L125">            outProps.setProperty(OutputKeys.ENCODING, &quot;UTF-8&quot;);</span>
+<span class="nc" id="L126">            outProps.setProperty(OutputKeys.OMIT_XML_DECLARATION, &quot;yes&quot;);</span>
+<span class="nc" id="L127">            outProps.setProperty(OutputKeys.INDENT, &quot;yes&quot;);</span>
+<span class="nc" id="L128">            idTransformer.setOutputProperties(outProps);</span>
+<span class="nc" id="L129">            idTransformer.transform(new DOMSource(node), new StreamResult(outputStream));</span>
+<span class="nc" id="L130">        } catch (TransformerException ex) {</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">            String nodeName = (node.getNodeType() == Node.DOCUMENT_NODE)</span>
+<span class="nc" id="L132">                    ? Document.class.cast(node).getDocumentElement().getNodeName() : node.getNodeName();</span>
+<span class="nc" id="L133">            TestSuiteLogger.log(Level.WARNING, &quot;Failed to serialize DOM node: &quot; + nodeName, ex);</span>
+<span class="nc" id="L134">        }</span>
+<span class="nc" id="L135">    }</span>
+
+    /**
+     * Writes the result of a transformation to a String. An XML declaration is
+     * always omitted.
+     * 
+     * @param result
+     *            An object (DOMResult or StreamResult) that holds the result of
+     *            a transformation, which may be XML or plain text.
+     * @return A String representing the content of the result; it may be empty
+     *         if the content could not be read.
+     */
+    public static String resultToString(Result result) {
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        if (null == result) {</span>
+<span class="nc" id="L149">            throw new IllegalArgumentException(&quot;Result is null.&quot;);</span>
+        }
+<span class="nc" id="L151">        StringWriter writer = new StringWriter();</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        if (result instanceof DOMResult) {</span>
+<span class="nc" id="L153">            Node node = DOMResult.class.cast(result).getNode();</span>
+<span class="nc" id="L154">            Properties outProps = new Properties();</span>
+<span class="nc" id="L155">            outProps.setProperty(OutputKeys.ENCODING, &quot;UTF-8&quot;);</span>
+<span class="nc" id="L156">            outProps.setProperty(OutputKeys.OMIT_XML_DECLARATION, &quot;yes&quot;);</span>
+<span class="nc" id="L157">            outProps.setProperty(OutputKeys.INDENT, &quot;yes&quot;);</span>
+            Transformer idTransformer;
+            try {
+<span class="nc" id="L160">                idTransformer = TransformerFactory.newInstance().newTransformer();</span>
+<span class="nc" id="L161">                idTransformer.setOutputProperties(outProps);</span>
+<span class="nc" id="L162">                idTransformer.transform(new DOMSource(node), new StreamResult(writer));</span>
+<span class="nc" id="L163">            } catch (TransformerFactoryConfigurationError | TransformerException e) {</span>
+<span class="nc" id="L164">                LOGR.warning(e.getMessage());</span>
+<span class="nc" id="L165">            }</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">        } else if (result instanceof StreamResult) {</span>
+<span class="nc" id="L167">            StreamResult streamResult = StreamResult.class.cast(result);</span>
+            @SuppressWarnings(&quot;resource&quot;)
+<span class="nc" id="L169">			OutputStream os = streamResult.getOutputStream();</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">            if (null != os) {</span>
+<span class="nc" id="L171">                writer.write(os.toString()); // probably ByteArrayOutputStream</span>
+                try {
+<span class="nc" id="L173">                	os.close();</span>
+<span class="nc" id="L174">                } catch (IOException e) {}</span>
+            } else { // try system id or writer
+<span class="nc" id="L176">                Path path = Paths.get(URI.create(streamResult.getSystemId()));</span>
+                try {
+<span class="nc" id="L178">                    byte[] data = Files.readAllBytes(path);</span>
+<span class="nc" id="L179">                    writer.write(new String(data));</span>
+<span class="nc" id="L180">                } catch (IOException e) {</span>
+<span class="nc" id="L181">                    LOGR.warning(e.getMessage());</span>
+<span class="nc" id="L182">                }</span>
+            }
+<span class="nc" id="L184">        } else {</span>
+<span class="nc" id="L185">            throw new IllegalArgumentException(&quot;Unsupported Result type:&quot; + result.getClass());</span>
+        }
+<span class="nc" id="L187">        return writer.toString();</span>
+    }
+
+    /**
+     * Evaluates an XPath 1.0 expression using the given context and returns the
+     * result as a node set.
+     * 
+     * @param context
+     *            The context node.
+     * @param expr
+     *            An XPath expression.
+     * @param namespaceBindings
+     *            A collection of namespace bindings for the XPath expression,
+     *            where each entry maps a namespace URI (key) to a prefix
+     *            (value). Standard bindings do not need to be declared (see
+     *            {@link NamespaceBindings#withStandardBindings()}.
+     * @return A NodeList containing nodes that satisfy the expression (it may
+     *         be empty).
+     * @throws XPathExpressionException
+     *             If the expression cannot be evaluated for any reason.
+     */
+    public static NodeList evaluateXPath(Node context, String expr, Map&lt;String, String&gt; namespaceBindings)
+            throws XPathExpressionException {
+<span class="fc" id="L210">        Object result = evaluateXPath(context, expr, namespaceBindings, XPathConstants.NODESET);</span>
+<span class="pc bpc" id="L211" title="1 of 2 branches missed.">        if (!NodeList.class.isInstance(result)) {</span>
+<span class="nc" id="L212">            throw new XPathExpressionException(&quot;Expression does not evaluate to a NodeList: &quot; + expr);</span>
+        }
+<span class="fc" id="L214">        return (NodeList) result;</span>
+    }
+
+    /**
+     * Evaluates an XPath expression using the given context and returns the
+     * result as the specified type.
+     * 
+     * &lt;p&gt;
+     * &lt;strong&gt;Note:&lt;/strong&gt; The Saxon implementation supports XPath 2.0
+     * expressions when using the JAXP XPath APIs (the default implementation
+     * will throw an exception).
+     * &lt;/p&gt;
+     * 
+     * @param context
+     *            The context node.
+     * @param expr
+     *            An XPath expression.
+     * @param namespaceBindings
+     *            A collection of namespace bindings for the XPath expression,
+     *            where each entry maps a namespace URI (key) to a prefix
+     *            (value). Standard bindings do not need to be declared (see
+     *            {@link NamespaceBindings#withStandardBindings()}.
+     * @param returnType
+     *            The desired return type (as declared in {@link XPathConstants}
+     *            ).
+     * @return The result converted to the desired returnType.
+     * @throws XPathExpressionException
+     *             If the expression cannot be evaluated for any reason.
+     */
+    public static Object evaluateXPath(Node context, String expr, Map&lt;String, String&gt; namespaceBindings,
+            QName returnType) throws XPathExpressionException {
+<span class="fc" id="L245">        NamespaceBindings bindings = NamespaceBindings.withStandardBindings();</span>
+<span class="fc" id="L246">        bindings.addAllBindings(namespaceBindings);</span>
+<span class="fc" id="L247">        XPathFactory factory = XPATH_FACTORY;</span>
+        // WARNING: If context node is Saxon NodeOverNodeInfo, the factory must
+        // use the same Configuration object to avoid IllegalArgumentException
+<span class="fc" id="L250">        XPath xpath = factory.newXPath();</span>
+<span class="fc" id="L251">        xpath.setNamespaceContext(bindings);</span>
+<span class="fc" id="L252">        Object result = xpath.evaluate(expr, context, returnType);</span>
+<span class="fc" id="L253">        return result;</span>
+    }
+
+    /**
+     * Evaluates an XPath 2.0 expression using the Saxon s9api interfaces.
+     * 
+     * @param xmlSource
+     *            The XML Source.
+     * @param expr
+     *            The XPath expression to be evaluated.
+     * @param nsBindings
+     *            A collection of namespace bindings required to evaluate the
+     *            XPath expression, where each entry maps a namespace URI (key)
+     *            to a prefix (value); this may be {@code null} if not needed.
+     * @return An XdmValue object representing a value in the XDM data model;
+     *         this is a sequence of zero or more items, where each item is
+     *         either an atomic value or a node.
+     * @throws SaxonApiException
+     *             If an error occurs while evaluating the expression; this
+     *             always wraps some other underlying exception.
+     */
+    public static XdmValue evaluateXPath2(Source xmlSource, String expr, Map&lt;String, String&gt; nsBindings)
+            throws SaxonApiException {
+<span class="fc" id="L276">        Processor proc = new Processor(false);</span>
+<span class="fc" id="L277">        XPathCompiler compiler = proc.newXPathCompiler();</span>
+<span class="fc bfc" id="L278" title="All 2 branches covered.">        if (null != nsBindings) {</span>
+<span class="fc bfc" id="L279" title="All 2 branches covered.">            for (String nsURI : nsBindings.keySet()) {</span>
+<span class="fc" id="L280">                compiler.declareNamespace(nsBindings.get(nsURI), nsURI);</span>
+<span class="fc" id="L281">            }</span>
+        }
+<span class="fc" id="L283">        XPathSelector xpath = compiler.compile(expr).load();</span>
+<span class="fc" id="L284">        DocumentBuilder builder = proc.newDocumentBuilder();</span>
+<span class="fc" id="L285">        XdmNode node = null;</span>
+<span class="fc bfc" id="L286" title="All 2 branches covered.">        if (DOMSource.class.isInstance(xmlSource)) {</span>
+<span class="fc" id="L287">            DOMSource domSource = (DOMSource) xmlSource;</span>
+<span class="fc" id="L288">            node = builder.wrap(domSource.getNode());</span>
+<span class="fc" id="L289">        } else {</span>
+<span class="fc" id="L290">            node = builder.build(xmlSource);</span>
+        }
+<span class="fc" id="L292">        xpath.setContextItem(node);</span>
+<span class="fc" id="L293">        return xpath.evaluate();</span>
+    }
+
+    /**
+     * Evaluates an XQuery 1.0 expression using the Saxon s9api interfaces.
+     *
+     * @param source
+     *            The XML Source.
+     * @param query
+     *            The query expression.
+     * @param nsBindings
+     *            A collection of namespace bindings required to evaluate the
+     *            query, where each entry maps a namespace URI (key) to a prefix
+     *            (value).
+     * @return An XdmValue object representing a value in the XDM data model.
+     * @throws SaxonApiException
+     *             If an error occurs while evaluating the query (this always
+     *             wraps some other underlying exception).
+     */
+    public static XdmValue evaluateXQuery(Source source, String query, Map&lt;String, String&gt; nsBindings)
+            throws SaxonApiException {
+<span class="nc" id="L314">        Processor proc = new Processor(false);</span>
+<span class="nc" id="L315">        XQueryCompiler xqCompiler = proc.newXQueryCompiler();</span>
+<span class="nc bnc" id="L316" title="All 2 branches missed.">        if (null != nsBindings) {</span>
+<span class="nc bnc" id="L317" title="All 2 branches missed.">            for (String nsURI : nsBindings.keySet()) {</span>
+<span class="nc" id="L318">                xqCompiler.declareNamespace(nsBindings.get(nsURI), nsURI);</span>
+<span class="nc" id="L319">            }</span>
+        }
+<span class="nc" id="L321">        XQueryExecutable xqExec = xqCompiler.compile(query);</span>
+<span class="nc" id="L322">        XQueryEvaluator xqEval = xqExec.load();</span>
+<span class="nc" id="L323">        xqEval.setSource(source);</span>
+<span class="nc" id="L324">        return xqEval.evaluate();</span>
+    }
+
+    /**
+     * Creates a new Element having the specified qualified name. The element
+     * must be {@link Document#adoptNode(Node) adopted} when inserted into
+     * another Document.
+     * 
+     * @param qName
+     *            A QName object.
+     * @return An Element node (with a Document owner but no parent).
+     */
+    public static Element createElement(QName qName) {
+<span class="fc" id="L337">        Document doc = null;</span>
+        try {
+<span class="fc" id="L339">            doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();</span>
+<span class="nc" id="L340">        } catch (ParserConfigurationException e) {</span>
+<span class="nc" id="L341">            throw new RuntimeException(e);</span>
+<span class="fc" id="L342">        }</span>
+<span class="fc" id="L343">        Element elem = doc.createElementNS(qName.getNamespaceURI(), qName.getLocalPart());</span>
+<span class="fc" id="L344">        return elem;</span>
+    }
+
+    /**
+     * Returns a List of all descendant Element nodes having the specified
+     * [namespace name] property. The elements are listed in document order.
+     * 
+     * @param node
+     *            The node to search from.
+     * @param namespaceURI
+     *            An absolute URI denoting a namespace name.
+     * @return A List containing elements in the specified namespace; the list
+     *         is empty if there are no elements in the namespace.
+     */
+    public static List&lt;Element&gt; getElementsByNamespaceURI(Node node, String namespaceURI) {
+<span class="nc" id="L359">        List&lt;Element&gt; list = new ArrayList&lt;Element&gt;();</span>
+<span class="nc" id="L360">        NodeList children = node.getChildNodes();</span>
+<span class="nc bnc" id="L361" title="All 2 branches missed.">        for (int i = 0; i &lt; children.getLength(); i++) {</span>
+<span class="nc" id="L362">            Node child = children.item(i);</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">            if (child.getNodeType() != Node.ELEMENT_NODE)</span>
+<span class="nc" id="L364">                continue;</span>
+<span class="nc bnc" id="L365" title="All 2 branches missed.">            if (child.getNamespaceURI().equals(namespaceURI))</span>
+<span class="nc" id="L366">                list.add((Element) child);</span>
+        }
+<span class="nc" id="L368">        return list;</span>
+    }
+
+    /**
+     * Transforms the content of a DOM Node using a specified XSLT stylesheet.
+     * 
+     * @param xslt
+     *            A Source object representing a stylesheet (XSLT 1.0 or 2.0).
+     * @param source
+     *            A Node representing the XML source. If it is an Element node
+     *            it will be imported into a new DOM Document.
+     * @return A DOM Document containing the result of the transformation.
+     */
+    public static Document transform(Source xslt, Node source) {
+<span class="nc" id="L382">        Document sourceDoc = null;</span>
+<span class="nc" id="L383">        Document resultDoc = null;</span>
+        try {
+<span class="nc" id="L385">            resultDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();</span>
+<span class="nc bnc" id="L386" title="All 2 branches missed.">            if (source.getNodeType() == Node.DOCUMENT_NODE) {</span>
+<span class="nc" id="L387">                sourceDoc = (Document) source;</span>
+            } else {
+<span class="nc" id="L389">                sourceDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();</span>
+<span class="nc" id="L390">                sourceDoc.appendChild(sourceDoc.importNode(source, true));</span>
+            }
+<span class="nc" id="L392">        } catch (ParserConfigurationException pce) {</span>
+<span class="nc" id="L393">            throw new RuntimeException(pce);</span>
+<span class="nc" id="L394">        }</span>
+<span class="nc" id="L395">        Processor processor = new Processor(false);</span>
+<span class="nc" id="L396">        XsltCompiler compiler = processor.newXsltCompiler();</span>
+        try {
+<span class="nc" id="L398">            XsltExecutable exec = compiler.compile(xslt);</span>
+<span class="nc" id="L399">            XsltTransformer transformer = exec.load();</span>
+<span class="nc" id="L400">            transformer.setSource(new DOMSource(sourceDoc));</span>
+<span class="nc" id="L401">            transformer.setDestination(new DOMDestination(resultDoc));</span>
+<span class="nc" id="L402">            transformer.transform();</span>
+<span class="nc" id="L403">        } catch (SaxonApiException e) {</span>
+<span class="nc" id="L404">            throw new RuntimeException(e);</span>
+<span class="nc" id="L405">        }</span>
+<span class="nc" id="L406">        return resultDoc;</span>
+    }
+
+    /**
+     * Expands character entity ({@literal &amp;name;}) and numeric references (
+     * {@literal &amp;#xhhhh;} or {@literal &amp;dddd;}) that occur within a given
+     * string value. It may be necessary to do this before processing an XPath
+     * expression.
+     * 
+     * @param value
+     *            A string representing text content.
+     * @return A string with all included references expanded.
+     */
+    public static String expandReferencesInText(String value) {
+<span class="fc" id="L420">        StringBuilder wrapper = new StringBuilder(&quot;&lt;value&gt;&quot;);</span>
+<span class="fc" id="L421">        wrapper.append(value).append(&quot;&lt;/value&gt;&quot;);</span>
+<span class="fc" id="L422">        Reader reader = new StringReader(wrapper.toString());</span>
+<span class="fc" id="L423">        String str = null;</span>
+        try {
+<span class="fc" id="L425">            XMLStreamReader xsr = STAX_FACTORY.createXMLStreamReader(reader);</span>
+<span class="fc" id="L426">            xsr.nextTag(); // document element</span>
+<span class="fc" id="L427">            str = xsr.getElementText();</span>
+<span class="nc" id="L428">        } catch (XMLStreamException xse) {</span>
+<span class="nc" id="L429">            LOGR.log(Level.WARNING, xse.getMessage(), xse);</span>
+<span class="fc" id="L430">        }</span>
+<span class="fc" id="L431">        return str;</span>
+    }
+
+    /**
+     * Creates a DOM Document with the given Element as the document element. A
+     * deep copy of the element is imported; the source element is not altered.
+     *
+     * @param elem
+     *            An Element node.
+     * @return A Document node.
+     */
+    public static Document importElement(Element elem) {
+<span class="nc" id="L443">        javax.xml.parsers.DocumentBuilder docBuilder = null;</span>
+        try {
+<span class="nc" id="L445">            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();</span>
+<span class="nc" id="L446">            factory.setNamespaceAware(true);</span>
+<span class="nc" id="L447">            docBuilder = factory.newDocumentBuilder();</span>
+<span class="nc" id="L448">        } catch (ParserConfigurationException ex) {</span>
+<span class="nc" id="L449">            LOGR.log(Level.WARNING, null, ex);</span>
+<span class="nc" id="L450">        }</span>
+<span class="nc" id="L451">        Document newDoc = docBuilder.newDocument();</span>
+<span class="nc" id="L452">        Node newNode = newDoc.importNode(elem, true);</span>
+<span class="nc" id="L453">        newDoc.appendChild(newNode);</span>
+<span class="nc" id="L454">        return newDoc;</span>
+    }
+
+    /**
+     * Returns a List view of the nodes in the given NodeList collection.
+     *
+     * @param nodeList
+     *            An ordered collection of DOM nodes.
+     * @return A List containing the original sequence of Node objects.
+     */
+    public static List&lt;Node&gt; asList(NodeList nodeList) {
+<span class="nc" id="L465">        List&lt;Node&gt; nodes = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L466" title="All 2 branches missed.">        for (int i = 0; i &lt; nodeList.getLength(); i++) {</span>
+<span class="nc" id="L467">            nodes.add(nodeList.item(i));</span>
+        }
+<span class="nc" id="L469">        return nodes;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

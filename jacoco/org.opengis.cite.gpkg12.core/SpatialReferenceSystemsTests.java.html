@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SpatialReferenceSystemsTests.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.core</a> &gt; <span class="el_source">SpatialReferenceSystemsTests.java</span></div><h1>SpatialReferenceSystemsTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.core;
+
+import static org.testng.Assert.assertTrue;
+import static org.testng.AssertJUnit.fail;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.opengis.cite.gpkg12.ColumnDefinition;
+import org.opengis.cite.gpkg12.CommonFixture;
+import org.opengis.cite.gpkg12.ErrorMessage;
+import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.TableVerifier;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that apply to spatial reference systems defined in a
+ * GeoPackage. The coordinate reference systems relate feature geometries and
+ * tile images in user tables to locations on the Earth.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://www.geopackage.org/spec/#spatial_ref_sys&quot; target=
+ * &quot;_blank&quot;&gt;GeoPackage Encoding Standard - Spatial Reference Systems&lt;/a&gt; (OGC
+ * 12-128r12)&lt;/li&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://www.epsg.org/&quot; target= &quot;_blank&quot;&gt;EPSG Geodetic Parameter
+ * Dataset&lt;/a&gt;&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Luke Lambert
+ */
+<span class="fc" id="L41">public class SpatialReferenceSystemsTests extends CommonFixture {</span>
+    /**
+     * A GeoPackage SHALL include a {@code gpkg_spatial_ref_sys} table per
+     * clause 1.1.2.1.1 &lt;a href=
+     * &quot;http://www.geopackage.org/spec/#spatial_ref_sys_data_table_definition&quot;&gt;
+     * Table Definition&lt;/a&gt;, Table
+     * &lt;a href= &quot;http://www.geopackage.org/spec/#gpkg_spatial_ref_sys_cols&quot;&gt;
+     * Spatial Ref Sys Table Definition&lt;/a&gt; and Table
+     * &lt;a href= &quot;http://www.geopackage.org/spec/#gpkg_spatial_ref_sys_sql&quot;&gt;
+     * gpkg_spatial_ref_sys Table Definition SQL&lt;/a&gt;.
+     *
+     * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-10&quot; target=
+     *      &quot;_blank&quot;&gt;Table Definition - Requirement 10&lt;/a&gt;
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = &quot;See OGC 12-128r12: Requirement 10&quot;)
+    public void srsTableDefinition() throws SQLException
+    {
+        try
+        {
+<span class="fc" id="L63">            final Map&lt;String, ColumnDefinition&gt; spatialReferenceSystemColumns = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L65">            spatialReferenceSystemColumns.put(&quot;srs_name&quot;,                 new ColumnDefinition(&quot;TEXT&quot;,    true,  false, false, null));</span>
+<span class="fc" id="L66">            spatialReferenceSystemColumns.put(&quot;srs_id&quot;,                   new ColumnDefinition(&quot;INTEGER&quot;, true,  true,  true,  null));</span>
+<span class="fc" id="L67">            spatialReferenceSystemColumns.put(&quot;organization&quot;,             new ColumnDefinition(&quot;TEXT&quot;,    true,  false, false, null));</span>
+<span class="fc" id="L68">            spatialReferenceSystemColumns.put(&quot;organization_coordsys_id&quot;, new ColumnDefinition(&quot;INTEGER&quot;, true,  false, false, null));</span>
+<span class="fc" id="L69">            spatialReferenceSystemColumns.put(&quot;definition&quot;,               new ColumnDefinition(&quot;TEXT&quot;,    true,  false, false, null));</span>
+<span class="fc" id="L70">            spatialReferenceSystemColumns.put(&quot;description&quot;,              new ColumnDefinition(&quot;TEXT&quot;,    false, false, false, null));</span>
+
+<span class="fc" id="L72">            TableVerifier.verifyTable(this.databaseConnection,</span>
+                                      &quot;gpkg_spatial_ref_sys&quot;,
+                                      spatialReferenceSystemColumns,
+<span class="fc" id="L75">                                      Collections.emptySet(),</span>
+<span class="fc" id="L76">                                      Collections.emptyList());</span>
+        }
+<span class="nc" id="L78">        catch(final Throwable th)</span>
+        {
+<span class="nc" id="L80">            fail(ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_spatial_ref_sys&quot;, th.getMessage()));</span>
+<span class="fc" id="L81">        }</span>
+<span class="fc" id="L82">    }</span>
+
+    /**
+     * The {@code gpkg_spatial_ref_sys} table in a GeoPackage SHALL contain a
+     * record for organization
+     * &lt;a href=&quot;http://www.epsg.org/Geodetic.html&quot;&gt;EPSG or epsg&lt;/a&gt; and
+     * {@code organization_coordsys_id} &lt;a href=
+     * &quot;http://www.epsg-registry.org/report.htm?type=selection&amp;amp;entity=urn:ogc:def:crs:EPSG::4326&amp;amp;reportDetail=long&amp;amp;title=WGS%2084&amp;amp;style=urn:uuid:report-style:default-with-code&amp;amp;style_name=OGP%20Default%20With%20Code&quot;
+     * &gt;4326&lt;/a&gt; for
+     * &lt;a href=&quot;http://www.google.com/search?as_q=WGS-84&quot;&gt;WGS-84&lt;/a&gt;, a record
+     * with an {@code srs_id} of -1, an organization of &quot;NONE&quot;, an
+     * {@code organization_coordsys_id} of -1, and definition &quot;undefined&quot; for
+     * undefined Cartesian coordinate reference systems, and a record with an
+     * {@code srs_id} of 0, an organization of &quot;NONE&quot;, an {@code
+     * organization_coordsys_id} of 0, and definition &quot;undefined&quot; for undefined
+     * geographic coordinate reference systems.
+     *
+     * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-11&quot; target=
+     *      &quot;_blank&quot;&gt;Table Data Values - Requirement 11&lt;/a&gt;
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = &quot;See OGC 12-128r12: Requirement 11&quot;)
+    public void requiredSrsEntries() throws SQLException {
+<span class="pc" id="L107">        try (final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L108">                final ResultSet srsDefaultValue = statement.executeQuery(</span>
+                        &quot;SELECT srs_id FROM gpkg_spatial_ref_sys WHERE organization_coordsys_id = 4326 AND (organization = 'EPSG' OR organization = 'epsg');&quot;)) {
+<span class="fc" id="L110">            assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_GEOGRAPHIC_SRS));</span>
+<span class="pc bpc" id="L111" title="12 of 16 branches missed.">        }</span>
+
+<span class="pc" id="L113">        try (final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L114">                final ResultSet srsDefaultValue = statement.executeQuery(</span>
+                        &quot;SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = -1 AND organization = 'NONE' AND organization_coordsys_id = -1 AND definition = 'undefined';&quot;)) {
+<span class="fc" id="L116">            assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_UNDEFINED_CARTESIAN_SRS));</span>
+<span class="pc bpc" id="L117" title="12 of 16 branches missed.">        }</span>
+
+<span class="pc" id="L119">        try (final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L120">                final ResultSet srsDefaultValue = statement.executeQuery(</span>
+                        &quot;SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = 0 AND organization = 'NONE' AND organization_coordsys_id =  0 AND definition = 'undefined';&quot;)) {
+<span class="fc" id="L122">            assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_UNDEFINED_GEOGRAPHIC_SRS));</span>
+<span class="pc bpc" id="L123" title="12 of 16 branches missed.">        }</span>
+<span class="fc" id="L124">    }</span>
+
+    /**
+     * The {@code gpkg_spatial_ref_sys} table in a GeoPackage SHALL contain
+     * records to define all spatial reference systems used by features and
+     * tiles in a GeoPackage.
+     *
+     * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-12&quot; target=
+     *      &quot;_blank&quot;&gt;Table Data Values - Requirement 12&lt;/a&gt;
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = &quot;See OGC 12-128r12: Requirement 12&quot;)
+    public void checkContentSrs() throws SQLException {
+<span class="fc" id="L139">    	checkContentSrs(&quot;'tiles','features'&quot;);</span>
+<span class="fc" id="L140">    }</span>
+    
+    // Tests for extensions can call this instead of checkContentSrs()
+    protected void checkContentSrs(String types) throws SQLException {
+    	// 1
+<span class="fc" id="L145">        final String query = &quot;SELECT DISTINCT gc.srs_id, srs.srs_id FROM gpkg_contents AS gc LEFT OUTER JOIN gpkg_spatial_ref_sys AS srs ON srs.srs_id = gc.srs_id WHERE gc.data_type IN(&quot; + types + &quot;)&quot;;</span>
+<span class="pc" id="L146">        try (final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L147">                final ResultSet srsDefined = statement.executeQuery(query)) {</span>
+<span class="fc" id="L148">            final Collection&lt;String&gt; invalidSrsIds = new LinkedList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L150" title="All 2 branches covered.">            while (srsDefined.next()) {</span>
+            	// 2
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">            	if (srsDefined.getString(2) == null){</span>
+<span class="nc" id="L153">                    invalidSrsIds.add(srsDefined.getString(1));</span>
+            	}
+            }
+
+<span class="fc" id="L157">            assertTrue(invalidSrsIds.isEmpty(), ErrorMessage.format(ErrorMessageKeys.UNDEFINED_SRS,</span>
+<span class="fc" id="L158">                    invalidSrsIds.stream().map(Object::toString).collect(Collectors.joining(&quot;, &quot;))));</span>
+<span class="pc bpc" id="L159" title="12 of 16 branches missed.">        }</span>
+<span class="fc" id="L160">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

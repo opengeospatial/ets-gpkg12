@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DataContentsTests.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.core</a> &gt; <span class="el_source">DataContentsTests.java</span></div><h1>DataContentsTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.core;
+
+import static org.testng.Assert.assertTrue;
+import static org.testng.AssertJUnit.fail;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import org.opengis.cite.gpkg12.ColumnDefinition;
+import org.opengis.cite.gpkg12.CommonFixture;
+import org.opengis.cite.gpkg12.ErrorMessage;
+import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.ForeignKeyDefinition;
+import org.opengis.cite.gpkg12.TableVerifier;
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that apply to descriptive information about the contents
+ * of a GeoPackage. The {@code gpkg_contents} table describes the
+ * geospatial data contained in the file.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://www.geopackage.org/spec/#_contents&quot; target= &quot;_blank&quot;&gt;
+ * GeoPackage Encoding Standard - Contents&lt;/a&gt; (OGC 12-128r14)&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Luke Lambert
+ */
+<span class="fc" id="L44">public class DataContentsTests extends CommonFixture</span>
+{
+    /**
+     * The columns of tables in a GeoPackage SHALL only be declared using one
+     * of the data types specified in table &lt;a href=
+     * &quot;http://www.geopackage.org/spec/#table_column_data_types&quot;&gt;GeoPackage
+     * Data Types&lt;/a&gt;.
+     *
+     * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r5&quot; target=
+     *      &quot;_blank&quot;&gt;File Contents - Requirement 5&lt;/a&gt;
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = &quot;See OGC 12-128r14: Requirement 5&quot;)
+    public void columnDataTypes() throws SQLException
+    {
+    	// 1
+<span class="fc" id="L62">        try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L63">            final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_contents;&quot;))</span>
+        {
+        	// 2
+<span class="fc bfc" id="L66" title="All 2 branches covered.">            while(resultSet.next())</span>
+            {
+            	// 3
+<span class="fc" id="L69">                final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
+
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">                if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, tableName))</span>
+                {
+                	// 3a
+<span class="fc" id="L74">                    try(final Statement preparedStatement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L75">                        final ResultSet pragmaTableInfo   = preparedStatement.executeQuery(String.format(&quot;PRAGMA table_info('%s');&quot;, tableName)))</span>
+                    {
+                    	//3b
+<span class="fc bfc" id="L78" title="All 2 branches covered.">                        while(pragmaTableInfo.next())</span>
+                        {
+<span class="fc" id="L80">                            final String dataType = pragmaTableInfo.getString(&quot;type&quot;);</span>
+<span class="fc" id="L81">                            final String columnName = pragmaTableInfo.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">                            final boolean correctDataType = isExtendedType(tableName, columnName) ||</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">                            								getAllowedSqlTypes().contains(dataType) ||</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">                                                            TEXT_TYPE.matcher(dataType).matches() ||</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">                                                            BLOB_TYPE.matcher(dataType).matches();</span>
+
+                            // 3bi
+<span class="fc" id="L88">                            assertTrue(correctDataType,</span>
+<span class="fc" id="L89">                                       ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE,</span>
+                                                           dataType,
+                                                           tableName));
+<span class="fc" id="L92">                        }</span>
+<span class="pc bpc" id="L93" title="8 of 16 branches missed.">                    }</span>
+                }
+<span class="fc" id="L95">            }</span>
+<span class="pc bpc" id="L96" title="8 of 16 branches missed.">        }</span>
+<span class="fc" id="L97">    }</span>
+
+    /**
+     * A GeoPackage file SHALL include a {@code gpkg_contents} table per table
+     * &lt;a href=&quot;http://www.geopackage.org/spec/#gpkg_contents_cols&quot;&gt;Contents
+     * Table or View Definition&lt;/a&gt; and &lt;a href=
+     * &quot;http://www.geopackage.org/spec/#gpkg_contents_sql&quot;&gt;gpkg_contents Table
+     * Definition SQL&lt;/a&gt;.
+     *
+     * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_r13&quot; target=
+     *      &quot;_blank&quot;&gt;Table Definition - Requirement 13&lt;/a&gt;
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = &quot;See OGC 12-128r14: Requirement 13&quot;)
+    public void contentsTableDefinition() throws SQLException
+    {
+        try
+        {
+<span class="fc" id="L117">            final Map&lt;String, ColumnDefinition&gt; contentColumns = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L119">            contentColumns.put(&quot;table_name&quot;,  new ColumnDefinition(&quot;TEXT&quot;,     true,  true,  true,  null));</span>
+<span class="fc" id="L120">            contentColumns.put(&quot;data_type&quot;,   new ColumnDefinition(&quot;TEXT&quot;,     true,  false, false, null));</span>
+<span class="fc" id="L121">            contentColumns.put(&quot;identifier&quot;,  new ColumnDefinition(&quot;TEXT&quot;,     false, false, true,  null));</span>
+<span class="fc" id="L122">            contentColumns.put(&quot;description&quot;, new ColumnDefinition(&quot;TEXT&quot;,     false, false, false, &quot;''&quot;));</span>
+<span class="fc" id="L123">            contentColumns.put(&quot;last_change&quot;, new ColumnDefinition(&quot;DATETIME&quot;, true,  false, false, &quot;strftime('%Y-%m-%dT%H:%M:%fZ', 'now')&quot;));</span>
+<span class="fc" id="L124">            contentColumns.put(&quot;min_x&quot;,       new ColumnDefinition(&quot;DOUBLE&quot;,   false, false, false, null));</span>
+<span class="fc" id="L125">            contentColumns.put(&quot;min_y&quot;,       new ColumnDefinition(&quot;DOUBLE&quot;,   false, false, false, null));</span>
+<span class="fc" id="L126">            contentColumns.put(&quot;max_x&quot;,       new ColumnDefinition(&quot;DOUBLE&quot;,   false, false, false, null));</span>
+<span class="fc" id="L127">            contentColumns.put(&quot;max_y&quot;,       new ColumnDefinition(&quot;DOUBLE&quot;,   false, false, false, null));</span>
+<span class="fc" id="L128">            contentColumns.put(&quot;srs_id&quot;,      new ColumnDefinition(&quot;INTEGER&quot;,  false, false, false, null));</span>
+
+<span class="fc" id="L130">            TableVerifier.verifyTable(this.databaseConnection,</span>
+                                      &quot;gpkg_contents&quot;,
+                                      contentColumns,
+<span class="fc" id="L133">                                      new HashSet&lt;&gt;(Arrays.asList(new ForeignKeyDefinition(&quot;gpkg_spatial_ref_sys&quot;, &quot;srs_id&quot;, &quot;srs_id&quot;))),</span>
+<span class="fc" id="L134">                                      Collections.emptyList());</span>
+        }
+<span class="nc" id="L136">        catch(final AssertionError ex)</span>
+        {
+<span class="nc" id="L138">            fail(ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_TABLE_DEFINITION, ex.getMessage()));</span>
+<span class="fc" id="L139">        }</span>
+<span class="fc" id="L140">    }</span>
+
+    /**
+     * The {@code table_name} column value in a {@code gpkg_contents} table row
+     * SHALL contain the name of a SQLite table or view.
+     *
+     * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r14&quot; target=
+     *      &quot;_blank&quot;&gt;Table Data Values - Requirement 14&lt;/a&gt;
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = &quot;See OGC 12-128r14: Requirement 14&quot;)
+    public void contentsTablesExist() throws SQLException
+    {
+<span class="fc" id="L155">        final String query = &quot;SELECT DISTINCT table_name &quot; +</span>
+                             &quot;FROM  gpkg_contents &quot; +
+                             &quot;WHERE table_name NOT IN (SELECT name FROM sqlite_master);&quot;;
+
+        // 1
+<span class="pc" id="L160">        try(final Statement statement   = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L161">            final ResultSet resultSet = statement.executeQuery(query))</span>
+        {
+<span class="fc" id="L163">            final Collection&lt;String&gt; invalidContentsTableNames = new LinkedList&lt;&gt;();</span>
+
+            // 2
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">            while(resultSet.next())</span>
+            {
+<span class="nc" id="L168">                invalidContentsTableNames.add(resultSet.getString(1));</span>
+            }
+
+<span class="fc" id="L171">            assertTrue(invalidContentsTableNames.isEmpty(),</span>
+<span class="fc" id="L172">                       ErrorMessage.format(ErrorMessageKeys.CONTENT_TABLE_DOES_NOT_EXIST,</span>
+<span class="fc" id="L173">                                           String.join(&quot;, &quot;, invalidContentsTableNames)));</span>
+<span class="pc bpc" id="L174" title="12 of 16 branches missed.">        }</span>
+<span class="fc" id="L175">    }</span>
+
+    /**
+     * Values of the {@code gpkg_contents} table {@code last_change}
+     * column SHALL be in &lt;a
+     * href=&quot;http://www.iso.org/iso/catalogue_detail?csnumber=40874&quot;&gt;ISO 8601
+     * &lt;/a&gt; format containing a complete date plus UTC hours, minutes, seconds
+     * and a decimal fraction of a second, with a 'Z' ('zulu') suffix
+     * indicating UTC.
+     *
+     * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r15&quot; target=
+     *      &quot;_blank&quot;&gt;Table Data Values - Requirement 15&lt;/a&gt;
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = &quot;See OGC 12-128r14: Requirement 15&quot;)
+    public void timestampFormat() throws SQLException
+    {
+    	// 1
+<span class="pc" id="L195">        try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L196">            final ResultSet resultSet = statement.executeQuery(&quot;SELECT last_change, table_name FROM gpkg_contents;&quot;))</span>
+        {
+<span class="fc" id="L198">            final Collection&lt;String&gt; invalidDateTableNames = new LinkedList&lt;&gt;();</span>
+        	// 2
+<span class="fc bfc" id="L200" title="All 2 branches covered.">            while(resultSet.next())</span>
+            {
+            	// 3
+<span class="fc" id="L203">                final String lastChange = resultSet.getString(&quot;last_change&quot;);</span>
+
+                try
+                {
+                	// 3a
+<span class="fc" id="L208">                    new SimpleDateFormat(&quot;yyyy-MM-dd'T'HH:mm:ss'.'SS'Z'&quot;).parse(lastChange);</span>
+                }
+<span class="nc" id="L210">                catch(final ParseException ignore)</span>
+                {
+<span class="nc" id="L212">                	invalidDateTableNames.add(resultSet.getString(&quot;table_name&quot;));</span>
+<span class="fc" id="L213">                }</span>
+<span class="fc" id="L214">            }</span>
+            // 4
+<span class="fc" id="L216">            assertTrue(invalidDateTableNames.isEmpty(),</span>
+<span class="fc" id="L217">                    ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_ENTRY_LAST_CHANGE_FORMAT,</span>
+<span class="fc" id="L218">                                        String.join(&quot;, &quot;, invalidDateTableNames)));</span>
+<span class="pc bpc" id="L219" title="12 of 16 branches missed.">        }</span>
+<span class="fc" id="L220">    }</span>
+
+    /**
+     * Values of the {@code gpkg_contents} table {@code srs_id} column SHALL
+     * reference values in the {@code gpkg_spatial_ref_sys} table {@code
+     * srs_id} column.
+     *
+     * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r16&quot; target=
+     *      &quot;_blank&quot;&gt;Table Data Values - Requirement 16&lt;/a&gt;
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = &quot;See OGC 12-128r14: Requirement 16&quot;)
+    public void srsIdReferencesSrsTable() throws SQLException
+    {
+<span class="pc" id="L236">        try(final Statement statement  = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L237">            final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA foreign_key_check('gpkg_contents');&quot;))</span>
+        {
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">            assertTrue(!resultSet.next(),</span>
+<span class="fc" id="L240">                       ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_TABLE_SRS_FOREIGN_KEY));</span>
+<span class="pc bpc" id="L241" title="12 of 16 branches missed.">        }</span>
+<span class="fc" id="L242">    }</span>
+
+    /**
+     * Verify that a GeoPackage contains a features or tiles table and 
+     * gpkg_contents table row describing it.
+     *
+     * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_r17&quot; target=
+     *      &quot;_blank&quot;&gt;Options - Requirement 17&lt;/a&gt;
+     *
+     * @throws SQLException
+     *             If an SQL query causes an error
+     */
+    @Test(description = &quot;See OGC 12-128r14: Requirement 17&quot;)
+    public void optValidGeoPackage() throws SQLException
+    {
+    	//no op: requirement removed
+//        try(final Statement statement  = this.databaseConnection.createStatement();
+//            final ResultSet resultSet = statement.executeQuery(&quot;SELECT COUNT(*) FROM gpkg_contents WHERE data_type IN ('tiles', 'features')&quot;))
+//        {
+//        	resultSet.next();
+//            assertTrue(resultSet.getInt(1) &gt; 0,
+//                       ErrorMessage.format(ErrorMessageKeys.OPTIONS_NO_FEATURES_OR_TILES));
+//        }
+<span class="fc" id="L265">    }</span>
+<span class="fc" id="L266">    private static final Pattern TEXT_TYPE = Pattern.compile(&quot;TEXT\\([0-9]+\\)&quot;);</span>
+<span class="fc" id="L267">    private static final Pattern BLOB_TYPE = Pattern.compile(&quot;BLOB\\([0-9]+\\)&quot;);</span>
+
+<span class="fc" id="L269">    private static final Collection&lt;String&gt; ALLOWED_SQL_TYPES = Arrays.asList(&quot;BOOLEAN&quot;, &quot;TINYINT&quot;, &quot;SMALLINT&quot;, &quot;MEDIUMINT&quot;,</span>
+                                                                        &quot;INT&quot;, &quot;FLOAT&quot;, &quot;DOUBLE&quot;, &quot;REAL&quot;,
+                                                                        &quot;TEXT&quot;, &quot;BLOB&quot;, &quot;DATE&quot;, &quot;DATETIME&quot;,
+                                                                        &quot;GEOMETRY&quot;, &quot;POINT&quot;, &quot;LINESTRING&quot;, &quot;POLYGON&quot;,
+                                                                        &quot;MULTIPOINT&quot;, &quot;MULTILINESTRING&quot;, &quot;MULTIPOLYGON&quot;, &quot;GEOMETRYCOLLECTION&quot;,
+                                                                        &quot;INTEGER&quot;);
+
+	public static Collection&lt;String&gt; getAllowedSqlTypes() {
+<span class="fc" id="L277">		return ALLOWED_SQL_TYPES;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

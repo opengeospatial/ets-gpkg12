@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>URIUtils.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.util</a> &gt; <span class="el_source">URIUtils.java</span></div><h1>URIUtils.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.util;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.util.logging.Level;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+
+/**
+ * Provides a collection of utility methods for manipulating or resolving URI
+ * references.
+ */
+<span class="nc" id="L26">public class URIUtils {</span>
+
+    private static final String FIXUP_BASE_URI = &quot;http://apache.org/xml/features/xinclude/fixup-base-uris&quot;;
+
+    /**
+     * Parses the content of the given URI as an XML document and returns a new
+     * DOM Document object. Entity reference nodes will not be expanded. XML
+     * inclusions (xi:include elements) will be processed if present.
+     * 
+     * @param uriRef
+     *            An absolute URI specifying the location of an XML resource.
+     * @return A DOM Document node representing an XML resource.
+     * @throws SAXException
+     *             If the resource cannot be parsed.
+     * @throws IOException
+     *             If the resource is not accessible.
+     */
+    public static Document parseURI(URI uriRef) throws SAXException, IOException {
+<span class="pc bpc" id="L44" title="1 of 4 branches missed.">        if ((null == uriRef) || !uriRef.isAbsolute()) {</span>
+<span class="fc" id="L45">            throw new IllegalArgumentException(&quot;Absolute URI is required, but received &quot; + uriRef);</span>
+        }
+<span class="fc" id="L47">        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();</span>
+<span class="fc" id="L48">        docFactory.setNamespaceAware(true);</span>
+<span class="fc" id="L49">        docFactory.setExpandEntityReferences(false);</span>
+<span class="fc" id="L50">        docFactory.setXIncludeAware(true);</span>
+<span class="fc" id="L51">        Document doc = null;</span>
+        try {
+            // XInclude processor will not add xml:base attributes
+<span class="fc" id="L54">            docFactory.setFeature(FIXUP_BASE_URI, false);</span>
+<span class="fc" id="L55">            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();</span>
+<span class="fc" id="L56">            doc = docBuilder.parse(uriRef.toString());</span>
+<span class="nc" id="L57">        } catch (ParserConfigurationException x) {</span>
+<span class="nc" id="L58">            TestSuiteLogger.log(Level.WARNING, &quot;Failed to create DocumentBuilder.&quot; + x);</span>
+<span class="fc" id="L59">        }</span>
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">        if (null != doc) {</span>
+<span class="fc" id="L61">            doc.setDocumentURI(uriRef.toString());</span>
+        }
+<span class="fc" id="L63">        return doc;</span>
+    }
+
+    /**
+     * Dereferences the given URI and stores the resulting resource
+     * representation in a local file. The file will be located in the default
+     * temporary file directory.
+     * 
+     * @param uriRef
+     *            An absolute URI specifying the location of some resource.
+     * @return A File containing the content of the resource; it may be empty if
+     *         resolution failed for any reason.
+     * @throws IOException
+     *             If an IO error occurred.
+     */
+    public static File dereferenceURI(URI uriRef) throws IOException {
+<span class="pc bpc" id="L79" title="2 of 4 branches missed.">        if ((null == uriRef) || !uriRef.isAbsolute()) {</span>
+<span class="nc" id="L80">            throw new IllegalArgumentException(&quot;Absolute URI is required, but received &quot; + uriRef);</span>
+        }
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (uriRef.getScheme().equalsIgnoreCase(&quot;file&quot;)) {</span>
+<span class="fc" id="L83">            return new File(uriRef);</span>
+        }
+<span class="nc" id="L85">        Client client = Client.create();</span>
+<span class="nc" id="L86">        WebResource webRes = client.resource(uriRef);</span>
+<span class="nc" id="L87">        ClientResponse rsp = webRes.get(ClientResponse.class);</span>
+<span class="nc" id="L88">        int lastIndexOfDot = uriRef.getPath().lastIndexOf('.');</span>
+        // preserve suffix if possible
+<span class="nc bnc" id="L90" title="All 2 branches missed.">        String suffix = (lastIndexOfDot &gt; 0) ? uriRef.getPath().substring(lastIndexOfDot) : &quot;.db&quot;;</span>
+<span class="nc" id="L91">        File destFile = File.createTempFile(&quot;gpkg-&quot;, suffix);</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (rsp.hasEntity()) {</span>
+<span class="nc" id="L93">        	try (</span>
+<span class="nc" id="L94">                    InputStream is = rsp.getEntityInputStream();</span>
+<span class="nc" id="L95">                    OutputStream os = new FileOutputStream(destFile);</span>
+        			) {
+<span class="nc" id="L97">                byte[] buffer = new byte[8 * 1024];</span>
+                int bytesRead;
+<span class="nc bnc" id="L99" title="All 2 branches missed.">                while ((bytesRead = is.read(buffer)) != -1) {</span>
+<span class="nc" id="L100">                    os.write(buffer, 0, bytesRead);</span>
+                }
+<span class="nc bnc" id="L102" title="All 16 branches missed.">        	}</span>
+        }
+<span class="nc" id="L104">        TestSuiteLogger.log(Level.CONFIG,</span>
+<span class="nc" id="L105">                &quot;Wrote &quot; + destFile.length() + &quot; bytes to file at &quot; + destFile.getAbsolutePath());</span>
+<span class="nc" id="L106">        return destFile;</span>
+    }
+
+    /**
+     * Constructs an absolute URI from the given URI reference and a base URI.
+     * 
+     * @see &lt;a href=&quot;http://tools.ietf.org/html/rfc3986#section-5.2&quot;&gt;RFC 3986,
+     *      5.2&lt;/a&gt;
+     * 
+     * @param baseURI
+     *            The base URI; if present, it must be an absolute URI.
+     * @param uriRef
+     *            A URI reference that may be relative to the given base URI.
+     * @return The resulting URI.
+     * 
+     */
+    public static URI resolveRelativeURI(String baseURI, String uriRef) {
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">        URI uri = (null != baseURI) ? URI.create(baseURI) : URI.create(&quot;&quot;);</span>
+<span class="pc bpc" id="L124" title="2 of 4 branches missed.">        if (null != baseURI &amp;&amp; null == uri.getScheme()) {</span>
+<span class="nc" id="L125">            throw new IllegalArgumentException(&quot;Base URI has no scheme component: &quot; + baseURI);</span>
+        }
+<span class="fc" id="L127">        return uri.resolve(uriRef);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

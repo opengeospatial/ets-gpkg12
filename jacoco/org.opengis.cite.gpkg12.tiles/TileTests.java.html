@@ -1,0 +1,1017 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>TileTests.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.tiles</a> &gt; <span class="el_source">TileTests.java</span></div><h1>TileTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.tiles;
+
+import static org.testng.Assert.assertTrue;
+import static org.testng.AssertJUnit.fail;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import javax.imageio.stream.MemoryCacheImageInputStream;
+
+import org.opengis.cite.gpkg12.ColumnDefinition;
+import org.opengis.cite.gpkg12.CommonFixture;
+import org.opengis.cite.gpkg12.ErrorMessage;
+import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.ForeignKeyDefinition;
+import org.opengis.cite.gpkg12.TableVerifier;
+import org.opengis.cite.gpkg12.UniqueDefinition;
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that apply to descriptive information about a
+ * GeoPackage's content as it pertains to tiles.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://www.geopackage.org/spec/#tiles&quot; target= &quot;_blank&quot;&gt;
+ * GeoPackage Encoding Standard - 2.2. Tiles&lt;/a&gt; (OGC 12-128r12)&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Luke Lambert, Jeff Yutzler
+ */
+<span class="fc" id="L56">public class TileTests extends CommonFixture</span>
+{
+	/**
+	 * Sets up variables used across methods
+	 *
+	 * @throws SQLException if there is a database error
+	 */
+	@BeforeClass
+	public void setUp() throws SQLException
+	{
+<span class="fc" id="L66">		final Collection&lt;String&gt; extensionTableNames = new ArrayList&lt;String&gt;();</span>
+
+		// We may have tiles tables that are handled by an extension
+<span class="fc bfc" id="L69" title="All 2 branches covered.">		if (DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;)){</span>
+<span class="pc" id="L70">			try (</span>
+<span class="fc" id="L71">					final Statement statement2 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L73">					final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT table_name FROM gpkg_extensions WHERE column_name = 'tile_data';&quot;);</span>
+					) {
+<span class="fc bfc" id="L75" title="All 2 branches covered.">				while(resultSet2.next()) {</span>
+<span class="fc" id="L76">					final String tableName = resultSet2.getString(1);</span>
+<span class="fc" id="L77">					extensionTableNames.add(tableName);</span>
+<span class="fc" id="L78">				}</span>
+<span class="pc bpc" id="L79" title="12 of 16 branches missed.">			}</span>
+		}
+
+<span class="fc" id="L82">		try (</span>
+<span class="fc" id="L83">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L85">				final ResultSet resultSet = statement.executeQuery(String.format(&quot;SELECT table_name FROM gpkg_contents WHERE data_type = '%s';&quot;, dataType));</span>
+				) {
+<span class="fc bfc" id="L87" title="All 2 branches covered.">			while(resultSet.next())</span>
+			{
+<span class="fc" id="L89">				final String tableName = resultSet.getString(1);</span>
+<span class="fc" id="L90">				this.tileTableNames.add(tableName);</span>
+<span class="fc" id="L91">			}</span>
+<span class="fc" id="L92">			this.tileTableNames.removeAll(extensionTableNames);</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">			Assert.assertTrue(!this.tileTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));    		</span>
+<span class="pc bpc" id="L94" title="8 of 16 branches missed.">		}</span>
+<span class="fc" id="L95">	}</span>
+
+	/**
+	 * In a GeoPackage that contains a tile pyramid user data table that
+	 * contains tile data, by default, zoom level pixel sizes for that table
+	 * SHALL vary by a factor of 2 between adjacent zoom levels in the tile
+	 * matrix metadata table.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-35&quot; target=
+	 *      &quot;_blank&quot;&gt;Zoom Times Two - Requirement 35&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 35&quot;)
+	public void zoomTimesTwo() throws SQLException
+	{
+<span class="fc bfc" id="L112" title="All 2 branches covered.">		for(final String tableName : this.tileTableNames)</span>
+		{
+<span class="pc" id="L114">			try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(&quot;SELECT table_name, zoom_level, pixel_x_size, pixel_y_size, matrix_width, matrix_height, tile_width, tile_height FROM gpkg_tile_matrix WHERE table_name = ? ORDER BY zoom_level ASC;&quot;))</span>
+			{
+<span class="fc" id="L116">				preparedStatement.setString(1, tableName);</span>
+
+<span class="pc" id="L118">				try(final ResultSet resultSet = preparedStatement.executeQuery())</span>
+				{
+<span class="fc" id="L120">					int    lastZoomLevel  = Integer.MIN_VALUE;</span>
+<span class="fc" id="L121">					double lastPixelXSize = 0.0;</span>
+<span class="fc" id="L122">					double lastPixelYSize = 0.0;</span>
+
+<span class="fc bfc" id="L124" title="All 2 branches covered.">					while(resultSet.next())</span>
+					{
+<span class="fc" id="L126">						final int    zoomLevel  = resultSet.getInt   (&quot;zoom_level&quot;);</span>
+<span class="fc" id="L127">						final double pixelXSize = resultSet.getDouble(&quot;pixel_x_size&quot;);</span>
+<span class="fc" id="L128">						final double pixelYSize = resultSet.getDouble(&quot;pixel_y_size&quot;);</span>
+
+<span class="fc bfc" id="L130" title="All 2 branches covered.">						if(zoomLevel == lastZoomLevel + 1)</span>
+						{
+							//noinspection MagicNumber
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">							assertTrue(isEqual((lastPixelXSize / 2.0), pixelXSize) &amp;&amp;</span>
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">									isEqual((lastPixelYSize / 2.0), pixelYSize),</span>
+<span class="fc" id="L135">									ErrorMessage.format(ErrorMessageKeys.VALUES_DO_NOT_VARY_BY_FACTOR_OF_TWO,</span>
+<span class="fc" id="L136">											lastZoomLevel,</span>
+<span class="fc" id="L137">											zoomLevel));</span>
+						}
+
+<span class="fc" id="L140">						lastZoomLevel  = zoomLevel;</span>
+<span class="fc" id="L141">						lastPixelXSize = pixelXSize;</span>
+<span class="fc" id="L142">						lastPixelYSize = pixelYSize;</span>
+<span class="fc" id="L143">					}</span>
+<span class="pc bpc" id="L144" title="6 of 8 branches missed.">				}</span>
+<span class="pc bpc" id="L145" title="6 of 8 branches missed.">			}</span>
+<span class="fc" id="L146">		}</span>
+<span class="fc" id="L147">	}</span>
+
+	/**
+	 * In a GeoPackage that contains a tile pyramid user data table that
+	 * contains tile data that is not &lt;a
+	 * href=&quot;http://www.ietf.org/rfc/rfc2046.txt&quot;&gt;MIME type&lt;/a&gt;
+	 * &lt;a href=&quot;http://www.jpeg.org/public/jfif.pdf&quot;&gt;image/jpeg&lt;/a&gt;, by default
+	 * SHALL store that tile data in &lt;a
+	 * href=&quot;http://www.iana.org/assignments/media-types/index.html&quot;&gt; MIME type
+	 * &lt;/a&gt; &lt;a href=&quot;http://libpng.org/pub/png/&quot;&gt;image/png&lt;/a&gt;.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-36&quot; target=
+	 *      &quot;_blank&quot;&gt;MIME Type PNG - Requirement 36&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 * @throws IOException
+	 *             If the bytes of an image cause an error when read
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 36&quot;)
+	public void imageFormat() throws SQLException, IOException
+	{
+<span class="fc bfc" id="L169" title="All 2 branches covered.">		for(final String tableName : this.tileTableNames)</span>
+		{
+<span class="pc" id="L171">			try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L172">					final ResultSet resultSet = statement.executeQuery(String.format(&quot;SELECT tile_data, id FROM %s;&quot;, tableName)))</span>
+			{
+<span class="fc" id="L174">				final Collection&lt;Integer&gt; failedTileIds = new LinkedList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L176" title="All 2 branches covered.">				while(resultSet.next())</span>
+				{
+<span class="fc" id="L178">					final byte[] tileData = resultSet.getBytes(&quot;tile_data&quot;);</span>
+
+<span class="pc bpc" id="L180" title="1 of 2 branches missed.">					if(!isAcceptedImageFormat(tileData))</span>
+					{
+<span class="nc" id="L182">						failedTileIds.add(resultSet.getInt(&quot;id&quot;));</span>
+					}
+<span class="fc" id="L184">				}</span>
+
+				// TODO If this assert fails, subsequent tables won't be tested or reported
+<span class="fc" id="L187">				assertTrue(failedTileIds.isEmpty(),</span>
+<span class="fc" id="L188">						ErrorMessage.format(ErrorMessageKeys.INVALID_IMAGE_FORMAT,</span>
+								tableName,
+<span class="fc" id="L190">								failedTileIds.stream()</span>
+<span class="fc" id="L191">								.map(Object::toString)</span>
+<span class="fc" id="L192">								.collect(Collectors.joining(&quot;, &quot;))));</span>
+<span class="pc bpc" id="L193" title="12 of 16 branches missed.">			}</span>
+<span class="fc" id="L194">		}</span>
+<span class="fc" id="L195">	}</span>
+
+	/**
+	 * In a GeoPackage that contains a tile pyramid user data table that
+	 * contains tile data that is not &lt;a
+	 * href=&quot;http://www.iana.org/assignments/media-types/index.html&quot;&gt;MIME type
+	 * &lt;/a&gt; &lt;a href=&quot;http://libpng.org/pub/png/&quot;&gt;image/png&lt;/a&gt;, by default
+	 * SHALL store that tile data in &lt;a
+	 * href=&quot;http://www.ietf.org/rfc/rfc2046.txt&quot;&gt;MIME type&lt;/a&gt; &lt;a
+	 * href=&quot;http://www.jpeg.org/public/jfif.pdf&quot;&gt;image/jpeg&lt;/a&gt;.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-37&quot; target=
+	 *      &quot;_blank&quot;&gt;MIME Type JPEG - Requirement 37&lt;/a&gt;
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 37&quot;)
+	public void imageFormatJpg()
+	{
+		// Ignore - this is covered by requirement 36. It doesn't make sense to
+		// ask each tile &quot;Are you a PNG? If not, are you a JPG?&quot; *and* &quot;Are you
+		// a JPG? If not, are you a PNG?&quot;
+<span class="fc" id="L215">	}</span>
+
+	/**
+	 * A GeoPackage that contains a tile pyramid user data table SHALL contain
+	 * {@code gpkg_tile_matrix_set} table or view per &lt;a href=
+	 * &quot;http://www.geopackage.org/spec/#tile_matrix_set_data_table_definition&quot;&gt;
+	 * Table Definition&lt;/a&gt;, &lt;a href=
+	 * &quot;http://www.geopackage.org/spec/#gpkg_tile_matrix_set_cols&quot;&gt;Tile
+	 * Matrix Set Table or View Definition&lt;/a&gt; and &lt;a
+	 * href=&quot;http://www.geopackage.org/spec/#gpkg_tile_matrix_set_sql&quot;&gt;
+	 * gpkg_tile_matrix_set Table Creation SQL&lt;/a&gt;.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-38&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Matrix Set - Table Definition - Requirement 38&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 38&quot;)
+	public void tileMatrixSetTable() throws SQLException
+	{
+<span class="fc" id="L236">		final String tableName = &quot;gpkg_tile_matrix_set&quot;;</span>
+
+<span class="fc" id="L238">		assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, tableName), </span>
+<span class="fc" id="L239">				ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));</span>
+
+		try
+		{
+<span class="fc" id="L243">			final Map&lt;String, ColumnDefinition&gt; tileMatrixSetColumns = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L245">			tileMatrixSetColumns.put(&quot;table_name&quot;, new ColumnDefinition(&quot;TEXT&quot;,    true, true,  true,  null));</span>
+<span class="fc" id="L246">			tileMatrixSetColumns.put(&quot;srs_id&quot;,     new ColumnDefinition(&quot;INTEGER&quot;, true, false, false, null));</span>
+<span class="fc" id="L247">			tileMatrixSetColumns.put(&quot;min_x&quot;,      new ColumnDefinition(&quot;DOUBLE&quot;,  true, false, false, null));</span>
+<span class="fc" id="L248">			tileMatrixSetColumns.put(&quot;min_y&quot;,      new ColumnDefinition(&quot;DOUBLE&quot;,  true, false, false, null));</span>
+<span class="fc" id="L249">			tileMatrixSetColumns.put(&quot;max_x&quot;,      new ColumnDefinition(&quot;DOUBLE&quot;,  true, false, false, null));</span>
+<span class="fc" id="L250">			tileMatrixSetColumns.put(&quot;max_y&quot;,      new ColumnDefinition(&quot;DOUBLE&quot;,  true, false, false, null));</span>
+
+<span class="fc" id="L252">			TableVerifier.verifyTable(this.databaseConnection,</span>
+					tableName,
+					tileMatrixSetColumns,
+<span class="fc" id="L255">					new HashSet&lt;&gt;(Arrays.asList(new ForeignKeyDefinition(&quot;gpkg_spatial_ref_sys&quot;, &quot;srs_id&quot;,     &quot;srs_id&quot;),</span>
+							new ForeignKeyDefinition(&quot;gpkg_contents&quot;,        &quot;table_name&quot;, &quot;table_name&quot;))),
+<span class="fc" id="L257">					Collections.emptyList());</span>
+		}
+<span class="nc" id="L259">		catch(final Throwable th)</span>
+		{
+<span class="nc" id="L261">			fail(ErrorMessage.format(ErrorMessageKeys.BAD_TILE_MATRIX_SET_TABLE_DEFINITION, th.getMessage()));</span>
+<span class="fc" id="L262">		}</span>
+<span class="fc" id="L263">	}</span>
+
+	/**
+	 * Values of the {@code gpkg_tile_matrix_set} {@code table_name} column
+	 * SHALL reference values in the gpkg_contents table_name column for rows
+	 * with a data type of &quot;tiles&quot;.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-39&quot; target=
+	 *      &quot;_blank&quot;&gt;Table Data Values - Requirement 39&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 39&quot;)
+	public void matrixSetNamesReferenceTiles() throws SQLException
+	{
+<span class="fc bfc" id="L279" title="All 2 branches covered.">		for (final String tableName : this.tileTableNames) {</span>
+<span class="pc" id="L280">			try (</span>
+<span class="fc" id="L281">					final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L282">					final ResultSet resultSet1 = statement1.executeQuery(String.format(&quot;SELECT table_name FROM gpkg_tile_matrix_set WHERE table_name = '%s'&quot;, tableName));</span>
+					) {
+<span class="fc" id="L284">				assertTrue(resultSet1.next(),</span>
+<span class="fc" id="L285">						ErrorMessage.format(ErrorMessageKeys.UNREFERENCED_TILE_MATRIX_SET_TABLE, tableName));				</span>
+<span class="pc bpc" id="L286" title="12 of 16 branches missed.">			}</span>
+<span class="fc" id="L287">		}</span>
+<span class="fc" id="L288">	}</span>
+
+	/**
+	 * The {@code gpkg_tile_matrix_set} table or view SHALL contain one row
+	 * record for each tile pyramid user data table.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-40&quot; target=
+	 *      &quot;_blank&quot;&gt;Table Data Values - Requirement 40&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 40&quot;)
+	public void matrixSetNameForEachTilesTable() throws SQLException
+	{
+<span class="pc" id="L303">		try(Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L304">				ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_tile_matrix_set;&quot;))</span>
+		{
+<span class="fc" id="L306">			final Collection&lt;String&gt; tableNames = new LinkedList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L308" title="All 2 branches covered.">			while(resultSet.next())</span>
+			{
+<span class="fc" id="L310">				tableNames.add(resultSet.getString(&quot;table_name&quot;));</span>
+			}
+
+<span class="fc bfc" id="L313" title="All 2 branches covered.">			for(final String tableName : this.tileTableNames)</span>
+			{
+<span class="fc" id="L315">				assertTrue(tableNames.contains(tableName),</span>
+<span class="fc" id="L316">						ErrorMessage.format(ErrorMessageKeys.UNREFERENCED_TILES_CONTENT_TABLE_NAME, tableName));</span>
+<span class="fc" id="L317">			}</span>
+<span class="pc bpc" id="L318" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L319">	}</span>
+
+	/**
+	 * Values of the {@code gpkg_tile_matrix_set} {@code srs_id} column SHALL
+	 * reference values in the {@code gpkg_spatial_ref_sys} {@code srs_id}
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-41&quot; target=
+	 *      &quot;_blank&quot;&gt;Table Data Values - Requirement 41&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 41&quot;)
+	public void matrixSetSrsIdReferencesGoodId() throws SQLException
+	{
+<span class="pc" id="L334">		try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L335">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT srs_id from gpkg_tile_matrix_set WHERE srs_id NOT IN (SELECT srs_id FROM gpkg_spatial_ref_sys);&quot;))</span>
+		{
+<span class="pc bpc" id="L337" title="1 of 2 branches missed.">			if(resultSet.next())</span>
+			{
+<span class="nc" id="L339">				fail(ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_SET_SRS_REFERENCE, resultSet.getInt(&quot;srs_id&quot;)));</span>
+			}
+<span class="pc bpc" id="L341" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L342">	}</span>
+
+	/**
+	 * A GeoPackage that contains a tile pyramid user data table SHALL contain
+	 * a {@code gpkg_tile_matrix} table or view per clause 2.2.7.1.1 &lt;a href=
+	 * &quot;http://www.geopackage.org/spec/#tile_matrix_data_table_definition&quot;&gt;
+	 * Table Definition&lt;/a&gt;, Table &lt;a href=
+	 * &quot;http://www.geopackage.org/spec/#gpkg_tile_matrix_cols&quot;&gt;Tile Matrix
+	 * Metadata Table or View Definition&lt;/a&gt; and Table &lt;a href=
+	 * &quot;http://www.geopackage.org/spec/#gpkg_tile_matrix_sql&quot;&gt;
+	 * gpkg_tile_matrix Table Creation SQL&lt;/a&gt;.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-42&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Matrix - Table Definition - Requirement 42&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 42&quot;)
+	public void tileMatrixTableDefinition() throws SQLException
+	{
+<span class="fc" id="L363">		final String tableName = &quot;gpkg_tile_matrix&quot;;</span>
+
+<span class="fc" id="L365">		assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, tableName), </span>
+<span class="fc" id="L366">				ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));</span>
+
+		try
+		{
+<span class="fc" id="L370">			final Map&lt;String, ColumnDefinition&gt; tileMatrixColumns = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L372">			tileMatrixColumns.put(&quot;table_name&quot;,     new ColumnDefinition(&quot;TEXT&quot;,    true, true,  true,  null));</span>
+<span class="fc" id="L373">			tileMatrixColumns.put(&quot;zoom_level&quot;,     new ColumnDefinition(&quot;INTEGER&quot;, true, true,  true,  null));</span>
+<span class="fc" id="L374">			tileMatrixColumns.put(&quot;matrix_width&quot;,   new ColumnDefinition(&quot;INTEGER&quot;, true, false, false, null));</span>
+<span class="fc" id="L375">			tileMatrixColumns.put(&quot;matrix_height&quot;,  new ColumnDefinition(&quot;INTEGER&quot;, true, false, false, null));</span>
+<span class="fc" id="L376">			tileMatrixColumns.put(&quot;tile_width&quot;,     new ColumnDefinition(&quot;INTEGER&quot;, true, false, false, null));</span>
+<span class="fc" id="L377">			tileMatrixColumns.put(&quot;tile_height&quot;,    new ColumnDefinition(&quot;INTEGER&quot;, true, false, false, null));</span>
+<span class="fc" id="L378">			tileMatrixColumns.put(&quot;pixel_x_size&quot;,   new ColumnDefinition(&quot;DOUBLE&quot;,  true, false, false, null));</span>
+<span class="fc" id="L379">			tileMatrixColumns.put(&quot;pixel_y_size&quot;,   new ColumnDefinition(&quot;DOUBLE&quot;,  true, false, false, null));</span>
+
+<span class="fc" id="L381">			TableVerifier.verifyTable(this.databaseConnection,</span>
+					tableName,
+					tileMatrixColumns,
+<span class="fc" id="L384">					new HashSet&lt;&gt;(Arrays.asList(new ForeignKeyDefinition(&quot;gpkg_contents&quot;, &quot;table_name&quot;, &quot;table_name&quot;))),</span>
+<span class="fc" id="L385">					Collections.emptyList());</span>
+		}
+<span class="nc" id="L387">		catch(final Throwable th)</span>
+		{
+<span class="nc" id="L389">			fail(ErrorMessage.format(ErrorMessageKeys.BAD_TILE_MATRIX_TABLE_DEFINITION, th.getMessage()));</span>
+<span class="fc" id="L390">		}</span>
+<span class="fc" id="L391">	}</span>
+
+	/**
+	 * Values of the {@code gpkg_tile_matrix} {@code table_name}
+	 * column SHALL reference values in the {@code gpkg_contents} {@code
+	 * table_name} column for rows with a {@code data_type} of
+	 * 'tiles'.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-43&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Matrix - Table Data Values - Requirement 43&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 43&quot;)
+	public void tileMatrixTableContentsReferences() throws SQLException
+	{
+<span class="pc" id="L408">		try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L409">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_tile_matrix AS tm WHERE table_name NOT IN (SELECT table_name FROM gpkg_contents AS gc WHERE tm.table_name = gc.table_name);&quot;))</span>
+		{
+<span class="fc" id="L411">			final Collection&lt;String&gt; unreferencedTables = new LinkedList&lt;&gt;();</span>
+
+<span class="pc bpc" id="L413" title="1 of 2 branches missed.">			while(resultSet.next())</span>
+			{
+<span class="nc" id="L415">				unreferencedTables.add(resultSet.getString(&quot;table_name&quot;));</span>
+			}
+
+<span class="fc" id="L418">			assertTrue(unreferencedTables.isEmpty(),</span>
+<span class="fc" id="L419">					ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_CONTENTS_REFERENCES,</span>
+<span class="fc" id="L420">							String.join(&quot;, &quot;, unreferencedTables)));</span>
+<span class="pc bpc" id="L421" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L422">	}</span>
+
+	/**
+	 * The {@code gpkg_tile_matrix} table or view SHALL contain one row
+	 * record for each zoom level that contains one or more tiles in each tile
+	 * pyramid user data table or view.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-44&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Matrix - Table Data Values - Requirement 44&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 44&quot;)
+	public void tileMatrixPerZoomLevel() throws SQLException
+	{
+<span class="fc bfc" id="L438" title="All 2 branches covered.">		for(final String tableName : this.tileTableNames)</span>
+		{
+<span class="fc" id="L440">			final Collection&lt;Integer&gt; tileMatrixZooms = new LinkedList&lt;&gt;();</span>
+
+<span class="pc" id="L442">			try(final PreparedStatement statement = this.databaseConnection.prepareStatement(&quot;SELECT DISTINCT zoom_level FROM gpkg_tile_matrix WHERE table_name = ? ORDER BY zoom_level;&quot;))</span>
+			{
+<span class="fc" id="L444">				statement.setString(1, tableName);</span>
+
+<span class="pc" id="L446">				try(final ResultSet gmZoomLevels = statement.executeQuery())</span>
+				{
+<span class="fc bfc" id="L448" title="All 2 branches covered.">					while(gmZoomLevels.next())</span>
+					{
+<span class="fc" id="L450">						tileMatrixZooms.add(gmZoomLevels.getInt(&quot;zoom_level&quot;));</span>
+					}
+<span class="pc bpc" id="L452" title="6 of 8 branches missed.">				}</span>
+<span class="pc bpc" id="L453" title="6 of 8 branches missed.">			}</span>
+
+<span class="fc" id="L455">			final Collection&lt;Integer&gt; tilePyramidZooms = new LinkedList&lt;&gt;();</span>
+
+<span class="pc" id="L457">			try(final Statement statement    = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L458">					final ResultSet pyZoomLevels = statement.executeQuery(String.format(&quot;SELECT DISTINCT zoom_level FROM %s ORDER BY zoom_level;&quot;, tableName)))</span>
+			{
+<span class="fc bfc" id="L460" title="All 2 branches covered.">				while(pyZoomLevels.next())</span>
+				{
+<span class="fc" id="L462">					tilePyramidZooms.add(pyZoomLevels.getInt(&quot;zoom_level&quot;));</span>
+				}
+<span class="pc bpc" id="L464" title="12 of 16 branches missed.">			}</span>
+
+<span class="fc bfc" id="L466" title="All 2 branches covered.">			for(final Integer zoom: tilePyramidZooms)</span>
+			{
+<span class="fc" id="L468">				assertTrue(tileMatrixZooms.contains(zoom),</span>
+<span class="fc" id="L469">						ErrorMessage.format(ErrorMessageKeys.MISSING_TILE_MATRIX_ENTRY, zoom, tableName));</span>
+<span class="fc" id="L470">			}</span>
+<span class="fc" id="L471">		}</span>
+<span class="fc" id="L472">	}</span>
+
+	/**
+	 * The width of a tile matrix (the difference between {@code min_x} and
+	 * {@code max_x} in {@code gpkg_tile_matrix_set}) SHALL equal the product
+	 * of {@code matrix_width}, {@code tile_width}, and {@code pixel_x_size}
+	 * for that zoom level. Similarly, height of a tile matrix (the difference
+	 * between {@code min_y} and {@code max_y} in {@code gpkg_tile_matrix_set})
+	 * SHALL equal the product of {@code matrix_height}, {@code tile_height},
+	 * and {@code pixel_y_size} for that zoom level.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-45&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Matrix - Table Data Values - Requirement 45&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 45&quot;)
+	public void tileMatrixDimensionAgreement() throws SQLException
+	{
+<span class="fc" id="L492">		final Map&lt;String, Collection&lt;Integer&gt;&gt; tableNamesWithBadZooms = new HashMap&lt;&gt;();</span>
+
+<span class="fc bfc" id="L494" title="All 2 branches covered.">		for(final String tableName : this.tileTableNames)</span>
+		{
+<span class="pc" id="L496">			try(final PreparedStatement preparedStatement = this.databaseConnection.prepareStatement(&quot;SELECT min_x, min_y, max_x, max_y FROM gpkg_tile_matrix_set WHERE table_name = ?&quot;))</span>
+			{
+<span class="fc" id="L498">				preparedStatement.setString(1, tableName);</span>
+
+<span class="pc" id="L500">				try(final ResultSet boundingBox = preparedStatement.executeQuery())</span>
+				{
+<span class="pc bpc" id="L502" title="1 of 2 branches missed.">					if(boundingBox.next())</span>
+					{
+<span class="fc" id="L504">						final double width  = boundingBox.getDouble(&quot;max_x&quot;) - boundingBox.getDouble(&quot;min_x&quot;);</span>
+<span class="fc" id="L505">						final double height = boundingBox.getDouble(&quot;max_y&quot;) - boundingBox.getDouble(&quot;min_y&quot;);</span>
+
+<span class="fc" id="L507">						final Collection&lt;Integer&gt; zoomLevels = new ArrayList&lt;&gt;();</span>
+
+<span class="pc" id="L509">						try(final PreparedStatement statement = this.databaseConnection.prepareStatement(&quot;SELECT zoom_level, pixel_x_size, pixel_y_size, matrix_width, matrix_height, tile_width, tile_height FROM gpkg_tile_matrix WHERE table_name = ? ORDER BY zoom_level ASC;&quot;))</span>
+						{
+<span class="fc" id="L511">							statement.setString(1, tableName);</span>
+
+<span class="pc" id="L513">							try(final ResultSet pixelInfo = statement.executeQuery())</span>
+							{
+<span class="fc bfc" id="L515" title="All 2 branches covered.">								while(pixelInfo.next())</span>
+								{
+<span class="fc" id="L517">									final double pixelXSize   = pixelInfo.getDouble(&quot;pixel_x_size&quot;);</span>
+<span class="fc" id="L518">									final double pixelYSize   = pixelInfo.getDouble(&quot;pixel_y_size&quot;);</span>
+<span class="fc" id="L519">									final double matrixHeight = pixelInfo.getInt   (&quot;matrix_height&quot;);</span>
+<span class="fc" id="L520">									final double matrixWidth  = pixelInfo.getInt   (&quot;matrix_width&quot;);</span>
+<span class="fc" id="L521">									final double tileHeight   = pixelInfo.getInt   (&quot;tile_height&quot;);</span>
+<span class="fc" id="L522">									final double tileWidth    = pixelInfo.getInt   (&quot;tile_width&quot;);</span>
+
+<span class="pc bpc" id="L524" title="1 of 2 branches missed.">									if(!isEqual(pixelXSize, (width  / matrixWidth)  / tileWidth) ||</span>
+<span class="pc bpc" id="L525" title="1 of 2 branches missed.">											!isEqual(pixelYSize, (height / matrixHeight) / tileHeight))</span>
+									{
+<span class="nc" id="L527">										zoomLevels.add(pixelInfo.getInt(&quot;zoom_level&quot;));</span>
+									}
+<span class="fc" id="L529">								}</span>
+<span class="pc bpc" id="L530" title="6 of 8 branches missed.">							}</span>
+<span class="pc bpc" id="L531" title="6 of 8 branches missed.">						}</span>
+
+<span class="pc bpc" id="L533" title="1 of 2 branches missed.">						if(!zoomLevels.isEmpty())</span>
+						{
+<span class="nc" id="L535">							tableNamesWithBadZooms.put(tableName, zoomLevels);</span>
+						}
+					}
+<span class="pc bpc" id="L538" title="6 of 8 branches missed.">				}</span>
+<span class="pc bpc" id="L539" title="6 of 8 branches missed.">			}</span>
+<span class="fc" id="L540">		}</span>
+
+<span class="fc" id="L542">		assertTrue(tableNamesWithBadZooms.isEmpty(),</span>
+<span class="fc" id="L543">				ErrorMessage.format(ErrorMessageKeys.BAD_PIXEL_DIMENSIONS,</span>
+<span class="fc" id="L544">						tableNamesWithBadZooms.entrySet()</span>
+<span class="fc" id="L545">						.stream()</span>
+<span class="pc" id="L546">						.map(entrySet -&gt; String.format(&quot;%s: %s&quot;,</span>
+<span class="nc" id="L547">								entrySet.getKey(),</span>
+<span class="nc" id="L548">								entrySet.getValue()</span>
+<span class="nc" id="L549">								.stream()</span>
+<span class="nc" id="L550">								.map(Object::toString)</span>
+<span class="nc" id="L551">								.collect(Collectors.joining(&quot;, &quot;))))</span>
+<span class="fc" id="L552">						.collect(Collectors.joining(&quot;\n&quot;))));</span>
+<span class="fc" id="L553">	}</span>
+
+	/**
+	 * The {@code zoom_level} column value in a {@code gpkg_tile_matrix} table
+	 * row SHALL not be negative.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-46&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Matrix - Table Data Values - Requirement 46&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 46&quot;)
+	public void zoomLevelNotNegative() throws SQLException
+	{
+<span class="pc" id="L568">		try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L569">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT zoom_level FROM gpkg_tile_matrix WHERE zoom_level &lt; 0;&quot;))</span>
+		{
+<span class="pc bpc" id="L571" title="1 of 2 branches missed.">			if(resultSet.next())</span>
+			{
+<span class="nc" id="L573">				fail(ErrorMessageKeys.NEGATIVE_ZOOM_LEVEL);</span>
+			}
+<span class="pc bpc" id="L575" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L576">	}</span>
+
+	/**
+	 * {@code matrix_width} column value in a {@code gpkg_tile_matrix} table
+	 * row SHALL be greater than 0.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-47&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Matrix - Table Data Values - Requirement 47&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 47&quot;)
+	public void matrixWidthGreaterThanZero() throws SQLException
+	{
+<span class="pc" id="L591">		try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L592">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT matrix_width FROM gpkg_tile_matrix WHERE matrix_width &lt;= 0;&quot;))</span>
+		{
+<span class="pc bpc" id="L594" title="1 of 2 branches missed.">			if(resultSet.next())</span>
+			{
+<span class="nc" id="L596">				fail(ErrorMessageKeys.NON_POSITIVE_MATRIX_WIDTH);</span>
+			}
+<span class="pc bpc" id="L598" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L599">	}</span>
+
+	/**
+	 * {@code matrix_height} column value in a {@code gpkg_tile_matrix} table
+	 * row SHALL be greater than 0.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-48&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Matrix - Table Data Values - Requirement 48&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 48&quot;)
+	public void matrixHeightGreaterThanZero() throws SQLException
+	{
+<span class="pc" id="L614">		try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L615">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT matrix_height FROM gpkg_tile_matrix WHERE matrix_height &lt;= 0;&quot;))</span>
+		{
+<span class="pc bpc" id="L617" title="1 of 2 branches missed.">			if(resultSet.next())</span>
+			{
+<span class="nc" id="L619">				fail(ErrorMessageKeys.NON_POSITIVE_MATRIX_HEIGHT);</span>
+			}
+<span class="pc bpc" id="L621" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L622">	}</span>
+
+	/**
+	 * {@code tile_width} column value in a {@code gpkg_tile_matrix} table row
+	 * SHALL be greater than 0.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-49&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Matrix - Table Data Values - Requirement 49&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 49&quot;)
+	public void tileWidthGreaterThanZero() throws SQLException
+	{
+<span class="pc" id="L637">		try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L638">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT tile_width FROM gpkg_tile_matrix WHERE tile_width &lt;= 0;&quot;))</span>
+		{
+<span class="pc bpc" id="L640" title="1 of 2 branches missed.">			if(resultSet.next())</span>
+			{
+<span class="nc" id="L642">				fail(ErrorMessageKeys.NON_POSITIVE_TILE_WIDTH);</span>
+			}
+<span class="pc bpc" id="L644" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L645">	}</span>
+
+	/**
+	 * {@code tile_height} column value in a {@code gpkg_tile_matrix} table row
+	 * SHALL be greater than 0.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-50&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Matrix - Table Data Values - Requirement 50&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 50&quot;)
+	public void tileHeightGreaterThanZero() throws SQLException
+	{
+<span class="pc" id="L660">		try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L661">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT tile_height FROM gpkg_tile_matrix WHERE tile_height &lt;= 0;&quot;))</span>
+		{
+<span class="pc bpc" id="L663" title="1 of 2 branches missed.">			if(resultSet.next())</span>
+			{
+<span class="nc" id="L665">				fail(ErrorMessageKeys.NON_POSITIVE_TILE_HEIGHT);</span>
+			}
+<span class="pc bpc" id="L667" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L668">	}</span>
+
+	/**
+	 * {@code pixel_x_size} column value in a {@code gpkg_tile_matrix} table row
+	 * SHALL be greater than 0.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-51&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Matrix - Table Data Values - Requirement 51&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 51&quot;)
+	public void pixelXSizeGreaterThanZero() throws SQLException
+	{
+<span class="pc" id="L683">		try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L684">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT pixel_x_size FROM gpkg_tile_matrix WHERE pixel_x_size &lt;= 0;&quot;))</span>
+		{
+<span class="pc bpc" id="L686" title="1 of 2 branches missed.">			if(resultSet.next())</span>
+			{
+<span class="nc" id="L688">				fail(ErrorMessageKeys.NON_POSITIVE_PIXEL_X_SIZE);</span>
+			}
+<span class="pc bpc" id="L690" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L691">	}</span>
+
+	/**
+	 * {@code pixel_y_size} column value in a {@code gpkg_tile_matrix} table row
+	 * SHALL be greater than 0.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-52&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Matrix - Table Data Values - Requirement 52&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 52&quot;)
+	public void pixelYSizeGreaterThanZero() throws SQLException
+	{
+<span class="pc" id="L706">		try (</span>
+<span class="fc" id="L707">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L708">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT pixel_y_size FROM gpkg_tile_matrix WHERE pixel_y_size &lt;= 0;&quot;);</span>
+				) {
+<span class="pc bpc" id="L710" title="1 of 2 branches missed.">			if (resultSet.next()) {</span>
+<span class="nc" id="L711">				fail(ErrorMessageKeys.NON_POSITIVE_PIXEL_Y_SIZE);</span>
+			}    		
+<span class="pc bpc" id="L713" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L714">	}</span>
+
+	/**
+	 * The {@code pixel_x_size} and {@code pixel_y_size} column values for
+	 * {@code zoom_level} column values in a {@code gpkg_tile_matrix} table
+	 * sorted in ascending order SHALL be sorted in descending order.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-53&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Matrix - Table Data Values - Requirement 53&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 *
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 53&quot;)
+	public void sortedPixelSizes() throws SQLException
+	{
+<span class="fc bfc" id="L731" title="All 2 branches covered.">		for(final String pyramidTable : this.tileTableNames) {</span>
+<span class="pc" id="L732">			try (final PreparedStatement statement = this.databaseConnection.prepareStatement(&quot;SELECT pixel_x_size, pixel_y_size FROM gpkg_tile_matrix WHERE table_name = ? ORDER BY zoom_level ASC;&quot;)) {</span>
+<span class="fc" id="L733">				statement.setString(1, pyramidTable);</span>
+<span class="pc" id="L734">				try (final ResultSet resultSet = statement.executeQuery()) {</span>
+<span class="pc bpc" id="L735" title="1 of 2 branches missed.">					if(resultSet.isBeforeFirst()) {</span>
+<span class="fc" id="L736">						resultSet.next();</span>
+
+<span class="fc" id="L738">						double lastPixelX = resultSet.getDouble(&quot;pixel_x_size&quot;);</span>
+<span class="fc" id="L739">						double lastPixelY = resultSet.getDouble(&quot;pixel_y_size&quot;);</span>
+
+<span class="fc bfc" id="L741" title="All 2 branches covered.">						while(resultSet.next()) {</span>
+<span class="fc" id="L742">							final double pixelX = resultSet.getDouble(&quot;pixel_x_size&quot;);</span>
+<span class="fc" id="L743">							final double pixelY = resultSet.getDouble(&quot;pixel_y_size&quot;);</span>
+
+<span class="pc bpc" id="L745" title="2 of 4 branches missed.">							assertTrue(lastPixelX &gt; pixelX &amp;&amp; lastPixelY &gt; pixelY,</span>
+<span class="fc" id="L746">									ErrorMessage.format(ErrorMessageKeys.PIXEL_SIZE_NOT_DECREASING, pyramidTable));</span>
+
+<span class="fc" id="L748">							lastPixelX = pixelX;</span>
+<span class="fc" id="L749">							lastPixelY = pixelY;</span>
+<span class="fc" id="L750">						}</span>
+					}                	
+<span class="pc bpc" id="L752" title="6 of 8 branches missed.">				}</span>
+<span class="pc bpc" id="L753" title="6 of 8 branches missed.">			}</span>
+<span class="fc" id="L754">		}</span>
+<span class="fc" id="L755">	}</span>
+
+	/**
+	 * Each tile matrix set in a GeoPackage SHALL be stored in a different tile
+	 * pyramid user data table or updateable view with a unique name that SHALL
+	 * have a column named &quot;id&quot; with column type INTEGER and &lt;em&gt;PRIMARY KEY
+	 * AUTOINCREMENT&lt;/em&gt; column constraints per Clause 2.2.8.1.1 &lt;a
+	 * href=&quot;http://www.geopackage.org/spec/#tiles_user_tables_data_table_definition&quot;&gt;
+	 * Table Definition&lt;/a&gt;, &lt;a
+	 * href=&quot;http://www.geopackage.org/spec/#example_tiles_table_cols&quot;&gt;Tiles
+	 * Table or View Definition&lt;/a&gt; and &lt;a
+	 * href=&quot;http://www.geopackage.org/spec/#example_tiles_table_insert_sql&quot;&gt;
+	 * EXAMPLE: tiles table Insert Statement (Informative)&lt;/a&gt;.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-54&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Pyramid User Data Tables - Table Definition - Requirement 54&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 54&quot;)
+	public void tilesTableDefinitions() throws SQLException
+	{
+<span class="fc" id="L778">		final Map&lt;String, ColumnDefinition&gt; expectedColumns = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L780">		expectedColumns.put(&quot;id&quot;,          new ColumnDefinition(&quot;INTEGER&quot;, false, true,  true,  null));</span>
+<span class="fc" id="L781">		expectedColumns.put(&quot;zoom_level&quot;,  new ColumnDefinition(&quot;INTEGER&quot;, true,  false, false, null));</span>
+<span class="fc" id="L782">		expectedColumns.put(&quot;tile_column&quot;, new ColumnDefinition(&quot;INTEGER&quot;, true,  false, false, null));</span>
+<span class="fc" id="L783">		expectedColumns.put(&quot;tile_row&quot;,    new ColumnDefinition(&quot;INTEGER&quot;, true,  false, false, null));</span>
+<span class="fc" id="L784">		expectedColumns.put(&quot;tile_data&quot;,   new ColumnDefinition(&quot;BLOB&quot;,    true,  false, false, null));</span>
+
+<span class="fc bfc" id="L786" title="All 2 branches covered.">		for(final String tableName : this.tileTableNames) {</span>
+			try {
+<span class="fc" id="L788">				TableVerifier.verifyTable(this.databaseConnection,</span>
+						tableName,
+						expectedColumns,
+<span class="fc" id="L791">						Collections.emptySet(),</span>
+<span class="fc" id="L792">						new HashSet&lt;&gt;(Arrays.asList(new UniqueDefinition(&quot;zoom_level&quot;, &quot;tile_column&quot;, &quot;tile_row&quot;))));</span>
+			}
+<span class="nc" id="L794">			catch(final Throwable th)</span>
+			{
+<span class="nc" id="L796">				fail(ErrorMessage.format(ErrorMessageKeys.BAD_TILE_PYRAMID_USER_DATA_TABLE_DEFINITION,</span>
+						tableName,
+<span class="nc" id="L798">						th.getMessage()));</span>
+<span class="fc" id="L799">			}</span>
+<span class="fc" id="L800">		}</span>
+<span class="fc" id="L801">	}</span>
+
+	/**
+	 * For each distinct {@code table_name} from the {@code gpkg_tile_matrix}
+	 * (tm) table, the tile pyramid (tp) user data table {@code zoom_level}
+	 * column value in a GeoPackage SHALL be in the range {@code min(tm.zoom_level) &lt;=
+	 * tp.zoom_level &lt;= max(tm.zoom_level)}.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-55&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Pyramid User Data Tables - Table Data Values - Requirement 55&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 55&quot;)
+	public void zoomLevelRange() throws SQLException
+	{
+<span class="fc bfc" id="L818" title="All 2 branches covered.">		for(final String tableName : this.tileTableNames) {</span>
+			final boolean nullZoom;
+			final int minZoom, maxZoom;
+
+
+
+
+<span class="pc" id="L825">			try (final PreparedStatement statement = this.databaseConnection.prepareStatement(&quot;SELECT MIN(zoom_level) AS min_zoom, MAX(zoom_level) AS max_zoom FROM gpkg_tile_matrix WHERE table_name = ?;&quot;)) {</span>
+<span class="fc" id="L826">				statement.setString(1, tableName);</span>
+<span class="pc" id="L827">				try (final ResultSet minMaxZoom = statement.executeQuery()) {</span>
+<span class="fc" id="L828">					minZoom = minMaxZoom.getInt(&quot;min_zoom&quot;);</span>
+<span class="fc" id="L829">					maxZoom = minMaxZoom.getInt(&quot;max_zoom&quot;);    </span>
+<span class="fc" id="L830">					nullZoom = minMaxZoom.wasNull();</span>
+<span class="pc bpc" id="L831" title="6 of 8 branches missed.">				}</span>
+<span class="pc bpc" id="L832" title="6 of 8 branches missed.">			}</span>
+
+
+<span class="pc bpc" id="L835" title="1 of 2 branches missed.">			if (nullZoom) { return; }</span>
+
+<span class="pc" id="L837">			try (final PreparedStatement zoomStatement = this.databaseConnection.prepareStatement(String.format(&quot;SELECT zoom_level FROM %s WHERE zoom_level &lt; ? OR zoom_level &gt; ?&quot;, tableName))) {</span>
+<span class="fc" id="L838">				zoomStatement.setInt(1, minZoom);</span>
+<span class="fc" id="L839">				zoomStatement.setInt(2, maxZoom);</span>
+
+<span class="pc" id="L841">				try (final ResultSet invalidZooms = zoomStatement.executeQuery()) {</span>
+<span class="pc bpc" id="L842" title="1 of 2 branches missed.">					if(invalidZooms.next())</span>
+					{
+<span class="nc" id="L844">						fail(ErrorMessage.format(ErrorMessageKeys.UNDEFINED_ZOOM_LEVEL,</span>
+								tableName,
+<span class="nc" id="L846">								invalidZooms.getInt(&quot;zoom_level&quot;)));</span>
+					}                	
+<span class="pc bpc" id="L848" title="6 of 8 branches missed.">				}        		</span>
+<span class="pc bpc" id="L849" title="6 of 8 branches missed.">			}		</span>
+<span class="fc" id="L850">		}</span>
+<span class="fc" id="L851">	}</span>
+
+	/**
+	 * For each distinct {@code table_name} from the {@code gpkg_tile_matrix}
+	 * (tm) table, the tile pyramid (tp) user data table {@code tile_column}
+	 * column value in a GeoPackage SHALL be in the range {@code &lt;= tp.tile_column
+	 * &lt;= tm.matrix_width - 1} where the tm and tp {@code zoom_level} column
+	 * values are equal.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-56&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Pyramid User Data Tables - Table Data Values - Requirement 56&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 56&quot;)
+	public void tileColumnRange() throws SQLException
+	{
+<span class="fc bfc" id="L869" title="All 2 branches covered.">		for(final String tableName : this.tileTableNames)</span>
+		{
+<span class="fc" id="L871">			final String query = String.format(&quot;SELECT zoom_level as zl, matrix_width as width &quot; +</span>
+					&quot;FROM   gpkg_tile_matrix &quot;        +
+					&quot;WHERE  table_name = ? &quot;       +
+					&quot;AND (zoom_level in (SELECT zoom_level FROM %1$s WHERE tile_column &lt; 0) &quot; +
+					&quot;OR  (EXISTS(SELECT NULL FROM %1$s WHERE zoom_level = zl AND tile_column &gt; width - 1)));&quot;,
+					tableName);
+
+<span class="pc" id="L878">			try (final PreparedStatement statement = this.databaseConnection.prepareStatement(query)) {</span>
+<span class="fc" id="L879">				statement.setString(1, tableName);</span>
+<span class="pc" id="L880">				try (final ResultSet resultSet = statement.executeQuery()) {</span>
+<span class="pc bpc" id="L881" title="1 of 2 branches missed.">					while(resultSet.next()) {</span>
+<span class="nc" id="L882">						final int matrixWidth = resultSet.getInt(&quot;width&quot;);</span>
+<span class="nc" id="L883">						final int zoomLevel   = resultSet.getInt(&quot;zl&quot;);</span>
+
+<span class="nc" id="L885">						fail(ErrorMessage.format(ErrorMessageKeys.TILE_COLUMN_OUT_OF_RANGE,</span>
+								tableName,
+<span class="nc" id="L887">								matrixWidth-1,</span>
+<span class="nc" id="L888">								zoomLevel));</span>
+<span class="nc" id="L889">					}					</span>
+<span class="pc bpc" id="L890" title="6 of 8 branches missed.">				}</span>
+<span class="pc bpc" id="L891" title="6 of 8 branches missed.">			}</span>
+<span class="fc" id="L892">		}</span>
+<span class="fc" id="L893">	}</span>
+
+	/**
+	 * For each distinct {@code table_name} from the {@code gpkg_tile_matrix}
+	 * (tm) table, the tile pyramid (tp) user data table {@code tile_row}
+	 * column value in a GeoPackage SHALL be in the range {@code 0 &lt;= tp.tile_row &lt;=
+	 * tm.matrix_height - 1} where the tm and tp {@code zoom_level} column
+	 * values are equal.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-57&quot; target=
+	 *      &quot;_blank&quot;&gt;Tile Pyramid User Data Tables - Table Data Values - Requirement 57&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 57&quot;)
+	public void tileRowRange() throws SQLException
+	{
+<span class="fc bfc" id="L911" title="All 2 branches covered.">		for(final String tableName : this.tileTableNames)</span>
+		{
+<span class="fc" id="L913">			final String query = String.format(&quot;SELECT zoom_level as zl, matrix_height as height &quot; +</span>
+					&quot;FROM   gpkg_tile_matrix &quot;        +
+					&quot;WHERE  table_name = ? &quot;       +
+					&quot;AND (zoom_level in (SELECT zoom_level FROM %1$s WHERE tile_row &lt; 0) &quot; +
+					&quot;OR  (EXISTS(SELECT NULL FROM %1$s WHERE zoom_level = zl AND tile_row &gt; height - 1)));&quot;,
+					tableName);
+
+<span class="pc" id="L920">			try (final PreparedStatement statement = this.databaseConnection.prepareStatement(query)) {</span>
+<span class="fc" id="L921">				statement.setString(1, tableName);</span>
+<span class="pc" id="L922">				try (final ResultSet resultSet = statement.executeQuery()) {</span>
+<span class="pc bpc" id="L923" title="1 of 2 branches missed.">					while(resultSet.next()) {</span>
+<span class="nc" id="L924">						final int matrixHeight = resultSet.getInt(&quot;height&quot;);</span>
+<span class="nc" id="L925">						final int zoomLevel   = resultSet.getInt(&quot;zl&quot;);</span>
+
+<span class="nc" id="L927">						fail(ErrorMessage.format(ErrorMessageKeys.TILE_ROW_OUT_OF_RANGE,</span>
+								tableName,
+<span class="nc" id="L929">								matrixHeight-1,</span>
+<span class="nc" id="L930">								zoomLevel));</span>
+<span class="nc" id="L931">					}</span>
+<span class="pc bpc" id="L932" title="6 of 8 branches missed.">				}</span>
+<span class="pc bpc" id="L933" title="6 of 8 branches missed.">			}</span>
+<span class="fc" id="L934">		}</span>
+<span class="fc" id="L935">	}</span>
+
+	private static boolean isEqual(final double first, final double second)
+	{
+<span class="pc bpc" id="L939" title="1 of 2 branches missed.">		return Math.abs(first - second) &lt; EPSILON;</span>
+	}
+
+	protected boolean isAcceptedImageFormat(final byte[] image) throws IOException
+	{
+<span class="pc bpc" id="L944" title="1 of 2 branches missed.">		if(image == null)</span>
+		{
+<span class="nc" id="L946">			return false;</span>
+		}
+
+<span class="pc" id="L949">		try(final ByteArrayInputStream        byteArray  = new ByteArrayInputStream(image);</span>
+<span class="fc" id="L950">				final MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(byteArray))</span>
+		{
+<span class="pc bpc" id="L952" title="1 of 4 branches missed.">			return canReadImage(pngImageReaders, cacheImage) || canReadImage(jpegImageReaders, cacheImage);</span>
+<span class="pc bpc" id="L953" title="12 of 16 branches missed.">		}</span>
+	}
+
+	protected static boolean canReadImage(final Iterable&lt;ImageReader&gt; imageReaders, final ImageInputStream image) throws IOException
+	{
+<span class="fc bfc" id="L958" title="All 2 branches covered.">		for(final ImageReader imageReader : imageReaders)</span>
+		{
+			try
+			{
+<span class="fc" id="L962">				image.mark();</span>
+<span class="fc bfc" id="L963" title="All 2 branches covered.">				if(imageReader.getOriginatingProvider().canDecodeInput(image))</span>
+				{
+<span class="fc" id="L965">					return true;</span>
+				}
+			}
+			finally
+			{
+<span class="pc" id="L970">				image.reset();</span>
+<span class="fc" id="L971">			}</span>
+<span class="fc" id="L972">		}</span>
+
+<span class="fc" id="L974">		return false;</span>
+	}
+
+	public String getDataType() {
+<span class="nc" id="L978">		return dataType;</span>
+	}
+
+	public void setDataType(String dataType) {
+<span class="fc" id="L982">		this.dataType = dataType;</span>
+<span class="fc" id="L983">	}</span>
+
+<span class="fc" id="L985">	private String dataType = &quot;tiles&quot;;</span>
+
+<span class="fc" id="L987">	protected final Collection&lt;String&gt; tileTableNames = new ArrayList&lt;String&gt;();</span>
+
+	private static final double EPSILON = 0.0001;   // TODO should this be made configurable?
+
+	protected static final Collection&lt;ImageReader&gt; jpegImageReaders;
+	protected static final Collection&lt;ImageReader&gt; pngImageReaders;
+
+	private static final Map&lt;String, ColumnDefinition&gt; TileTableExpectedColumns;
+
+	static
+	{
+<span class="fc" id="L998">		jpegImageReaders = StreamSupport.stream(Spliterators.spliteratorUnknownSize(ImageIO.getImageReadersByMIMEType(&quot;image/jpeg&quot;),</span>
+				Spliterator.ORDERED),
+				false)
+<span class="fc" id="L1001">				.collect(Collectors.toCollection(ArrayList::new));</span>
+
+<span class="fc" id="L1003">		pngImageReaders  = StreamSupport.stream(Spliterators.spliteratorUnknownSize(ImageIO.getImageReadersByMIMEType(&quot;image/png&quot;),</span>
+				Spliterator.ORDERED),
+				false)
+<span class="fc" id="L1006">				.collect(Collectors.toCollection(ArrayList::new));</span>
+
+<span class="fc" id="L1008">		TileTableExpectedColumns = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L1010">		TileTableExpectedColumns.put(&quot;id&quot;,           new ColumnDefinition(&quot;INTEGER&quot;, false, true,  true,  null));</span>
+<span class="fc" id="L1011">		TileTableExpectedColumns.put(&quot;zoom_level&quot;,   new ColumnDefinition(&quot;INTEGER&quot;, true,  false, false, null));</span>
+<span class="fc" id="L1012">		TileTableExpectedColumns.put(&quot;tile_column&quot;,  new ColumnDefinition(&quot;INTEGER&quot;, true,  false, false, null));</span>
+<span class="fc" id="L1013">		TileTableExpectedColumns.put(&quot;tile_row&quot;,     new ColumnDefinition(&quot;INTEGER&quot;, true,  false, false, null));</span>
+<span class="fc" id="L1014">		TileTableExpectedColumns.put(&quot;tile_data&quot;,    new ColumnDefinition(&quot;BLOB&quot;,    true,  false, false, null));</span>
+<span class="fc" id="L1015">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

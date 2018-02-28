@@ -1,0 +1,634 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>ElevationTests.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.extensions.elevation</a> &gt; <span class="el_source">ElevationTests.java</span></div><h1>ElevationTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.extensions.elevation;
+
+import static org.testng.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.MemoryCacheImageInputStream;
+
+import org.opengis.cite.gpkg12.ErrorMessage;
+import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.tiles.TileTests;
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
+import org.testng.Assert;
+import org.testng.ITestContext;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that apply to descriptive information about a
+ * GeoPackage's content as it pertains to tiled, gridded elevation data.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://www.geopackage.org/spec/#features&quot; target= &quot;_blank&quot;&gt;
+ * GeoPackage Encoding Standard - Annex F.11 Elevation&lt;/a&gt; (OGC 12-128r13)&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Jeff Yutzler
+ */
+public class ElevationTests extends TileTests {
+<span class="fc" id="L46">	public ElevationTests(){</span>
+		// This allows all of the tiles tests to run on elevation data
+<span class="fc" id="L48">		setDataType(&quot;2d-gridded-coverage&quot;);</span>
+<span class="fc" id="L49">	}</span>
+
+	@BeforeClass
+	public void a_ValidateExtensionPresent(ITestContext testContext) throws SQLException {
+<span class="fc" id="L53">		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;), </span>
+<span class="fc" id="L54">				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Elevation Extension&quot;));</span>
+    	
+<span class="fc" id="L56">		try (</span>
+<span class="fc" id="L57">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L58">				ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = 'gpkg_2d_gridded_coverage_ancillary';&quot;);</span>
+				) {
+<span class="fc" id="L60">			resultSet1.next();</span>
+<span class="fc bfc" id="L61" title="All 2 branches covered.">			Assert.assertTrue(resultSet1.getInt(1) &gt; 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Elevation Extension&quot;));</span>
+<span class="pc bpc" id="L62" title="8 of 16 branches missed.">		}</span>
+<span class="fc" id="L63">	}</span>
+
+	/**
+	 * Sets up variables used across methods, overrides TileTests
+	 *
+	 * @throws SQLException
+	 *             if there is a database error
+	 */
+	@BeforeClass
+	public void setUp() throws SQLException {
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">		if (!hasExtension){</span>
+<span class="fc" id="L74">			return;</span>
+		}
+		/*
+		 * Test case
+		 * {@code /extensions/elevation/table_val/gpkg_contents}
+		 *
+		 * @see &lt;a href=&quot;#r120&quot; target= &quot;_blank&quot;&gt;Elevation 
+		 * Extension - Requirement 124&lt;/a&gt;
+		 */
+
+<span class="nc" id="L84">		try (</span>
+<span class="nc" id="L85">				final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="nc" id="L86">				ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type = '2d-gridded-coverage';&quot;);</span>
+				) {
+<span class="nc bnc" id="L88" title="All 2 branches missed.">			while (resultSet2.next()) {</span>
+<span class="nc" id="L89">				this.elevationTableNames.add(resultSet2.getString(&quot;table_name&quot;));</span>
+			}
+<span class="nc bnc" id="L91" title="All 16 branches missed.">		}</span>
+<span class="nc" id="L92">	}</span>
+
+	/**
+	 * Test case
+	 * {@code /extensions/elevation/table_def/gpkg_2d_gridded_coverage_ancillary}
+	 *
+	 * @see &lt;a href=&quot;#r120&quot; target= &quot;_blank&quot;&gt;Elevation 
+	 * Extension - Requirement 120&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 120&quot;)
+	public void coverageAncillaryTableDefinition() throws SQLException {
+
+<span class="pc" id="L107">		try (</span>
+				// 1
+<span class="fc" id="L109">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L111">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkg_2d_gridded_coverage_ancillary');&quot;);</span>
+				) {
+			// 2
+<span class="fc" id="L114">			int passFlag = 0;</span>
+<span class="fc" id="L115">			final int flagMask = 0b01111111;</span>
+
+<span class="fc" id="L117">			checkPrimaryKey(&quot;gpkg_2d_gridded_coverage_ancillary&quot;, &quot;id&quot;);</span>
+
+<span class="fc bfc" id="L119" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+				// 3
+<span class="fc" id="L121">				final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">				if (&quot;id&quot;.equals(name)){</span>
+					// handled with checkPrimaryKey...
+<span class="fc" id="L124">					passFlag |= 1;</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">				} else if (&quot;tile_matrix_set_name&quot;.equals(name)){</span>
+<span class="fc" id="L126">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;tile_matrix_set_name type&quot;));</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;tile_matrix_set_name notnull&quot;));</span>
+<span class="fc" id="L128">					passFlag |= (1 &lt;&lt; 1);</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">				} else if (&quot;datatype&quot;.equals(name)){</span>
+<span class="fc" id="L130">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;datatype type&quot;));</span>
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;datatype notnull&quot;));</span>
+<span class="fc" id="L132">					final String def = resultSet.getString(&quot;dflt_value&quot;);</span>
+<span class="pc bpc" id="L133" title="2 of 4 branches missed.">					assertTrue(&quot;integer&quot;.equals(def) || &quot;'integer'&quot;.equals(def), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;datatype default&quot;));</span>
+<span class="fc" id="L134">					passFlag |= (1 &lt;&lt; 2);</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">				} else if (&quot;scale&quot;.equals(name)){</span>
+<span class="fc" id="L136">					assertTrue(&quot;REAL&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;scale type&quot;));</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;scale notnull&quot;));</span>
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">					assertTrue(resultSet.getFloat(&quot;dflt_value&quot;) == 1.0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;scale default&quot;));</span>
+<span class="fc" id="L139">					passFlag |= (1 &lt;&lt; 3);</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">				} else if (&quot;offset&quot;.equals(name)){</span>
+<span class="fc" id="L141">					assertTrue(&quot;REAL&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;offset type&quot;));</span>
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;offset notnull&quot;));</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">					assertTrue(resultSet.getFloat(&quot;dflt_value&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;offset default&quot;));</span>
+<span class="fc" id="L144">					passFlag |= (1 &lt;&lt; 4);</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">				} else if (&quot;precision&quot;.equals(name)){</span>
+<span class="fc" id="L146">					assertTrue(&quot;REAL&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;precision type&quot;));</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;precision type&quot;));</span>
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">					assertTrue(resultSet.getFloat(&quot;dflt_value&quot;) == 1.0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;precision default&quot;));</span>
+<span class="fc" id="L149">					passFlag |= (1 &lt;&lt; 5);</span>
+<span class="pc bpc" id="L150" title="1 of 2 branches missed.">				} else if (&quot;data_null&quot;.equals(name)){</span>
+<span class="fc" id="L151">					assertTrue(&quot;REAL&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;data_null type&quot;));</span>
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID, &quot;data_null notnull&quot;));</span>
+<span class="fc" id="L153">					passFlag |= (1 &lt;&lt; 6);</span>
+				}
+<span class="fc" id="L155">			} </span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessageKeys.COVERAGE_ANCILLARY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L157" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L158">	}</span>
+
+	/**
+	 * Test case
+	 * {@code /extensions/elevation/table_def/gpkg_2d_gridded_tile_ancillary}
+	 *
+	 * @see &lt;a href=&quot;#r121&quot; target= &quot;_blank&quot;&gt;Elevation 
+	 * Extension - Requirement 121&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 121&quot;)
+	public void tileAncillaryTableDefinition() throws SQLException {
+<span class="pc" id="L172">		try (</span>
+				// 1
+<span class="fc" id="L174">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L176">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkg_2d_gridded_tile_ancillary');&quot;);</span>
+				) {
+
+			// 2
+<span class="fc" id="L180">			long passFlag = 0;</span>
+<span class="fc" id="L181">			final long flagMask = 0b111111111;</span>
+
+<span class="fc bfc" id="L183" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc" id="L184">				checkPrimaryKey(&quot;gpkg_2d_gridded_tile_ancillary&quot;, &quot;id&quot;);</span>
+				// 3
+<span class="fc" id="L186">				final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">				if (&quot;id&quot;.equals(name)){</span>
+					// handled with checkPrimaryKey...
+<span class="fc" id="L189">					passFlag |= 1;</span>
+<span class="fc bfc" id="L190" title="All 2 branches covered.">				} else if (&quot;tpudt_name&quot;.equals(name)){</span>
+<span class="fc" id="L191">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;tpudt_name type&quot;));</span>
+<span class="pc bpc" id="L192" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;tpudt_name notnull&quot;));</span>
+<span class="fc" id="L193">					passFlag |= (1 &lt;&lt; 1);</span>
+<span class="fc bfc" id="L194" title="All 2 branches covered.">				} else if (&quot;tpudt_id&quot;.equals(name)){</span>
+<span class="fc" id="L195">					assertTrue(&quot;INTEGER&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;tpudt_id type&quot;));</span>
+<span class="pc bpc" id="L196" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;tpudt_id notnull&quot;));</span>
+<span class="fc" id="L197">					passFlag |= (1 &lt;&lt; 2);</span>
+<span class="fc bfc" id="L198" title="All 2 branches covered.">				} else if (&quot;scale&quot;.equals(name)){</span>
+<span class="fc" id="L199">					assertTrue(&quot;REAL&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;scale type&quot;));</span>
+<span class="pc bpc" id="L200" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;scale notnull&quot;));</span>
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">					assertTrue(resultSet.getFloat(&quot;dflt_value&quot;) == 1.0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;scale default&quot;));</span>
+<span class="fc" id="L202">					passFlag |= (1 &lt;&lt; 3);</span>
+<span class="fc bfc" id="L203" title="All 2 branches covered.">				} else if (&quot;offset&quot;.equals(name)){</span>
+<span class="fc" id="L204">					assertTrue(&quot;REAL&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;offset type&quot;));</span>
+<span class="pc bpc" id="L205" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;offset notnull&quot;));</span>
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">					assertTrue(resultSet.getFloat(&quot;dflt_value&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;offset default&quot;));</span>
+<span class="fc" id="L207">					passFlag |= (1 &lt;&lt; 4);</span>
+<span class="fc bfc" id="L208" title="All 2 branches covered.">				} else if (&quot;min&quot;.equals(name)){</span>
+<span class="fc" id="L209">					assertTrue(&quot;REAL&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;precision type&quot;));</span>
+<span class="pc bpc" id="L210" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;precision type&quot;));</span>
+<span class="fc" id="L211">					passFlag |= (1 &lt;&lt; 5);</span>
+<span class="fc bfc" id="L212" title="All 2 branches covered.">				} else if (&quot;max&quot;.equals(name)){</span>
+<span class="fc" id="L213">					assertTrue(&quot;REAL&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;data_null type&quot;));</span>
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;data_null notnull&quot;));</span>
+<span class="fc" id="L215">					passFlag |= (1 &lt;&lt; 6);</span>
+<span class="fc bfc" id="L216" title="All 2 branches covered.">				} else if (&quot;mean&quot;.equals(name)){</span>
+<span class="fc" id="L217">					assertTrue(&quot;REAL&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;mean type&quot;));</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;mean type&quot;));</span>
+<span class="fc" id="L219">					passFlag |= (1 &lt;&lt; 7);</span>
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">				} else if (&quot;std_dev&quot;.equals(name)){</span>
+<span class="fc" id="L221">					assertTrue(&quot;REAL&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;std_dev type&quot;));</span>
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, &quot;std_dev notnull&quot;));</span>
+<span class="fc" id="L223">					passFlag |= (1 &lt;&lt; 8);</span>
+				}
+<span class="fc" id="L225">			} </span>
+<span class="pc bpc" id="L226" title="1 of 2 branches missed.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_COLUMNS_INVALID, String.format(&quot;Missing column flag %d&quot;, passFlag)));</span>
+<span class="pc bpc" id="L227" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L228">	}</span>
+
+	/**
+	 * Test case
+	 * {@code /extensions/elevation/table_val/gpkg_spatial_ref_sys/rows}
+	 *
+	 * @see &lt;a href=&quot;#r122&quot; target= &quot;_blank&quot;&gt;Elevation 
+	 * Extension - Requirement 122&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 122&quot;)
+	public void requiredSRSRows() throws SQLException {
+<span class="pc" id="L242">		try (</span>
+<span class="fc" id="L243">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L244">				final ResultSet srsDefaultValue = statement.executeQuery(</span>
+						&quot;SELECT COUNT(*) FROM gpkg_spatial_ref_sys WHERE organization_coordsys_id = 4979 AND (organization = 'EPSG' OR organization = 'epsg');&quot;);
+				) {
+<span class="pc bpc" id="L247" title="1 of 2 branches missed.">			assertTrue(srsDefaultValue.getInt(1) &gt; 0, ErrorMessage.format(ErrorMessageKeys.NO_ELEVATION_SRS));</span>
+<span class="pc bpc" id="L248" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L249">	}</span>
+
+	/**
+	 * Test case
+	 * {@code /opt/extensions/elevation/srs/required_references}
+	 *
+	 * @see &lt;a href=&quot;#r123&quot; target= &quot;_blank&quot;&gt;Elevation 
+	 * Extension - Requirement 112&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 123&quot;)
+	public void requiredSRSReferences() throws SQLException {
+<span class="pc bpc" id="L263" title="1 of 2 branches missed.">		for (final String tableName : this.elevationTableNames) {</span>
+<span class="nc" id="L264">			try (	</span>
+<span class="nc" id="L265">					final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="nc" id="L266">					final ResultSet resultSet1 = statement1.executeQuery(String.format(&quot;SELECT srs_id FROM gpkg_tile_matrix_set WHERE table_name = '%s'&quot;, tableName));</span>
+					) {
+<span class="nc" id="L268">				resultSet1.next();				</span>
+<span class="nc" id="L269">				final String srsID = resultSet1.getString(1);</span>
+<span class="nc" id="L270">				try (</span>
+<span class="nc" id="L271">						final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="nc" id="L272">						final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;SELECT COUNT(*) FROM gpkg_spatial_ref_sys WHERE srs_id = '%s'&quot;, srsID));</span>
+						) {
+<span class="nc bnc" id="L274" title="All 2 branches missed.">					assertTrue(resultSet2.getInt(1) == 1, ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_SET_SRS_REFERENCE, srsID));</span>
+<span class="nc bnc" id="L275" title="All 16 branches missed.">				}</span>
+<span class="nc bnc" id="L276" title="All 16 branches missed.">			}</span>
+<span class="nc" id="L277">		}</span>
+<span class="fc" id="L278">	}</span>
+
+	/**
+	 * Test case
+	 * {@code /extensions/elevation/table_val/gpkg_extensions}
+	 *
+	 * @see &lt;a href=&quot;#r125&quot; target= &quot;_blank&quot;&gt;Elevation 
+	 * Extension - Requirement 125&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 125&quot;)
+	public void extensionTableRows() throws SQLException {
+<span class="pc" id="L292">		try (</span>
+				// 1
+<span class="fc" id="L294">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L296">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name, column_name, extension_name, definition, scope from gpkg_extensions&quot;);</span>
+				) {
+			// 2
+<span class="fc" id="L299">			long passFlag = 0;</span>
+<span class="fc" id="L300">			final long flagMask = 0b11;</span>
+
+<span class="fc bfc" id="L302" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+				// 3
+<span class="fc" id="L304">				final String name = resultSet.getString(&quot;table_name&quot;);</span>
+<span class="fc bfc" id="L305" title="All 2 branches covered.">				if (&quot;gpkg_2d_gridded_coverage_ancillary&quot;.equals(name)){</span>
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">					if ((resultSet.getObject(&quot;column_name&quot;) == null) &amp;&amp;</span>
+<span class="pc bpc" id="L307" title="1 of 2 branches missed.">							&quot;gpkg_elevation_tiles&quot;.equals(resultSet.getString(&quot;extension_name&quot;)) &amp;&amp;</span>
+<span class="pc bpc" id="L308" title="1 of 2 branches missed.">							&quot;http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data&quot;.equals(resultSet.getString(&quot;definition&quot;)) &amp;&amp; </span>
+<span class="pc bpc" id="L309" title="1 of 2 branches missed.">							&quot;read-write&quot;.equals(resultSet.getString(&quot;scope&quot;))){</span>
+<span class="fc" id="L310">						passFlag |= 1;</span>
+					}
+<span class="fc bfc" id="L312" title="All 2 branches covered.">				} else if (&quot;gpkg_2d_gridded_tile_ancillary&quot;.equals(name)){</span>
+<span class="pc bpc" id="L313" title="1 of 2 branches missed.">					if ((resultSet.getObject(&quot;column_name&quot;) == null) &amp;&amp;</span>
+<span class="pc bpc" id="L314" title="1 of 2 branches missed.">							&quot;gpkg_elevation_tiles&quot;.equals(resultSet.getString(&quot;extension_name&quot;)) &amp;&amp;</span>
+<span class="pc bpc" id="L315" title="1 of 2 branches missed.">							&quot;http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data&quot;.equals(resultSet.getString(&quot;definition&quot;)) &amp;&amp; </span>
+<span class="pc bpc" id="L316" title="1 of 2 branches missed.">							&quot;read-write&quot;.equals(resultSet.getString(&quot;scope&quot;))){</span>
+<span class="fc" id="L317">						passFlag |= (1 &lt;&lt; 1);</span>
+					}
+				}
+<span class="fc" id="L320">			} </span>
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.ELEVATION_EXTENSION_ROWS_MISSING, String.format(&quot;Missing column flag %d&quot;, passFlag)));</span>
+<span class="pc bpc" id="L322" title="12 of 16 branches missed.">		}</span>
+
+
+<span class="pc bpc" id="L325" title="1 of 2 branches missed.">		for (final String tableName : this.elevationTableNames) {</span>
+<span class="nc" id="L326">			try (</span>
+<span class="nc" id="L327">					final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="nc" id="L328">					final ResultSet resultSet1 = statement1.executeQuery(String.format(&quot;SELECT column_name, definition, scope from gpkg_extensions WHERE extension_name = 'gpkg_elevation_tiles' AND table_name = '%s'&quot;, tableName));</span>
+					) {
+<span class="nc bnc" id="L330" title="All 4 branches missed.">				assertTrue(resultSet1.next() &amp;&amp; &quot;tile_data&quot;.equals(resultSet1.getObject(&quot;column_name&quot;)) &amp;&amp;</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">						&quot;gpkg_elevation_tiles&quot;.equals(resultSet1.getString(&quot;extension_name&quot;)) &amp;&amp;</span>
+<span class="nc bnc" id="L332" title="All 2 branches missed.">						&quot;http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data&quot;.equals(resultSet1.getString(&quot;definition&quot;)) &amp;&amp; </span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">						&quot;read-write&quot;.equals(resultSet1.getString(&quot;scope&quot;)), </span>
+						ErrorMessageKeys.ELEVATION_EXTENSION_ROWS_MISSING);
+<span class="nc bnc" id="L335" title="All 16 branches missed.">			}</span>
+<span class="nc" id="L336">		}</span>
+<span class="fc" id="L337">	}</span>
+
+	/**
+	 * Test case
+	 * {@code /extensions/elevation/table_ref/gpkg_contents/gpkg_2d_gridded_coverage_ancillary}
+	 *
+	 * @see &lt;a href=&quot;#r126&quot; target= &quot;_blank&quot;&gt;Elevation 
+	 * Extension - Requirement 126&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 126&quot;)
+	public void coverageAncillaryValues() throws SQLException {
+
+<span class="pc bpc" id="L352" title="1 of 2 branches missed.">		for (final String tableName : this.elevationTableNames) {</span>
+<span class="nc" id="L353">			try (</span>
+<span class="nc" id="L354">					final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="nc" id="L355">					final ResultSet resultSet1 = statement1.executeQuery(String.format(&quot;SELECT COUNT(*) FROM gpkg_2d_gridded_coverage_ancillary WHERE tile_matrix_set_name = '%s'&quot;, tableName));</span>
+					) {
+<span class="nc" id="L357">				resultSet1.next();</span>
+<span class="nc bnc" id="L358" title="All 2 branches missed.">				assertTrue(resultSet1.getInt(1) == 1, ErrorMessage.format(ErrorMessageKeys.MISSING_REFERENCE, &quot;gpkg_2d_gridded_coverage_ancillary&quot;, &quot;tile_matrix_set_name&quot;, tableName));				</span>
+<span class="nc bnc" id="L359" title="All 16 branches missed.">			}</span>
+<span class="nc" id="L360">		}</span>
+<span class="fc" id="L361">	}</span>
+
+	/**
+	 * Test case
+	 * {@code /extensions/elevation/table_ref/gpkg_2d_gridded_coverage_ancillary/gpkg_tile_matrix_set}
+	 *
+	 * @see &lt;a href=&quot;#r127&quot; target= &quot;_blank&quot;&gt;Elevation 
+	 * Extension - Requirement 127&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 127&quot;)
+	public void coverageAncillarySetName() throws SQLException {
+<span class="pc" id="L375">		try (</span>
+				// 1
+<span class="fc" id="L377">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L379">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT tile_matrix_set_name FROM 'gpkg_2d_gridded_coverage_ancillary';&quot;);</span>
+				) {
+			// 2
+<span class="fc bfc" id="L382" title="All 2 branches covered.">			while (resultSet.next()){</span>
+				// 3
+<span class="fc" id="L384">				final String tileMatrixSetName = resultSet.getString(1);</span>
+<span class="pc" id="L385">				try (</span>
+<span class="fc" id="L386">						final Statement statement2 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L388">						final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;SELECT count(*) FROM gpkg_tile_matrix_set WHERE table_name = '%s';&quot;, tileMatrixSetName));</span>
+						) {
+<span class="pc bpc" id="L390" title="1 of 2 branches missed.">					assertTrue(resultSet2.getInt(1) == 1, ErrorMessageKeys.UNREFERENCED_COVERAGE_TILE_MATRIX_SET_TABLE);</span>
+<span class="pc bpc" id="L391" title="12 of 16 branches missed.">				}</span>
+<span class="fc" id="L392">			}</span>
+<span class="pc bpc" id="L393" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L394">	}</span>
+
+	/**
+	 * Test case
+	 * {@code/extensions/elevation/table_val/gpkg_2d_gridded_coverage_ancillary}
+	 *
+	 * @see &lt;a href=&quot;#r128&quot; target= &quot;_blank&quot;&gt;Elevation 
+	 * Extension - Requirement 128&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 128&quot;)
+	public void coverageAncillaryDatatype() throws SQLException {
+<span class="pc" id="L408">		try (</span>
+				// 1
+<span class="fc" id="L410">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L412">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT tile_matrix_set_name, datatype, scale, offset FROM 'gpkg_2d_gridded_coverage_ancillary';&quot;);</span>
+				) {
+			// 2
+<span class="fc bfc" id="L415" title="All 2 branches covered.">			while (resultSet.next()){</span>
+<span class="fc" id="L416">				final String setName = resultSet.getString(&quot;tile_matrix_set_name&quot;);</span>
+<span class="pc bpc" id="L417" title="1 of 2 branches missed.">				if (!elevationTableNames.contains(setName)) {</span>
+<span class="fc" id="L418">					continue;</span>
+				}
+				// 2a
+<span class="nc" id="L421">				final String datatype = resultSet.getString(&quot;datatype&quot;);</span>
+<span class="nc bnc" id="L422" title="All 4 branches missed.">				assertTrue(&quot;integer&quot;.equals(datatype) || &quot;float&quot;.equals(datatype), ErrorMessageKeys.COVERAGE_ANCILLARY_DATATYPE_INVALID);</span>
+
+<span class="nc bnc" id="L424" title="All 2 branches missed.">				if (&quot;float&quot;.equals(datatype)){</span>
+<span class="nc" id="L425">					final double scale = resultSet.getDouble(&quot;scale&quot;);</span>
+<span class="nc" id="L426">					final double offset = resultSet.getDouble(&quot;offset&quot;);</span>
+					// 2b
+<span class="nc bnc" id="L428" title="All 2 branches missed.">					assertTrue(scale == 1.0, </span>
+<span class="nc" id="L429">							ErrorMessage.format(ErrorMessageKeys.ILLEGAL_VALUE, </span>
+									&quot;gpkg_2d_gridded_coverage_ancillary&quot;, 
+									&quot;datatype&quot;, 
+									&quot;float&quot;, 
+									&quot;scale&quot;, 
+									&quot;1.0&quot;, 
+<span class="nc" id="L435">									Double.toString(scale), </span>
+									&quot;tile_matrix_set_name&quot;, 
+									setName));
+					// 2c
+<span class="nc bnc" id="L439" title="All 2 branches missed.">					assertTrue(offset == 0.0, </span>
+<span class="nc" id="L440">							ErrorMessage.format(ErrorMessageKeys.ILLEGAL_VALUE, </span>
+									&quot;gpkg_2d_gridded_coverage_ancillary&quot;, 
+									&quot;datatype&quot;, 
+									&quot;float&quot;, 
+									&quot;offset&quot;, 
+									&quot;0.0&quot;, 
+<span class="nc" id="L446">									Double.toString(offset), </span>
+									&quot;tile_matrix_set_name&quot;, 
+									setName));
+				}
+<span class="nc" id="L450">			}	</span>
+<span class="pc bpc" id="L451" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L452">	}</span>
+
+	/**
+	 * Test case
+	 * {@code /extensions/elevation/table_ref/tpudt/gpkg_2d_gridded_tile_ancillary}
+	 *
+	 * @see &lt;a href=&quot;#129&quot; target= &quot;_blank&quot;&gt;Elevation 
+	 * Extension - Requirement 129, 131&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 129, 131&quot;)
+	public void tileAncillaryTableRef() throws SQLException {
+		// 1
+<span class="pc bpc" id="L467" title="1 of 2 branches missed.">		for (final String tableName : this.elevationTableNames) {</span>
+<span class="nc" id="L468">			try (</span>
+<span class="nc" id="L469">					final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="nc" id="L470">					final ResultSet resultSet1 = statement1.executeQuery(String.format(&quot;SELECT id FROM %s&quot;, tableName));</span>
+					) {
+<span class="nc bnc" id="L472" title="All 2 branches missed.">				while (resultSet1.next()) {</span>
+<span class="nc" id="L473">					try (</span>
+<span class="nc" id="L474">							final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="nc" id="L475">							final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT %s.id as tid, gpkg_2d_gridded_tile_ancillary.tpudt_id as taid from %s LEFT OUTER JOIN gpkg_2d_gridded_tile_ancillary ON %s.id = gpkg_2d_gridded_tile_ancillary.tpudt_id AND gpkg_2d_gridded_tile_ancillary.tpudt_name = '%s'&quot;.replace(&quot;%s&quot;,  tableName));</span>
+							) {
+<span class="nc bnc" id="L477" title="All 2 branches missed.">						while (resultSet2.next()) {</span>
+<span class="nc" id="L478">							final String id = resultSet2.getString(1);</span>
+<span class="nc" id="L479">							resultSet2.getString(2);</span>
+<span class="nc bnc" id="L480" title="All 2 branches missed.">							assertTrue(!resultSet2.wasNull(), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_REFERENCES, tableName, id));</span>
+<span class="nc" id="L481">						}</span>
+
+<span class="nc bnc" id="L483" title="All 16 branches missed.">					}</span>
+				}				
+<span class="nc bnc" id="L485" title="All 16 branches missed.">			}</span>
+<span class="nc" id="L486">		}</span>
+<span class="fc" id="L487">	}</span>
+
+	/**
+	 * Test case
+	 * {@code /extensions/elevation/table_val/gpkg_2d_gridded_tile_ancillary}
+	 *
+	 * @see &lt;a href=&quot;#130&quot; target= &quot;_blank&quot;&gt;Elevation 
+	 * Extension - Requirement 130&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 130&quot;)
+	public void tileAncillaryTableVal() throws SQLException {
+<span class="pc" id="L501">		try (</span>
+				// 1
+<span class="fc" id="L503">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L504">				final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT tpudt_name, scale, offset FROM gpkg_2d_gridded_tile_ancillary;&quot;);</span>
+				) {
+			// 2
+<span class="fc bfc" id="L507" title="All 2 branches covered.">			while (resultSet1.next()) {</span>
+<span class="fc" id="L508">				final String tableName = resultSet1.getString(&quot;tpudt_name&quot;);</span>
+<span class="pc" id="L509">				try (</span>
+<span class="fc" id="L510">						final Statement statement2 = this.databaseConnection.createStatement();</span>
+						// 2a
+<span class="fc" id="L512">						final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;PRAGMA table_info(%s)&quot;, tableName));</span>
+						) {
+					// 2b
+<span class="fc" id="L515">					assertTrue(resultSet2.next(), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_TABLE_REF_INVALID, tableName));					</span>
+<span class="pc bpc" id="L516" title="12 of 16 branches missed.">				}</span>
+<span class="pc" id="L517">				try (</span>
+						// 2c
+<span class="fc" id="L519">						final Statement statement3 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L520">						final ResultSet resultSet3 = statement3.executeQuery(String.format(&quot;SELECT datatype from gpkg_2d_gridded_coverage_ancillary WHERE tile_matrix_set_name = '%s'&quot;, tableName));</span>
+						) {
+					// 2d
+<span class="fc" id="L523">					assertTrue(resultSet3.next(), ErrorMessage.format(ErrorMessageKeys.TILE_ANCILLARY_TABLE_REF_INVALID, tableName));</span>
+<span class="fc" id="L524">					final String datatype = resultSet3.getString(&quot;datatype&quot;);			</span>
+<span class="fc bfc" id="L525" title="All 2 branches covered.">					if(&quot;float&quot;.equals(datatype)){</span>
+<span class="fc" id="L526">						final double scale = resultSet1.getDouble(&quot;scale&quot;);</span>
+<span class="fc" id="L527">						final double offset = resultSet1.getDouble(&quot;offset&quot;);</span>
+						// 2e
+<span class="pc bpc" id="L529" title="1 of 2 branches missed.">						assertTrue(scale == 1.0, </span>
+<span class="fc" id="L530">								ErrorMessage.format(ErrorMessageKeys.ILLEGAL_VALUE, </span>
+										&quot;gpkg_2d_gridded_tile_ancillary&quot;, 
+										&quot;datatype&quot;, 
+										&quot;float&quot;, 
+										&quot;scale&quot;, 
+										&quot;1.0&quot;, 
+<span class="fc" id="L536">										Double.toString(scale), </span>
+										&quot;tpudt_name&quot;, 
+										tableName));
+						// 2f
+<span class="pc bpc" id="L540" title="1 of 2 branches missed.">						assertTrue(offset == 0.0, </span>
+<span class="fc" id="L541">								ErrorMessage.format(ErrorMessageKeys.ILLEGAL_VALUE, </span>
+										&quot;gpkg_2d_gridded_tile_ancillary&quot;, 
+										&quot;datatype&quot;, 
+										&quot;float&quot;, 
+										&quot;offset&quot;, 
+										&quot;0.0&quot;, 
+<span class="fc" id="L547">										Double.toString(offset), </span>
+										&quot;tpudt_name&quot;, 
+										tableName));
+					}
+<span class="pc bpc" id="L551" title="12 of 16 branches missed.">				}</span>
+<span class="fc" id="L552">			}			</span>
+<span class="pc bpc" id="L553" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L554">	}</span>
+
+	/**
+	 * For data where the datatype column of the corresponding row in the 
+	 * gpkg_2d_gridded_coverage_ancillary table is integer, 
+	 * the tile_data BLOB in the tile pyramid user data table containing tiled, 
+	 * gridded elevation data SHALL be of MIME type image/png and the data SHALL 
+	 * be 16-bit unsigned integer (single channel - &quot;greyscale&quot;).
+	 * For data where the datatype column of the corresponding row in the 
+	 * gpkg_2d_gridded_coverage_ancillary table is float, 
+	 * the tile_data BLOB in the tile pyramid user data table containing tiled, 
+	 * gridded elevation data SHALL be of MIME type image/tiff and the data SHALL 
+	 * be 32-bit floating point as described by the TIFF Encoding (Requirement 120).
+	 * 
+	 * @see &lt;a href=&quot;#r132&quot; target=
+	 *      &quot;_blank&quot;&gt;MIME Type PNG or TIFF - Requirement 132/133&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 * @throws IOException
+	 *             If the bytes of an image cause an error when read
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 132/133&quot;)
+	public void imageFormat() throws SQLException, IOException
+	{
+		// 1, 2
+<span class="pc bpc" id="L580" title="1 of 2 branches missed.">		for(final String tableName : this.elevationTableNames)</span>
+		{
+<span class="nc" id="L582">			final Collection&lt;Integer&gt; failedTileIds = new LinkedList&lt;&gt;();</span>
+<span class="nc" id="L583">			try (</span>
+					// 2a
+<span class="nc" id="L585">					final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="nc" id="L586">					final ResultSet resultSet = statement.executeQuery(&quot;SELECT t.datatype AS datatype, u.id AS id, u.tile_data AS tile_data FROM gpkg_2d_gridded_coverage_ancillary t, %s u WHERE t.tile_matrix_set_name = '%s';&quot;.replace(&quot;%s&quot;, tableName));</span>
+					) {		
+				// 2b
+<span class="nc bnc" id="L589" title="All 2 branches missed.">				while(resultSet.next())</span>
+				{
+<span class="nc" id="L591">					final String datatype = resultSet.getString(&quot;datatype&quot;);</span>
+<span class="nc" id="L592">					final int id = resultSet.getInt(&quot;id&quot;);</span>
+
+<span class="nc" id="L594">					try (final MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(new ByteArrayInputStream(resultSet.getBytes(&quot;tile_data&quot;)))) {</span>
+						// 2bi
+<span class="nc bnc" id="L596" title="All 2 branches missed.">						if (&quot;float&quot;.equals(datatype)) {</span>
+<span class="nc bnc" id="L597" title="All 2 branches missed.">							if (!canReadImage(tiffImageReaders, cacheImage)){</span>
+<span class="nc" id="L598">								failedTileIds.add(id);</span>
+							}
+							// 2bii
+<span class="nc bnc" id="L601" title="All 2 branches missed.">						} else if (&quot;integer&quot;.equals(datatype)){</span>
+<span class="nc bnc" id="L602" title="All 2 branches missed.">							if (!canReadImage(pngImageReaders, cacheImage)){</span>
+<span class="nc" id="L603">								failedTileIds.add(id);</span>
+							}
+						}                	
+<span class="nc bnc" id="L606" title="All 8 branches missed.">					};</span>
+<span class="nc" id="L607">				}</span>
+<span class="nc bnc" id="L608" title="All 16 branches missed.">			}</span>
+
+<span class="nc" id="L610">			assertTrue(failedTileIds.isEmpty(),</span>
+<span class="nc" id="L611">					ErrorMessage.format(ErrorMessageKeys.INVALID_IMAGE_FORMAT,</span>
+							tableName,
+<span class="nc" id="L613">							failedTileIds.stream()</span>
+<span class="nc" id="L614">							.map(Object::toString)</span>
+<span class="nc" id="L615">							.collect(Collectors.joining(&quot;, &quot;))));</span>
+<span class="nc" id="L616">		}</span>
+<span class="fc" id="L617">	}</span>
+
+	//TODO: I don't know how to test R134 - R139
+
+	protected static final Collection&lt;ImageReader&gt; tiffImageReaders;
+	static
+	{
+<span class="fc" id="L624">		tiffImageReaders = StreamSupport.stream(Spliterators.spliteratorUnknownSize(ImageIO.getImageReadersByMIMEType(&quot;image/tiff&quot;),</span>
+				Spliterator.ORDERED),
+				false)
+<span class="fc" id="L627">				.collect(Collectors.toCollection(ArrayList::new));</span>
+
+<span class="fc" id="L629">	}</span>
+
+<span class="fc" id="L631">	private boolean hasExtension = false;</span>
+<span class="fc" id="L632">	private final Collection&lt;String&gt; elevationTableNames = new ArrayList&lt;&gt;();</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

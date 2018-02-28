@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>NonlinearTests.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.extensions.nonlinear</a> &gt; <span class="el_source">NonlinearTests.java</span></div><h1>NonlinearTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.extensions.nonlinear;
+
+import static org.testng.Assert.assertTrue;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.Collection;
+import org.opengis.cite.gpkg12.ErrorMessage;
+import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.features.FeaturesTests;
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
+import org.testng.Assert;
+import org.testng.ITestContext;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that apply to descriptive information about a
+ * GeoPackage's RTree Index Extension.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://www.geopackage.org/spec/#extension_geometry_types&quot; target= &quot;_blank&quot;&gt;
+ * GeoPackage Encoding Standard - Annex F.1 Non-Linear Geometry Types&lt;/a&gt; (OGC 12-128r13)&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Jeff Yutzler
+ */
+<span class="fc" id="L33">public class NonlinearTests extends FeaturesTests {</span>
+
+
+	/**
+	 * An extension name to specify a feature geometry extension type SHALL 
+	 * be defined for the &quot;gpkg&quot; author name using the &quot;gpkg_geom_&amp;lt;gname&amp;gt;&quot; 
+	 * template where &amp;lt;gname&amp;gt; is the uppercase name of the extension geometry 
+	 * type from Geometry Types (Normative) used in a GeoPackage.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r67&quot; target=
+	 *      &quot;_blank&quot;&gt;F.8. Non-Linear Geometry Types - Requirement 67&lt;/a&gt;
+	 *
+	 * @param testContext the ITestContext to use
+	 * @throws SQLException on any error
+	 */
+	@BeforeClass
+	public void validateExtensionPresent(ITestContext testContext) throws SQLException {
+<span class="fc" id="L50">		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;), </span>
+<span class="fc" id="L51">				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Non-Linear Geometry Types Extension&quot;));</span>
+    	
+<span class="fc" id="L53">		try (</span>
+<span class="fc" id="L54">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L55">				ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT COUNT(*) FROM gpkg_extensions WHERE extension_name LIKE 'gpkg_geom_%';&quot;);</span>
+				) {
+<span class="fc" id="L57">			resultSet1.next();</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">			Assert.assertTrue(resultSet1.getInt(1) &gt; 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Non-Linear Geometry Types Extension&quot;));</span>
+<span class="pc bpc" id="L59" title="8 of 16 branches missed.">		}</span>
+<span class="fc" id="L60">	}</span>
+
+	/**
+	 * The `geometry_type_name` value in a `gpkg_geometry_columns` row MAY be 
+	 * one of the uppercase extended non-linear geometry type names specified 
+	 * in geometry_types.
+	 * 
+	 * Test case
+	 * {@code /extensions/geometry_types/data_values_geometry_type_name}
+	 *
+	 * Extends test case
+	 * {@code /opt/features/geometry_columns/data/data_values_geometry_type_name}
+	 *
+	 * @see &lt;a href=&quot;#r65&quot; target= &quot;_blank&quot;&gt;Annex F.1 GeoPackage 
+	 * Non-Linear Geometry Types - Requirement 65&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 65&quot;)
+	public void featureGeometryColumnsDataValuesGeometryType() throws SQLException {
+<span class="pc" id="L81">		try (</span>
+				// 1
+<span class="fc" id="L83">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L85">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns&quot;);</span>
+				) {
+			// 2
+<span class="fc bfc" id="L88" title="All 2 branches covered.">			while (resultSet.next()){</span>
+				// 3
+<span class="fc" id="L90">				final String geometryTypeName = resultSet.getString(&quot;geometry_type_name&quot;);</span>
+<span class="fc" id="L91">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
+
+<span class="fc" id="L93">				boolean pass = false;</span>
+
+<span class="pc bpc" id="L95" title="1 of 2 branches missed.">				if (getGeopackageVersion().equals(GeoPackageVersion.V120)){</span>
+<span class="pc bpc" id="L96" title="1 of 4 branches missed.">					pass |= getAllowedGeometryTypes().contains(geometryTypeName) || extendedGeometryTypes.contains(geometryTypeName);</span>
+				} else {
+<span class="nc bnc" id="L98" title="All 2 branches missed.">					for (final String geometryType: extendedGeometryTypes){</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">						if (geometryTypeName.equalsIgnoreCase(geometryType)){</span>
+<span class="nc" id="L100">							pass = true;</span>
+<span class="nc" id="L101">							break;</span>
+						}
+<span class="nc" id="L103">					}</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">					for (final String geometryType: getAllowedGeometryTypes()){</span>
+<span class="nc bnc" id="L105" title="All 2 branches missed.">						if (geometryTypeName.equalsIgnoreCase(geometryType)){</span>
+<span class="nc" id="L106">							pass = true;</span>
+<span class="nc" id="L107">							break;</span>
+						}
+<span class="nc" id="L109">					}</span>
+				}
+
+<span class="fc" id="L112">				assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName, tableName));</span>
+<span class="fc" id="L113">			}			</span>
+<span class="pc bpc" id="L114" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L115">	}</span>
+
+	// TODO: No clear way to test R66 as it requires a spatial library
+
+	/**
+	 * A GeoPackage that contains a `gpkg_geometry_columns` table or 
+	 * updateable view with row records that specify extension 
+	 * `geometry_type_name` column values SHALL contain a `gpkg_extensions` 
+	 * table that contains row records with `table_name` and `column_name` 
+	 * values from the `gpkg_geometry_columns` row records that identify 
+	 * extension type uses, and `extension_name` column values for each of 
+	 * those geometry types constructed per the previous requirement 
+	 * extension_geometry_types_extensions_name.
+	 * 
+	 * Test case
+	 * {@code /extensions/geometry_types/extension_row}
+	 *
+	 * @see &lt;a href=&quot;#r68&quot; target= &quot;_blank&quot;&gt;Annex F.1 GeoPackage 
+	 * Non-Linear Geometry Types - Requirement 68&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 68&quot;)
+	public void extensionsRow() throws SQLException {
+<span class="pc" id="L140">		try (</span>
+				// 1
+<span class="fc" id="L142">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L144">				final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns&quot;);</span>
+				) {
+			// 2
+<span class="fc bfc" id="L147" title="All 2 branches covered.">			while (resultSet1.next()){</span>
+				// 3
+<span class="fc" id="L149">				final String geometryTypeName = resultSet1.getString(&quot;geometry_type_name&quot;);</span>
+
+				// 3a
+<span class="fc bfc" id="L152" title="All 2 branches covered.">				if(extendedGeometryTypes.contains(geometryTypeName)) {</span>
+<span class="fc" id="L153">					final String tableName = resultSet1.getString(&quot;table_name&quot;);</span>
+<span class="fc" id="L154">					final String columnName = resultSet1.getString(&quot;column_name&quot;);</span>
+
+<span class="pc" id="L156">					try (</span>
+							// 3ai
+<span class="fc" id="L158">							final Statement statement2 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L160">							final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;SELECT extension_name FROM gpkg_extensions WHERE table_name = '%s' AND column_name = '%s'&quot;, tableName, columnName));</span>
+							) {
+<span class="fc" id="L162">						boolean pass = false;</span>
+
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">						while (resultSet2.next()) {</span>
+							// 3aii
+<span class="fc bfc" id="L166" title="All 2 branches covered.">							if (resultSet2.getString(1).equals(String.format(&quot;gpkg_geom_%s&quot;, geometryTypeName))) {</span>
+<span class="fc" id="L167">								pass |= true;</span>
+<span class="fc" id="L168">								break;</span>
+							}
+						}
+<span class="fc" id="L171">						assertTrue(pass, </span>
+<span class="fc" id="L172">								ErrorMessage.format(ErrorMessageKeys.EXTENDED_GEOMETRY_REFERENCE_MISSING, tableName, geometryTypeName));</span>
+<span class="pc bpc" id="L173" title="12 of 16 branches missed.">					}</span>
+				}
+<span class="fc" id="L175">			}			</span>
+<span class="pc bpc" id="L176" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L177">	}</span>
+
+
+<span class="fc" id="L180">	private static final Collection&lt;String&gt; extendedGeometryTypes = </span>
+<span class="fc" id="L181">			Arrays.asList(&quot;CIRCULARSTRING&quot;, &quot;COMPOUNDCURVE&quot;, &quot;CURVEPOLYGON&quot;, &quot;MULTICURVE&quot;, &quot;MULTISURFACE&quot;, &quot;CURVE&quot;, &quot;SURFACE&quot;);</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

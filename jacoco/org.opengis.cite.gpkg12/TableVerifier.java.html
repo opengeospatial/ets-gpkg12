@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>TableVerifier.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12</a> &gt; <span class="el_source">TableVerifier.java</span></div><h1>TableVerifier.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+/**
+ * @author Luke Lambert
+ */
+public final class TableVerifier
+{
+    // Not meant to instantiate
+    private TableVerifier()
+<span class="nc" id="L24">    {</span>
+
+<span class="nc" id="L26">    }</span>
+
+    public static void verifyTable(final Connection                    connection,
+                                   final String                        tableName,
+                                   final Map&lt;String, ColumnDefinition&gt; expectedColumns,
+                                   final Set&lt;ForeignKeyDefinition&gt;     expectedForeinKeys,
+                                   final Iterable&lt;UniqueDefinition&gt;    expectedGroupUniques) throws SQLException
+    {
+<span class="fc" id="L34">        verifyTableDefinition(connection, tableName);</span>
+
+<span class="fc" id="L36">        final Set&lt;UniqueDefinition&gt; uniques = getUniques(connection, tableName);</span>
+
+<span class="fc" id="L38">        verifyColumns(connection,</span>
+                      tableName,
+                      expectedColumns,
+                      uniques);
+
+<span class="fc" id="L43">        verifyForeignKeys(connection,</span>
+                          tableName,
+                          expectedForeinKeys);
+
+<span class="fc" id="L47">        verifyGroupUniques(tableName,</span>
+                           expectedGroupUniques,
+                           uniques);
+<span class="fc" id="L50">    }</span>
+
+    private static void verifyTableDefinition(final Connection connection, final String tableName) throws SQLException
+    {
+<span class="pc" id="L54">        try(final PreparedStatement statement = connection.prepareStatement(&quot;SELECT sql FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND tbl_name = ?;&quot;))</span>
+        {
+<span class="fc" id="L56">            statement.setString(1, tableName);</span>
+
+<span class="pc" id="L58">            try(ResultSet gpkgContents = statement.executeQuery())</span>
+            {
+<span class="pc bpc" id="L60" title="1 of 2 branches missed.">                if(gpkgContents.getString(&quot;sql&quot;) == null)</span>
+                {
+<span class="nc" id="L62">                    throw new RuntimeException(String.format(&quot;The `sql` field must include the %s table SQL Definition.&quot;, tableName));  // TODO this needs to be in the error string table</span>
+                }
+<span class="pc bpc" id="L64" title="6 of 8 branches missed.">            }</span>
+<span class="pc bpc" id="L65" title="6 of 8 branches missed.">        }</span>
+<span class="fc" id="L66">    }</span>
+
+    private static Set&lt;UniqueDefinition&gt; getUniques(final Connection connection, final String tableName) throws SQLException
+    {
+<span class="pc" id="L70">        try(final Statement statement = connection.createStatement();</span>
+<span class="fc" id="L71">            final ResultSet indices   = statement.executeQuery(String.format(&quot;PRAGMA index_list(%s);&quot;, tableName)))</span>
+        {
+<span class="fc" id="L73">            final Set&lt;UniqueDefinition&gt; uniqueDefinitions = new HashSet&lt;&gt;();</span>
+
+<span class="fc bfc" id="L75" title="All 2 branches covered.">            while(indices.next())</span>
+            {
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">                if(indices.getBoolean(&quot;unique&quot;))</span>
+                {
+<span class="fc" id="L79">                    final String indexName = indices.getString(&quot;name&quot;);</span>
+
+<span class="pc" id="L81">                    try(Statement nameStatement = connection.createStatement();</span>
+<span class="fc" id="L82">                        ResultSet namesSet      = nameStatement.executeQuery(String.format(&quot;PRAGMA index_info(%s);&quot;, indexName)))</span>
+                    {
+<span class="fc" id="L84">                        final List&lt;String&gt; names = new ArrayList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L86" title="All 2 branches covered.">                        while(namesSet.next())</span>
+                        {
+<span class="fc" id="L88">                            names.add(namesSet.getString(&quot;name&quot;));</span>
+                        }
+
+<span class="fc" id="L91">                        uniqueDefinitions.add(new UniqueDefinition(names));</span>
+<span class="pc bpc" id="L92" title="12 of 16 branches missed.">                    }</span>
+<span class="fc" id="L93">                }</span>
+            }
+
+<span class="fc" id="L96">            return uniqueDefinitions;</span>
+<span class="pc bpc" id="L97" title="12 of 16 branches missed.">        }</span>
+    }
+
+    private static void verifyColumns(final Connection                    connection,
+                                      final String                        tableName,
+                                      final Map&lt;String, ColumnDefinition&gt; requiredColumns,
+                                      final Collection&lt;UniqueDefinition&gt;  uniques) throws SQLException
+    {
+<span class="pc" id="L105">        try(final Statement statement = connection.createStatement();</span>
+<span class="fc" id="L106">            final ResultSet tableInfo = statement.executeQuery(String.format(&quot;PRAGMA table_info(%s);&quot;, tableName)))</span>
+        {
+<span class="fc" id="L108">            final Map&lt;String, ColumnDefinition&gt; columns = new TreeMap&lt;&gt;(String.CASE_INSENSITIVE_ORDER);</span>
+
+<span class="fc bfc" id="L110" title="All 2 branches covered.">            while(tableInfo.next())</span>
+            {
+<span class="fc" id="L112">                final String columnName = tableInfo.getString(&quot;name&quot;);</span>
+<span class="fc" id="L113">                columns.put(columnName,</span>
+<span class="fc" id="L114">                            new ColumnDefinition(tableInfo.getString (&quot;type&quot;),</span>
+<span class="fc" id="L115">                                                 tableInfo.getBoolean(&quot;notnull&quot;),</span>
+<span class="fc" id="L116">                                                 tableInfo.getBoolean(&quot;pk&quot;),</span>
+<span class="fc" id="L117">                                                 uniques.stream().anyMatch(unique -&gt; unique.equals(columnName)),</span>
+<span class="fc" id="L118">                                                 tableInfo.getString (&quot;dflt_value&quot;)));</span>
+<span class="fc" id="L119">            }</span>
+
+            // Make sure the required fields exist in the table
+<span class="fc bfc" id="L122" title="All 2 branches covered.">            for(final Map.Entry&lt;String, ColumnDefinition&gt; column : requiredColumns.entrySet())</span>
+            {
+<span class="pc bpc" id="L124" title="1 of 2 branches missed.">                if(!columns.containsKey(column.getKey()))</span>
+                {
+<span class="nc" id="L126">                    throw new RuntimeException(String.format(&quot;Required column: %s.%s is missing&quot;, tableName, column.getKey()));  // TODO this needs to be in the error string table</span>
+                }
+
+                // We shouldn't be picky on table defaults as long as the content is correct
+<span class="fc" id="L130">                final ColumnDefinition columnDefinition = columns.get(column.getKey());</span>
+
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">                if(columnDefinition != null)</span>
+                {
+<span class="pc bpc" id="L134" title="1 of 2 branches missed.">                    if(!columnDefinition.equals(column.getValue()) ||</span>
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">                       !checkExpressionEquivalence(connection,</span>
+<span class="fc" id="L136">                                                   columnDefinition.getDefaultValue(),</span>
+<span class="fc" id="L137">                                                   column.getValue().getDefaultValue()))    </span>
+                    {
+<span class="nc" id="L139">                        throw new RuntimeException(String.format(&quot;Required column %s is defined as:\n%s\nbut should be:\n%s&quot;,</span>
+<span class="nc" id="L140">                                                                 column.getKey(),</span>
+<span class="nc" id="L141">                                                                 columnDefinition.toString(),</span>
+<span class="nc" id="L142">                                                                 column.getValue().toString()));</span>
+                    }
+                }
+<span class="fc" id="L145">            }</span>
+<span class="pc bpc" id="L146" title="12 of 16 branches missed.">        }</span>
+<span class="fc" id="L147">    }</span>
+
+	/** 
+	 * .equals() for ColumnDefinition skips comparing default values. 
+	 * It's better to check for functional equivalence 
+	 * rather than exact string equality. 
+	 * This avoids issues with difference in white space 
+	 * as well as other trivial annoyances.
+	 * @param connection
+	 * @param definition
+	 * @param required
+	 * @return
+	 * @throws SQLException
+	 */
+    private static boolean checkExpressionEquivalence(final Connection connection,
+                                                      final String     definition,
+                                                      final String     required) throws SQLException
+    {
+<span class="pc bpc" id="L165" title="1 of 4 branches missed.">        if((definition == null) || (required == null))</span>
+        {
+<span class="pc bpc" id="L167" title="2 of 4 branches missed.">            return (definition == null) &amp;&amp; (required == null);</span>
+        }
+
+        // Sometimes people use a synonym here and functional equivalence 
+        // isn't possible because now is always changing
+<span class="fc bfc" id="L172" title="All 2 branches covered.">        if(required.replaceAll(&quot;\\s+&quot;,&quot;&quot;).equalsIgnoreCase(&quot;strftime('%Y-%m-%dT%H:%M:%fZ','now')&quot;)){</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        	if (definition.replaceAll(&quot;\\s+&quot;,&quot;&quot;).equalsIgnoreCase(&quot;strftime('%Y-%m-%dT%H:%M:%fZ',current_timestamp)&quot;)){</span>
+<span class="fc" id="L174">        		return true;</span>
+        	}
+        }
+        
+<span class="pc" id="L178">        try(final Statement statement = connection.createStatement())</span>
+        {
+<span class="fc" id="L180">            final String query = String.format(&quot;SELECT (%s) = (%s);&quot;,</span>
+                                               definition,
+                                               required);
+
+<span class="pc" id="L184">            try(final ResultSet results = statement.executeQuery(query))</span>
+            {
+<span class="pc bpc" id="L186" title="2 of 4 branches missed.">                return results.next() &amp;&amp; results.getBoolean(1);</span>
+<span class="pc bpc" id="L187" title="6 of 8 branches missed.">            }</span>
+<span class="pc bpc" id="L188" title="6 of 8 branches missed.">        }</span>
+    }
+
+    private static void verifyForeignKeys(final Connection                connection,
+                                          final String                    tableName,
+                                          final Set&lt;ForeignKeyDefinition&gt; requiredForeignKeys) throws SQLException
+    {
+<span class="pc" id="L195">        try(final Statement statement = connection.createStatement())</span>
+        {
+<span class="pc" id="L197">            try(final ResultSet fkInfo = statement.executeQuery(String.format(&quot;PRAGMA foreign_key_list(%s);&quot;, tableName)))</span>
+            {
+<span class="fc" id="L199">                final List&lt;ForeignKeyDefinition&gt; foundForeignKeys = new LinkedList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L201" title="All 2 branches covered.">                while(fkInfo.next())</span>
+                {
+<span class="fc" id="L203">                    foundForeignKeys.add(new ForeignKeyDefinition(fkInfo.getString(&quot;table&quot;),</span>
+<span class="fc" id="L204">                                                                  fkInfo.getString(&quot;from&quot;),</span>
+<span class="fc" id="L205">                                                                  fkInfo.getString(&quot;to&quot;)));</span>
+                }
+
+<span class="fc" id="L208">                final Collection&lt;ForeignKeyDefinition&gt; missingKeys = new HashSet&lt;&gt;(requiredForeignKeys);</span>
+<span class="fc" id="L209">                missingKeys.removeAll(foundForeignKeys);</span>
+
+<span class="fc" id="L211">                final Collection&lt;ForeignKeyDefinition&gt; extraneousKeys = new HashSet&lt;&gt;(foundForeignKeys);</span>
+<span class="fc" id="L212">                extraneousKeys.removeAll(requiredForeignKeys);</span>
+
+<span class="fc" id="L214">                final StringBuilder error = new StringBuilder();</span>
+
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">                if(!missingKeys.isEmpty())</span>
+                {
+<span class="nc" id="L218">                    error.append(String.format(&quot;The table %s is missing the foreign key constraint(s): \n&quot;, tableName));</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">                    for(final ForeignKeyDefinition key : missingKeys)</span>
+                    {
+<span class="nc" id="L221">                        error.append(String.format(&quot;%s.%s -&gt; %s.%s\n&quot;,</span>
+                                                   tableName,
+<span class="nc" id="L223">                                                   key.getFromColumnName(),</span>
+<span class="nc" id="L224">                                                   key.getReferenceTableName(),</span>
+<span class="nc" id="L225">                                                   key.getToColumnName()));</span>
+<span class="nc" id="L226">                    }</span>
+                }
+
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">                if(!extraneousKeys.isEmpty())</span>
+                {
+<span class="nc" id="L231">                    error.append(String.format(&quot;The table %s has extraneous foreign key constraint(s): \n&quot;, tableName));</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">                    for(final ForeignKeyDefinition key : extraneousKeys)</span>
+                    {
+<span class="nc" id="L234">                        error.append(String.format(&quot;%s.%s -&gt; %s.%s\n&quot;,</span>
+                                                   tableName,
+<span class="nc" id="L236">                                                   key.getFromColumnName(),</span>
+<span class="nc" id="L237">                                                   key.getReferenceTableName(),</span>
+<span class="nc" id="L238">                                                   key.getToColumnName()));</span>
+<span class="nc" id="L239">                    }</span>
+                }
+
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">                if(error.length() != 0)</span>
+                {
+<span class="nc" id="L244">                    throw new RuntimeException(error.toString());     // TODO this needs to be in the error string table</span>
+                }
+<span class="pc bpc" id="L246" title="6 of 8 branches missed.">            }</span>
+<span class="fc" id="L247">            catch(final SQLException ignored)</span>
+            {
+                // If a table has no foreign keys, executing the query
+                // PRAGMA foreign_key_list(&lt;table_name&gt;) will throw an
+                // exception complaining that result set is empty.
+                // The issue has been posted about it here:
+                // https://bitbucket.org/xerial/sqlite-jdbc/issue/162/
+                // If the result set is empty (no foreign keys), there's no
+                // work to be done.  Unfortunately .executeQuery() may throw an
+                // SQLException for other reasons that may require some
+                // attention.
+<span class="fc" id="L258">            }</span>
+<span class="pc bpc" id="L259" title="6 of 8 branches missed.">        }</span>
+<span class="fc" id="L260">    }</span>
+
+    private static void verifyGroupUniques(final String                       tableName,
+                                           final Iterable&lt;UniqueDefinition&gt;   requiredGroupUniques,
+                                           final Collection&lt;UniqueDefinition&gt; uniques)
+    {
+<span class="fc bfc" id="L266" title="All 2 branches covered.">        for(final UniqueDefinition groupUnique : requiredGroupUniques)</span>
+        {
+<span class="pc bpc" id="L268" title="1 of 2 branches missed.">            if(!uniques.contains(groupUnique))</span>
+            {
+<span class="nc" id="L270">                throw new RuntimeException(String.format(&quot;The table %s is missing the column group unique constraint: (%s)&quot;,</span>
+                                           tableName,
+<span class="nc" id="L272">                                           String.join(&quot;, &quot;, groupUnique.getColumnNames())));</span>
+            }
+<span class="fc" id="L274">        }</span>
+<span class="fc" id="L275">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

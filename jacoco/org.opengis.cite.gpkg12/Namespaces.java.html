@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>Namespaces.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12</a> &gt; <span class="el_source">Namespaces.java</span></div><h1>Namespaces.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12;
+
+import java.net.URI;
+
+/**
+ * XML namespace names.
+ * 
+ * @see &lt;a href=&quot;http://www.w3.org/TR/xml-names/&quot;&gt;Namespaces in XML 1.0&lt;/a&gt;
+ *
+ */
+public class Namespaces {
+
+<span class="nc" id="L13">    private Namespaces() {</span>
+<span class="nc" id="L14">    }</span>
+
+    /** SOAP 1.2 message envelopes. */
+    public static final String SOAP_ENV = &quot;http://www.w3.org/2003/05/soap-envelope&quot;;
+    /** W3C XLink */
+    public static final String XLINK = &quot;http://www.w3.org/1999/xlink&quot;;
+    /** OGC 06-121r3 (OWS 1.1) */
+    public static final String OWS = &quot;http://www.opengis.net/ows/1.1&quot;;
+    /** ISO 19136 (GML 3.2) */
+    public static final String GML = &quot;http://www.opengis.net/gml/3.2&quot;;
+    /** W3C XML Schema namespace */
+<span class="fc" id="L25">    public static final URI XSD = URI</span>
+<span class="fc" id="L26">            .create(&quot;http://www.w3.org/2001/XMLSchema&quot;);</span>
+    /** Schematron (ISO 19757-3) namespace */
+<span class="fc" id="L28">    public static final URI SCH = URI</span>
+<span class="fc" id="L29">            .create(&quot;http://purl.oclc.org/dsdl/schematron&quot;);</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>
