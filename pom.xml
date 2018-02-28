@@ -7,7 +7,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>ets-gpkg12</artifactId>
-  <version>0.4-SNAPSHOT</version>
+  <version>0.4</version>
   <packaging>jar</packaging>
 
   <name>GeoPackage 1.2 Conformance Test Suite</name>
@@ -28,7 +28,7 @@
     <connection>scm:git:https://github.com/opengeospatial/ets-gpkg12.git</connection>
     <developerConnection>scm:git:git@github.com:opengeospatial/ets-gpkg12.git</developerConnection>
     <url>https://github.com/opengeospatial/ets-gpkg12</url>
-    <tag>HEAD</tag>
+    <tag>0.4</tag>
   </scm>
   <issueManagement>
     <system>GitHub Issue Tracker</system>
