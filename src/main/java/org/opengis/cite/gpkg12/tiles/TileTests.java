@@ -777,7 +777,7 @@ public class TileTests extends CommonFixture
 	{
 		final Map<String, ColumnDefinition> expectedColumns = new HashMap<>();
 
-		expectedColumns.put("id",          new ColumnDefinition("INTEGER", false, true,  true,  null));
+		expectedColumns.put("id",          new ColumnDefinition("INTEGER", true, true,  true,  null));
 		expectedColumns.put("zoom_level",  new ColumnDefinition("INTEGER", true,  false, false, null));
 		expectedColumns.put("tile_column", new ColumnDefinition("INTEGER", true,  false, false, null));
 		expectedColumns.put("tile_row",    new ColumnDefinition("INTEGER", true,  false, false, null));
