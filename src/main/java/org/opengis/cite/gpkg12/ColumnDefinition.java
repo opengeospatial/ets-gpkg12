@@ -93,17 +93,12 @@ public class ColumnDefinition
         // This addition allows the column definition checks to be more
         // permissive (i.e. allow implicit NOT NULL) for PK columns of type
         // INTEGER.
-        // EDIT: implicit not null causes failure in some geopackage tests. taking it out for initial release.
         final boolean implicitNotNull = this.primaryKey &&
                                         this.sqlType.toUpperCase().equals("INTEGER");
 
         return this.sqlType.equals(other.sqlType)                      &&
-               ((this.notNull    == other.notNull)) && // by checking implicitNotNull, causes testing to pass on a malformed geopackage (simple_sewer_features.gpkg)
-                                                       // with not-null incorrectly set to false in the srs_id column of the gpkg_spatial_ref_sys table, even though
-                                                       // according to requirement 10, not_null should be set to true im this instance.
-                                                       // therefore, checking for implicitNotNull removed.  will now always fail if notNull's disagree between actual
-                                                       // and expected values.
-                this.primaryKey   == other.primaryKey  &&
+               ((this.notNull    == other.notNull) || implicitNotNull) &&
+               this.primaryKey   == other.primaryKey  &&
                this.unique       == other.unique     /*&&
                (this.defaultValue == null ? other.defaultValue == null : this.defaultValue.equals(other.defaultValue))*/; // Skip the test for equality in favor of a functional equivalence test with a query
     }
