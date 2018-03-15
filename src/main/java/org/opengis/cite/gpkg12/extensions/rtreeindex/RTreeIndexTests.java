@@ -137,7 +137,7 @@ public class RTreeIndexTests extends CommonFixture {
 					String index = String.format("CREATE\\s+VIRTUAL\\s+TABLE\\s+\"?rtree_%s_%s\"?\\s+USING\\s+rtree\\s*\\(id,\\s*minx,\\s*maxx,\\s*miny,\\s*maxy\\)", tableName, columnName);
 					final String sql3a = resultSet3a.getString("sql");
 					if (!Pattern.compile(index, Pattern.CASE_INSENSITIVE).matcher(sql3a).matches()){
-						Assert.assertTrue(false, ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "virtual table", tableName, index, sql3a));
+						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "virtual table", tableName, index, sql3a));
 					}
 
 				}
@@ -151,8 +151,7 @@ public class RTreeIndexTests extends CommonFixture {
 					trigger3d = trigger3d.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					final String sql3d = resultSet3d.getString("sql");
 					if(!Pattern.compile(trigger3d, Pattern.CASE_INSENSITIVE).matcher(sql3d).matches()){
-						Assert.assertTrue(false, 
-								ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "delete trigger", tableName, trigger3d, sql3d));
+						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "delete trigger", tableName, trigger3d, sql3d));
 					}
 
 				}
@@ -168,8 +167,7 @@ public class RTreeIndexTests extends CommonFixture {
 					String trigger1 = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_update1\"?\\s+AFTER\\s+UPDATE\\s+OF\\s+\"?<c>\"?\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s+OLD.\"?\\w*\"?\\s*=\\s*NEW.\"?\\w*\"?\\s+AND\\s+\\(NEW.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(NEW.\"?<c>\"?\\)\\)\\s+BEGIN\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s*\\(\\s*NEW.\"?\\w*\"?,\\s*ST_MinX\\(NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(NEW.\"?<c>\"?\\)\\);\\s*END;?";
 					trigger1 = trigger1.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					if(!Pattern.compile(trigger1, Pattern.CASE_INSENSITIVE).matcher(sql3c1).matches()){
-						Assert.assertTrue(false, 
-								ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "update trigger 1", tableName, trigger1, sql3c1));
+						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "update trigger 1", tableName, trigger1, sql3c1));
 					}
 
 					// Update 2
@@ -178,18 +176,23 @@ public class RTreeIndexTests extends CommonFixture {
 					String trigger2 = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_update2\"?\\s+AFTER\\s+UPDATE\\s+OF\\s+\"?<c>\"?\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s+OLD.\"?\\w*\"?\\s*=\\s*NEW.\"?\\w*\"?\\s+AND\\s+\\(\\s*NEW.\"?<c>\"?\\s+IS\\s*NULL\\s+OR\\s+ST_IsEmpty\\s*\\(\\s*NEW.\"?<c>\"?\\)\\)\\s+BEGIN\\s+DELETE\\s+FROM\\s+\"?rtree_<t>_<c>\"?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\"?\\w*\"?;\\s*END";
 					trigger2 = trigger2.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					if(!Pattern.compile(trigger2, Pattern.CASE_INSENSITIVE).matcher(sql3c2).matches()){
-						Assert.assertTrue(false, 
-								ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "update trigger 2", tableName, trigger2, sql3c2));
+						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "update trigger 2", tableName, trigger2, sql3c2));
 					}
 
 					// Update 3
 					resultSet3c.next();
 					final String sql3c3 = resultSet3c.getString("sql");
-					String trigger3 = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_update3\"?\\s+AFTER\\s+UPDATE\\s+OF\\s+\"?<c>\"?\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s+OLD.\"?\\w*\"?\\s*!=\\s*NEW.\"?\\w*\"?\\s+AND\\s+\\(\\s*NEW.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(\\s*NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\"?rtree_<t>_<c>\"?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\"?\\w*\"?;\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s*\\(\\s*NEW.\"?\\w*\"?,\\s*ST_MinX\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(\\s*NEW.\"?<c>\"?\\)\\);\\s*END";
+					String trigger3 = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_update3\"?\\s+AFTER\\s+UPDATE\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s+OLD.\"?\\w*\"?\\s*!=\\s*NEW.\"?\\w*\"?\\s+AND\\s+\\(\\s*NEW.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(\\s*NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\"?rtree_<t>_<c>\"?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\"?\\w*\"?;\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s*\\(\\s*NEW.\"?\\w*\"?,\\s*ST_MinX\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(\\s*NEW.\"?<c>\"?\\)\\);\\s*END";
 					trigger3 = trigger3.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					if(!Pattern.compile(trigger3, Pattern.CASE_INSENSITIVE).matcher(sql3c3).matches()){
-						Assert.assertTrue(false, 
-								ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "update trigger 3", tableName, trigger3, sql3c3));
+						String trigger3old = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_update3\"?\\s+AFTER\\s+UPDATE\\s+OF\\s+\"?<c>\"?\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s+OLD.\"?\\w*\"?\\s*!=\\s*NEW.\"?\\w*\"?\\s+AND\\s+\\(\\s*NEW.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(\\s*NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\"?rtree_<t>_<c>\"?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\"?\\w*\"?;\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s*\\(\\s*NEW.\"?\\w*\"?,\\s*ST_MinX\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(\\s*NEW.\"?<c>\"?\\)\\);\\s*END";
+						trigger3old = trigger3old.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
+						// The old version of the trigger is still grandfathered in on older version versions
+						GeoPackageVersion gpv = getGeopackageVersion();
+						if(((gpv == GeoPackageVersion.V102) || (gpv == GeoPackageVersion.V110) || (gpv == GeoPackageVersion.V120)) && 
+								!Pattern.compile(trigger3old, Pattern.CASE_INSENSITIVE).matcher(sql3c3).matches()){
+							Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "update trigger 3", tableName, trigger3, sql3c3));
+						}
 					}
 
 					// Update 4
@@ -198,8 +201,7 @@ public class RTreeIndexTests extends CommonFixture {
 					String trigger4 = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_update4\"?\\s+AFTER\\s+UPDATE\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s+OLD.\"?\\w*\"?\\s*!=\\s*NEW.\"?\\w*\"?\\s+AND\\s+\\(\\s*NEW.\"?<c>\"?\\s+IS\\s*NULL\\s+OR\\s+ST_IsEmpty\\s*\\(\\s*NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\"?rtree_<t>_<c>\"?\\s+WHERE\\s+\\w*\\sIN\\s*\\(\\s*OLD.\"?\\w*\"?\\s*,\\s*NEW.\"?\\w*\"?\\);\\s*END";
 					trigger4 = trigger4.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					if(!Pattern.compile(trigger4, Pattern.CASE_INSENSITIVE).matcher(sql3c4).matches()){
-						Assert.assertTrue(false, 
-								ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "update trigger 4", tableName, trigger4, sql3c4));
+						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "update trigger 4", tableName, trigger4, sql3c4));
 					}					
 				}
 
@@ -212,8 +214,7 @@ public class RTreeIndexTests extends CommonFixture {
 					trigger3b = trigger3b.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					final String sql3b = resultSet3b.getString("sql");
 					if(!Pattern.compile(trigger3b, Pattern.CASE_INSENSITIVE).matcher(sql3b).matches()){
-						Assert.assertTrue(false, 
-								ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "insert trigger", tableName, trigger3b, sql3b));
+						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "insert trigger", tableName, trigger3b, sql3b));
 					}
 				}
 			}
