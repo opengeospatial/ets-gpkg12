@@ -25,7 +25,9 @@ public class ErrorMessageKeys {
     public static final String UNKNOWN_APP_ID = "UnknownApplicationId";
     public static final String UNKNOWN_USER_VERSION = "UnknownUserVersion";
     public static final String INVALID_SUFFIX = "InvalidSuffix";
+    public static final String INVALID_COLUMN_DEFINITION = "InvalidColumnDefinition";
     public static final String INVALID_DATA_TYPE = "InvalidDataType";
+    public static final String MISSING_COLUMN = "MissingColumn";
     public static final String UNEXPECTED_COLUMN = "UnexpectedColumn";
     public static final String UNEXPECTED_VALUE = "UnexpectedValue";
     public static final String ILLEGAL_VALUE = "IllegalValue";
