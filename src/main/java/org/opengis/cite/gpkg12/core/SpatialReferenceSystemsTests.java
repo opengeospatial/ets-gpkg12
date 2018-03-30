@@ -58,6 +58,50 @@ public class SpatialReferenceSystemsTests extends CommonFixture {
     @Test(description = "See OGC 12-128r12: Requirement 10")
     public void srsTableDefinition() throws SQLException
     {
+    	final String tableName = "gpkg_spatial_ref_sys";
+		try (
+				// 1
+				final Statement statement = this.databaseConnection.createStatement();
+
+				final ResultSet resultSet = statement.executeQuery("PRAGMA table_info('" + tableName + "');");
+				) {
+			// 2
+			int passFlag = 0;
+			final int flagMask = 0b00111111;
+
+			checkPrimaryKey(tableName, "srs_id");
+
+			// Technically nonnull columns should have a default but this should not cause a test failure.
+			while (resultSet.next()) {
+				// 3
+				final String name = resultSet.getString("name");
+				if ("srs_id".equals(name)){
+					// handled with checkPrimaryKey...
+					passFlag |= 1;
+				} else if ("srs_name".equals(name)){
+					assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, "srs_name", tableName, "type", "TEXT", resultSet.getString("type")));
+					assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, "srs_name", tableName, "notnull", "1", resultSet.getInt("notnull")));
+					passFlag |= (1 << 1);
+				} else if ("organization".equals(name)){
+					assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, "organization", tableName, "type", "TEXT", resultSet.getString("type")));
+					assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, "organization", tableName, "notnull", "1", resultSet.getInt("notnull")));
+					passFlag |= (1 << 2);
+				} else if ("organization_coordsys_id".equals(name)){
+					assertTrue("INTEGER".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, "organization_coordsys_id", tableName, "type", "INTEGER", resultSet.getString("type")));
+					assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, "organization_coordsys_id", tableName, "notnull", "1", resultSet.getInt("notnull")));
+					passFlag |= (1 << 3);
+				} else if ("definition".equals(name)){
+					assertTrue("TEXT".equals(resultSet.getString("type")),  ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, "definition", tableName, "type", "TEXT", resultSet.getString("type")));
+					assertTrue(resultSet.getInt("notnull") == 1,  ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, "definition", tableName, "notnull", "1", resultSet.getString("notnull")));
+					passFlag |= (1 << 4);
+				} else if ("description".equals(name)){
+					assertTrue("TEXT".equals(resultSet.getString("type")),  ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, "description", tableName, "type", "TEXT", resultSet.getString("type")));
+					assertTrue(resultSet.getInt("notnull") == 0,  ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, "description", tableName, "notnull", "0", resultSet.getString("notnull")));
+					passFlag |= (1 << 5);
+				}
+			} 
+			assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.MISSING_COLUMN, tableName));
+		}
         try
         {
             final Map<String, ColumnDefinition> spatialReferenceSystemColumns = new HashMap<>();
