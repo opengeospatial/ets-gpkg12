@@ -102,27 +102,6 @@ public class SpatialReferenceSystemsTests extends CommonFixture {
 			} 
 			assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.MISSING_COLUMN, tableName));
 		}
-        try
-        {
-            final Map<String, ColumnDefinition> spatialReferenceSystemColumns = new HashMap<>();
-
-            spatialReferenceSystemColumns.put("srs_name",                 new ColumnDefinition("TEXT",    true,  false, false, null));
-            spatialReferenceSystemColumns.put("srs_id",                   new ColumnDefinition("INTEGER", true,  true,  true,  null));
-            spatialReferenceSystemColumns.put("organization",             new ColumnDefinition("TEXT",    true,  false, false, null));
-            spatialReferenceSystemColumns.put("organization_coordsys_id", new ColumnDefinition("INTEGER", true,  false, false, null));
-            spatialReferenceSystemColumns.put("definition",               new ColumnDefinition("TEXT",    true,  false, false, null));
-            spatialReferenceSystemColumns.put("description",              new ColumnDefinition("TEXT",    false, false, false, null));
-
-            TableVerifier.verifyTable(this.databaseConnection,
-                                      "gpkg_spatial_ref_sys",
-                                      spatialReferenceSystemColumns,
-                                      Collections.emptySet(),
-                                      Collections.emptyList());
-        }
-        catch(final Throwable th)
-        {
-            fail(ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", th.getMessage()));
-        }
     }
 
     /**
