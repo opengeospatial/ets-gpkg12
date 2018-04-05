@@ -118,7 +118,7 @@ The general structure of the test suite is shown in Table 1.
     </tr>
     <tr>
       <td>Tiled Gridded Coverage Data</td>
-      <td>org.opengis.cite.gpkg12.extensions.elevation.*</td>
+      <td>org.opengis.cite.gpkg12.extensions.coverage.*</td>
     </tr>
   </tbody>
 </table>

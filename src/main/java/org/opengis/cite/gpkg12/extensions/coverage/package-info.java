@@ -14,4 +14,4 @@
  * GeoPackage Encoding Standard - Features</a></li>
  * </ul>
  */
-package org.opengis.cite.gpkg12.extensions.elevation;
+package org.opengis.cite.gpkg12.extensions.coverage;
