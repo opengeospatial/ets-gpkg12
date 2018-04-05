@@ -24,7 +24,7 @@
           <conformanceClass>Metadata</conformanceClass>
           <conformanceClass>Schema</conformanceClass>
           <conformanceClass>WKT for Coordinate Reference Systems</conformanceClass>
-          <conformanceClass>Tiled Gridded Elevation Data</conformanceClass>
+          <conformanceClass>Tiled Gridded Coverage Data</conformanceClass>
         </BasicConformanceClasses>
       </suite>
       <revision>
