@@ -300,14 +300,14 @@ public class TiledGriddedCoverageTests extends TileTests {
 				if ("gpkg_2d_gridded_coverage_ancillary".equals(name)){
 					if ((resultSet.getObject("column_name") == null) &&
 							"gpkg_2d_gridded_coverage".equals(resultSet.getString("extension_name")) &&
-							"http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data".equals(resultSet.getString("definition")) && 
+							"http://docs.opengeospatial.org/is/17-066r1/17-066r1.html".equals(resultSet.getString("definition")) &&
 							"read-write".equals(resultSet.getString("scope"))){
 						passFlag |= 1;
 					}
 				} else if ("gpkg_2d_gridded_tile_ancillary".equals(name)){
 					if ((resultSet.getObject("column_name") == null) &&
 							"gpkg_2d_gridded_coverage".equals(resultSet.getString("extension_name")) &&
-							"http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data".equals(resultSet.getString("definition")) && 
+							"http://docs.opengeospatial.org/is/17-066r1/17-066r1.html".equals(resultSet.getString("definition")) &&
 							"read-write".equals(resultSet.getString("scope"))){
 						passFlag |= (1 << 1);
 					}
@@ -324,7 +324,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 					) {
 				assertTrue(resultSet1.next() && "tile_data".equals(resultSet1.getObject("column_name")) &&
 						"gpkg_2d_gridded_coverage".equals(resultSet1.getString("extension_name")) &&
-						"http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data".equals(resultSet1.getString("definition")) && 
+						"http://docs.opengeospatial.org/is/17-066r1/17-066r1.html".equals(resultSet1.getString("definition")) &&
 						"read-write".equals(resultSet1.getString("scope")), 
 						ErrorMessageKeys.ELEVATION_EXTENSION_ROWS_MISSING);
 			}
