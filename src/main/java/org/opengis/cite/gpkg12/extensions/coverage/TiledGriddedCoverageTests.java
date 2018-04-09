@@ -299,14 +299,14 @@ public class TiledGriddedCoverageTests extends TileTests {
 				final String name = resultSet.getString("table_name");
 				if ("gpkg_2d_gridded_coverage_ancillary".equals(name)){
 					if ((resultSet.getObject("column_name") == null) &&
-							"gpkg_elevation_tiles".equals(resultSet.getString("extension_name")) &&
+							"gpkg_2d_gridded_coverage".equals(resultSet.getString("extension_name")) &&
 							"http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data".equals(resultSet.getString("definition")) && 
 							"read-write".equals(resultSet.getString("scope"))){
 						passFlag |= 1;
 					}
 				} else if ("gpkg_2d_gridded_tile_ancillary".equals(name)){
 					if ((resultSet.getObject("column_name") == null) &&
-							"gpkg_elevation_tiles".equals(resultSet.getString("extension_name")) &&
+							"gpkg_2d_gridded_coverage".equals(resultSet.getString("extension_name")) &&
 							"http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data".equals(resultSet.getString("definition")) && 
 							"read-write".equals(resultSet.getString("scope"))){
 						passFlag |= (1 << 1);
@@ -320,10 +320,10 @@ public class TiledGriddedCoverageTests extends TileTests {
 		for (final String tableName : this.elevationTableNames) {
 			try (
 					final Statement statement1 = this.databaseConnection.createStatement();
-					final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT column_name, definition, scope from gpkg_extensions WHERE extension_name = 'gpkg_elevation_tiles' AND table_name = '%s'", tableName));
+					final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT column_name, definition, scope from gpkg_extensions WHERE extension_name = 'gpkg_2d_gridded_coverage' AND table_name = '%s'", tableName));
 					) {
 				assertTrue(resultSet1.next() && "tile_data".equals(resultSet1.getObject("column_name")) &&
-						"gpkg_elevation_tiles".equals(resultSet1.getString("extension_name")) &&
+						"gpkg_2d_gridded_coverage".equals(resultSet1.getString("extension_name")) &&
 						"http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data".equals(resultSet1.getString("definition")) && 
 						"read-write".equals(resultSet1.getString("scope")), 
 						ErrorMessageKeys.ELEVATION_EXTENSION_ROWS_MISSING);
