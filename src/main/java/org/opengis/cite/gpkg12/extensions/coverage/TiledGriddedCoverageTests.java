@@ -1,4 +1,4 @@
-package org.opengis.cite.gpkg12.extensions.elevation;
+package org.opengis.cite.gpkg12.extensions.coverage;
 
 import static org.testng.Assert.assertTrue;
 
@@ -30,35 +30,35 @@ import org.testng.annotations.Test;
 
 /**
  * Defines test methods that apply to descriptive information about a
- * GeoPackage's content as it pertains to tiled, gridded elevation data.
+ * GeoPackage's content as it pertains to tiled, gridded coverage data.
  *
  * <p style="margin-bottom: 0.5em">
  * <strong>Sources</strong>
  * </p>
  * <ul>
  * <li><a href="http://www.geopackage.org/spec/#features" target= "_blank">
- * GeoPackage Encoding Standard - Annex F.11 Elevation</a> (OGC 12-128r13)</li>
+ * GeoPackage Encoding Standard - Annex F.11 Tiled Gridded Coverage Data</a> (OGC 12-128r15) referencing to OGC GeoPackage Extension for Tiled Gridded Coverage Data (http://docs.opengeospatial.org/is/17-066r1/17-066r1.html) (17-066r1)</li>
  * </ul>
  *
  * @author Jeff Yutzler
  */
-public class ElevationTests extends TileTests {
-	public ElevationTests(){
-		// This allows all of the tiles tests to run on elevation data
+public class TiledGriddedCoverageTests extends TileTests {
+	public TiledGriddedCoverageTests(){
+		// This allows all of the tiles tests to run on coverage data
 		setDataType("2d-gridded-coverage");
 	}
 
 	@BeforeClass
 	public void a_ValidateExtensionPresent(ITestContext testContext) throws SQLException {
 		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
-				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Elevation Extension"));
+				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Coverage Extension"));
     	
 		try (
 				final Statement statement1 = this.databaseConnection.createStatement();
 				ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = 'gpkg_2d_gridded_coverage_ancillary';");
 				) {
 			resultSet1.next();
-			Assert.assertTrue(resultSet1.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Elevation Extension"));
+			Assert.assertTrue(resultSet1.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Coverage Extension"));
 		}
 	}
 
@@ -95,13 +95,12 @@ public class ElevationTests extends TileTests {
 	 * Test case
 	 * {@code /extensions/elevation/table_def/gpkg_2d_gridded_coverage_ancillary}
 	 *
-	 * @see <a href="#r120" target= "_blank">Elevation 
-	 * Extension - Requirement 120</a>
+	 * @see <a href="#r1" target= "_blank">Requirement 1</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r13: Requirement 120")
+	@Test(description = "See OGC 17-066r1: Requirement 1")
 	public void coverageAncillaryTableDefinition() throws SQLException {
 
 		try (
@@ -161,13 +160,12 @@ public class ElevationTests extends TileTests {
 	 * Test case
 	 * {@code /extensions/elevation/table_def/gpkg_2d_gridded_tile_ancillary}
 	 *
-	 * @see <a href="#r121" target= "_blank">Elevation 
-	 * Extension - Requirement 121</a>
+	 * @see <a href="#r2" target= "_blank">Requirement 2</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r13: Requirement 121")
+	@Test(description = "See OGC 17-066r1: Requirement 2")
 	public void tileAncillaryTableDefinition() throws SQLException {
 		try (
 				// 1
@@ -231,13 +229,12 @@ public class ElevationTests extends TileTests {
 	 * Test case
 	 * {@code /extensions/elevation/table_val/gpkg_spatial_ref_sys/rows}
 	 *
-	 * @see <a href="#r122" target= "_blank">Elevation 
-	 * Extension - Requirement 122</a>
+	 * @see <a href="#r3" target= "_blank">Requirement 3</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r13: Requirement 122")
+	@Test(description = "See OGC 17-066r1: Requirement 3")
 	public void requiredSRSRows() throws SQLException {
 		try (
 				final Statement statement = this.databaseConnection.createStatement();
@@ -252,13 +249,12 @@ public class ElevationTests extends TileTests {
 	 * Test case
 	 * {@code /opt/extensions/elevation/srs/required_references}
 	 *
-	 * @see <a href="#r123" target= "_blank">Elevation 
-	 * Extension - Requirement 112</a>
+	 * @see <a href="#r4" target= "_blank">Requirement 4,5</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r13: Requirement 123")
+	@Test(description = "See OGC 17-066r1: Requirement 4, 5")
 	public void requiredSRSReferences() throws SQLException {
 		for (final String tableName : this.elevationTableNames) {
 			try (	
@@ -281,13 +277,12 @@ public class ElevationTests extends TileTests {
 	 * Test case
 	 * {@code /extensions/elevation/table_val/gpkg_extensions}
 	 *
-	 * @see <a href="#r125" target= "_blank">Elevation 
-	 * Extension - Requirement 125</a>
+	 * @see <a href="#r6" target= "_blank">Requirement 6</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r13: Requirement 125")
+	@Test(description = "See OGC 17-066r1: Requirement 6")
 	public void extensionTableRows() throws SQLException {
 		try (
 				// 1
@@ -304,15 +299,15 @@ public class ElevationTests extends TileTests {
 				final String name = resultSet.getString("table_name");
 				if ("gpkg_2d_gridded_coverage_ancillary".equals(name)){
 					if ((resultSet.getObject("column_name") == null) &&
-							"gpkg_elevation_tiles".equals(resultSet.getString("extension_name")) &&
-							"http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data".equals(resultSet.getString("definition")) && 
+							"gpkg_2d_gridded_coverage".equals(resultSet.getString("extension_name")) &&
+							"http://docs.opengeospatial.org/is/17-066r1/17-066r1.html".equals(resultSet.getString("definition")) &&
 							"read-write".equals(resultSet.getString("scope"))){
 						passFlag |= 1;
 					}
 				} else if ("gpkg_2d_gridded_tile_ancillary".equals(name)){
 					if ((resultSet.getObject("column_name") == null) &&
-							"gpkg_elevation_tiles".equals(resultSet.getString("extension_name")) &&
-							"http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data".equals(resultSet.getString("definition")) && 
+							"gpkg_2d_gridded_coverage".equals(resultSet.getString("extension_name")) &&
+							"http://docs.opengeospatial.org/is/17-066r1/17-066r1.html".equals(resultSet.getString("definition")) &&
 							"read-write".equals(resultSet.getString("scope"))){
 						passFlag |= (1 << 1);
 					}
@@ -325,11 +320,11 @@ public class ElevationTests extends TileTests {
 		for (final String tableName : this.elevationTableNames) {
 			try (
 					final Statement statement1 = this.databaseConnection.createStatement();
-					final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT column_name, definition, scope from gpkg_extensions WHERE extension_name = 'gpkg_elevation_tiles' AND table_name = '%s'", tableName));
+					final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT column_name, definition, scope from gpkg_extensions WHERE extension_name = 'gpkg_2d_gridded_coverage' AND table_name = '%s'", tableName));
 					) {
 				assertTrue(resultSet1.next() && "tile_data".equals(resultSet1.getObject("column_name")) &&
-						"gpkg_elevation_tiles".equals(resultSet1.getString("extension_name")) &&
-						"http://www.geopackage.org/spec/#extension_tiled_gridded_elevation_data".equals(resultSet1.getString("definition")) && 
+						"gpkg_2d_gridded_coverage".equals(resultSet1.getString("extension_name")) &&
+						"http://docs.opengeospatial.org/is/17-066r1/17-066r1.html".equals(resultSet1.getString("definition")) &&
 						"read-write".equals(resultSet1.getString("scope")), 
 						ErrorMessageKeys.ELEVATION_EXTENSION_ROWS_MISSING);
 			}
@@ -340,13 +335,12 @@ public class ElevationTests extends TileTests {
 	 * Test case
 	 * {@code /extensions/elevation/table_ref/gpkg_contents/gpkg_2d_gridded_coverage_ancillary}
 	 *
-	 * @see <a href="#r126" target= "_blank">Elevation 
-	 * Extension - Requirement 126</a>
+	 * @see <a href="#r7" target= "_blank">Requirement 7</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r13: Requirement 126")
+	@Test(description = "See OGC 17-066r1: Requirement 7")
 	public void coverageAncillaryValues() throws SQLException {
 
 		for (final String tableName : this.elevationTableNames) {
@@ -364,13 +358,12 @@ public class ElevationTests extends TileTests {
 	 * Test case
 	 * {@code /extensions/elevation/table_ref/gpkg_2d_gridded_coverage_ancillary/gpkg_tile_matrix_set}
 	 *
-	 * @see <a href="#r127" target= "_blank">Elevation 
-	 * Extension - Requirement 127</a>
+	 * @see <a href="#r8" target= "_blank">Requirement 8</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r13: Requirement 127")
+	@Test(description = "See OGC 17-066r1: Requirement 8")
 	public void coverageAncillarySetName() throws SQLException {
 		try (
 				// 1
@@ -395,15 +388,14 @@ public class ElevationTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code/extensions/elevation/table_val/gpkg_2d_gridded_coverage_ancillary}
+	 * {@code /extensions/elevation/table_val/gpkg_2d_gridded_coverage_ancillary}
 	 *
-	 * @see <a href="#r128" target= "_blank">Elevation 
-	 * Extension - Requirement 128</a>
+	 * @see <a href="#r9" target= "_blank">Requirement 9</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r13: Requirement 128")
+	@Test(description = "See OGC 17-066r1: Requirement 9")
 	public void coverageAncillaryDatatype() throws SQLException {
 		try (
 				// 1
@@ -455,13 +447,12 @@ public class ElevationTests extends TileTests {
 	 * Test case
 	 * {@code /extensions/elevation/table_ref/tpudt/gpkg_2d_gridded_tile_ancillary}
 	 *
-	 * @see <a href="#129" target= "_blank">Elevation 
-	 * Extension - Requirement 129, 131</a>
+	 * @see <a href="#10" target= "_blank">Requirement 10, 12</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r13: Requirement 129, 131")
+	@Test(description = "See OGC 17-066r1: Requirements 10, 12")
 	public void tileAncillaryTableRef() throws SQLException {
 		// 1
 		for (final String tableName : this.elevationTableNames) {
@@ -490,13 +481,12 @@ public class ElevationTests extends TileTests {
 	 * Test case
 	 * {@code /extensions/elevation/table_val/gpkg_2d_gridded_tile_ancillary}
 	 *
-	 * @see <a href="#130" target= "_blank">Elevation 
-	 * Extension - Requirement 130</a>
+	 * @see <a href="#11" target= "_blank">Requirement 11</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 12-128r13: Requirement 130")
+	@Test(description = "See OGC 17-066r1: Requirement 11")
 	public void tileAncillaryTableVal() throws SQLException {
 		try (
 				// 1
@@ -565,15 +555,14 @@ public class ElevationTests extends TileTests {
 	 * gridded elevation data SHALL be of MIME type image/tiff and the data SHALL 
 	 * be 32-bit floating point as described by the TIFF Encoding (Requirement 120).
 	 * 
-	 * @see <a href="#r132" target=
-	 *      "_blank">MIME Type PNG or TIFF - Requirement 132/133</a>
+	 * @see <a href="#r13" target="_blank">MIME Type PNG or TIFF - Requirement 13/14</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 * @throws IOException
 	 *             If the bytes of an image cause an error when read
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 132/133")
+	@Test(description = "See OGC 12-128r12: Requirement 13/14")
 	public void imageFormat() throws SQLException, IOException
 	{
 		// 1, 2

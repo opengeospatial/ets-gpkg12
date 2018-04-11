@@ -68,9 +68,9 @@
       <package name="org.opengis.cite.gpkg12.extensions.crswkt" />
     </packages>
   </test>
-  <test name="Tiled Gridded Elevation Data">
+  <test name="Tiled Gridded Coverage Data">
     <packages>
-      <package name="org.opengis.cite.gpkg12.extensions.elevation" />
+      <package name="org.opengis.cite.gpkg12.extensions.coverage" />
     </packages>
   </test>
 </suite>

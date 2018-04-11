@@ -36,7 +36,7 @@ The following conformance classes have being defined:
     - Metadata
     - Schema
     - WKT for Coordinate Reference Systems
-    - Tiled Gridded Elevation Data
+    - Tiled Gridded Coverage Data
     
 Note: This ETS also supports GeoPackage 1.1 and 1.0. 
 
@@ -117,8 +117,8 @@ The general structure of the test suite is shown in Table 1.
       <td>org.opengis.cite.gpkg12.extensions.crswkt.*</td>
     </tr>
     <tr>
-      <td>Tiled Gridded Elevation Data</td>
-      <td>org.opengis.cite.gpkg12.extensions.elevation.*</td>
+      <td>Tiled Gridded Coverage Data</td>
+      <td>org.opengis.cite.gpkg12.extensions.coverage.*</td>
     </tr>
   </tbody>
 </table>
