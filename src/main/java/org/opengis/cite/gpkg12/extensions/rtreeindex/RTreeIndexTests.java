@@ -164,7 +164,7 @@ public class RTreeIndexTests extends CommonFixture {
 					// Update 1
 					resultSet3c.next();
 					final String sql3c1 = resultSet3c.getString("sql");
-					String trigger1 = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_update1\"?\\s+AFTER\\s+UPDATE\\s+OF\\s+\"?<c>\"?\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s+OLD.\"?\\w*\"?\\s*=\\s*NEW.\"?\\w*\"?\\s+AND\\s+\\(NEW.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(NEW.\"?<c>\"?\\)\\)\\s+BEGIN\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s*\\(\\s*NEW.\"?\\w*\"?,\\s*ST_MinX\\(NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(NEW.\"?<c>\"?\\)\\);\\s*END;?";
+					String trigger1 = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_update1\"?\\s+AFTER\\s+UPDATE\\s+OF\\s+\"?<c>\"?\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s+OLD.\"?\\w*\"?\\s*=\\s*NEW.\"?\\w*\"?\\s+AND\\s+\\(NEW.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(NEW.\"?<c>\"?\\)\\)\\s+BEGIN\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s*\\(\\s*NEW.\"?\\w*\"?,\\s*ST_MinX\\(NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(NEW.\"?<c>\"?\\)\\s*\\);\\s*END;?";
 					trigger1 = trigger1.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					if(!Pattern.compile(trigger1, Pattern.CASE_INSENSITIVE).matcher(sql3c1).matches()){
 						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "update trigger 1", tableName, trigger1, sql3c1));
@@ -182,10 +182,10 @@ public class RTreeIndexTests extends CommonFixture {
 					// Update 3
 					resultSet3c.next();
 					final String sql3c3 = resultSet3c.getString("sql");
-					String trigger3 = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_update3\"?\\s+AFTER\\s+UPDATE\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s+OLD.\"?\\w*\"?\\s*!=\\s*NEW.\"?\\w*\"?\\s+AND\\s+\\(\\s*NEW.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(\\s*NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\"?rtree_<t>_<c>\"?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\"?\\w*\"?;\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s*\\(\\s*NEW.\"?\\w*\"?,\\s*ST_MinX\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(\\s*NEW.\"?<c>\"?\\)\\);\\s*END";
+					String trigger3 = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_update3\"?\\s+AFTER\\s+UPDATE\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s+OLD.\"?\\w*\"?\\s*!=\\s*NEW.\"?\\w*\"?\\s+AND\\s+\\(\\s*NEW.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(\\s*NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\"?rtree_<t>_<c>\"?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\"?\\w*\"?;\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s*\\(\\s*NEW.\"?\\w*\"?,\\s*ST_MinX\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(\\s*NEW.\"?<c>\"?\\)\\s*\\);\\s*END";
 					trigger3 = trigger3.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					if(!Pattern.compile(trigger3, Pattern.CASE_INSENSITIVE).matcher(sql3c3).matches()){
-						String trigger3old = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_update3\"?\\s+AFTER\\s+UPDATE\\s+OF\\s+\"?<c>\"?\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s+OLD.\"?\\w*\"?\\s*!=\\s*NEW.\"?\\w*\"?\\s+AND\\s+\\(\\s*NEW.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(\\s*NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\"?rtree_<t>_<c>\"?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\"?\\w*\"?;\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s*\\(\\s*NEW.\"?\\w*\"?,\\s*ST_MinX\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(\\s*NEW.\"?<c>\"?\\)\\);\\s*END";
+						String trigger3old = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_update3\"?\\s+AFTER\\s+UPDATE\\s+OF\\s+\"?<c>\"?\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s+OLD.\"?\\w*\"?\\s*!=\\s*NEW.\"?\\w*\"?\\s+AND\\s+\\(\\s*NEW.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(\\s*NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\"?rtree_<t>_<c>\"?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\"?\\w*\"?;\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s*\\(\\s*NEW.\"?\\w*\"?,\\s*ST_MinX\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(\\s*NEW.\"?<c>\"?\\)\\s*\\);\\s*END";
 						trigger3old = trigger3old.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 						// The old version of the trigger is still grandfathered in on older version versions
 						GeoPackageVersion gpv = getGeopackageVersion();
@@ -210,7 +210,7 @@ public class RTreeIndexTests extends CommonFixture {
 						final Statement statement3b = this.databaseConnection.createStatement();
 						ResultSet resultSet3b = statement3b.executeQuery(String.format("SELECT sql FROM sqlite_master WHERE type='trigger' AND name = 'rtree_%s_%s_insert'", tableName, columnName));
 						) {
-					String trigger3b = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_insert\"?\\s+AFTER\\s+INSERT\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s*\\(new.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\(NEW.\"?<c>\"?\\)\\)\\s+BEGIN\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s+\\(NEW.\"?\\w+\"?,\\s*ST_MinX\\(NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(NEW.\"?<c>\"?\\)\\);\\s*END;?";
+					String trigger3b = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_insert\"?\\s+AFTER\\s+INSERT\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s*\\(new.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\(NEW.\"?<c>\"?\\)\\)\\s+BEGIN\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s+\\(\\s*NEW.\"?\\w+\"?,\\s*ST_MinX\\(NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(NEW.\"?<c>\"?\\)\\s*\\);\\s*END;?";
 					trigger3b = trigger3b.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 					final String sql3b = resultSet3b.getString("sql");
 					if(!Pattern.compile(trigger3b, Pattern.CASE_INSENSITIVE).matcher(sql3b).matches()){
