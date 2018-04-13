@@ -7,6 +7,7 @@ pipeline {
   stages {
     stage('Preparation') {
       steps{
+        deleteDir()
         git 'git@github.com:opengeospatial/ets-gpkg12.git'
       }
     }
