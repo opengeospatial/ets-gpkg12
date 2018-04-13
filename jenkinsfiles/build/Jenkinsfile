@@ -1,5 +1,8 @@
 pipeline {
   agent any
+  environment {
+    GIT_SSH_COMMAND = 'ssh -i ~/.ssh/ets-gpkg12'
+  }
   tools {
     maven 'mvn'
     jdk 'JDK 8'
@@ -8,7 +11,7 @@ pipeline {
     stage('Preparation') {
       steps{
         deleteDir()
-        sh "GIT_SSH_COMMAND='ssh -i ~/.ssh/ets-gpkg12' git clone git@github.com:opengeospatial/ets-gpkg12.git ."
+        sh 'git clone git@github.com:opengeospatial/ets-gpkg12.git .'
       }
     }
     stage('Build') {
