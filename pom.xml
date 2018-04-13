@@ -203,10 +203,11 @@
                   <goal>sign</goal>
                 </goals>
                 <configuration>
-                  <gpgArguments>
-                    <arg>--pinentry-mode</arg>
+                  <!-- Enable if GPG 2.1+ is used -->
+                  <!--<gpgArguments>
+                    <arg>&#45;&#45;pinentry-mode</arg>
                     <arg>loopback</arg>
-                  </gpgArguments>
+                  </gpgArguments>-->
                 </configuration>
               </execution>
             </executions>
