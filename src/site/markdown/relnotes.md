@@ -1,5 +1,14 @@
 # Release Notes GeoPackage (gpkg) 1.2
 
+## 0.5 (2018-04-13)
+* Fix [#46](https://github.com/opengeospatial/ets-gpkg12/issues/46): Rename Tiled Gridded Elevation Data conformance class
+* Merge[#50](https://github.com/opengeospatial/ets-gpkg12/pull/50): flexible white space in RTree regexes
+* Merge[#49](https://github.com/opengeospatial/ets-gpkg12/pull/49): updated gridded coverage gpkg_extensions extension_name and definition values
+* Merge[#47](https://github.com/opengeospatial/ets-gpkg12/pull/47): Refining gpkg_spatial_ref_sys tests
+* Merge[#45](https://github.com/opengeospatial/ets-gpkg12/pull/45): updating trigger, but leaving older versions grandfathered
+* Merge[ #44](https://github.com/opengeospatial/ets-gpkg12/pull/44): being more flexible WRT white space in regexes
+* Merge[#43](https://github.com/opengeospatial/ets-gpkg12/pull/43): clarifying tests for NOT NULL on primary keys
+
 ## 0.4 (2018-02-28)
 * Fix [#37](https://github.com/opengeospatial/ets-gpkg12/issues/37): Review list of implemented conformance classes in test report and documentation
 * Merge [#39](https://github.com/opengeospatial/ets-gpkg12/pull/39): 1.2 Test Suite Input Conformance Classes
