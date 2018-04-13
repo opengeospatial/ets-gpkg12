@@ -777,7 +777,7 @@ import org.testng.annotations.Test;
 	{
 <span class="fc" id="L778">		final Map&lt;String, ColumnDefinition&gt; expectedColumns = new HashMap&lt;&gt;();</span>
 
-<span class="fc" id="L780">		expectedColumns.put(&quot;id&quot;,          new ColumnDefinition(&quot;INTEGER&quot;, false, true,  true,  null));</span>
+<span class="fc" id="L780">		expectedColumns.put(&quot;id&quot;,          new ColumnDefinition(&quot;INTEGER&quot;, true, true,  true,  null));</span>
 <span class="fc" id="L781">		expectedColumns.put(&quot;zoom_level&quot;,  new ColumnDefinition(&quot;INTEGER&quot;, true,  false, false, null));</span>
 <span class="fc" id="L782">		expectedColumns.put(&quot;tile_column&quot;, new ColumnDefinition(&quot;INTEGER&quot;, true,  false, false, null));</span>
 <span class="fc" id="L783">		expectedColumns.put(&quot;tile_row&quot;,    new ColumnDefinition(&quot;INTEGER&quot;, true,  false, false, null));</span>
@@ -968,7 +968,7 @@ import org.testng.annotations.Test;
 			finally
 			{
 <span class="pc" id="L970">				image.reset();</span>
-<span class="fc" id="L971">			}</span>
+<span class="pc" id="L971">			}</span>
 <span class="fc" id="L972">		}</span>
 
 <span class="fc" id="L974">		return false;</span>

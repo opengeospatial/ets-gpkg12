@@ -134,10 +134,10 @@ import org.testng.annotations.Test;
 <span class="fc" id="L134">						final Statement statement3a = this.databaseConnection.createStatement();</span>
 <span class="fc" id="L135">						ResultSet resultSet3a = statement3a.executeQuery(String.format(&quot;SELECT sql FROM sqlite_master WHERE tbl_name = 'rtree_%s_%s'&quot;, tableName, columnName));</span>
 						) {
-<span class="fc" id="L137">					String index = String.format(&quot;CREATE\\sVIRTUAL\\sTABLE\\s\&quot;?rtree_%s_%s\&quot;?\\sUSING\\srtree\\s?\\(id,\\s?minx,\\s?maxx,\\s?miny,\\s?maxy\\)&quot;, tableName, columnName);</span>
+<span class="fc" id="L137">					String index = String.format(&quot;CREATE\\s+VIRTUAL\\s+TABLE\\s+\&quot;?rtree_%s_%s\&quot;?\\s+USING\\s+rtree\\s*\\(id,\\s*minx,\\s*maxx,\\s*miny,\\s*maxy\\)&quot;, tableName, columnName);</span>
 <span class="fc" id="L138">					final String sql3a = resultSet3a.getString(&quot;sql&quot;);</span>
 <span class="pc bpc" id="L139" title="1 of 2 branches missed.">					if (!Pattern.compile(index, Pattern.CASE_INSENSITIVE).matcher(sql3a).matches()){</span>
-<span class="nc" id="L140">						Assert.assertTrue(false, ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;virtual table&quot;, tableName));</span>
+<span class="nc" id="L140">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;virtual table&quot;, tableName, index, sql3a));</span>
 					}
 
 <span class="pc bpc" id="L143" title="12 of 16 branches missed.">				}</span>
@@ -147,77 +147,78 @@ import org.testng.annotations.Test;
 <span class="fc" id="L147">						final Statement statement3d = this.databaseConnection.createStatement();</span>
 <span class="fc" id="L148">						ResultSet resultSet3d = statement3d.executeQuery(String.format(&quot;SELECT sql FROM sqlite_master WHERE type='trigger' AND name = 'rtree_%s_%s_delete'&quot;, tableName, columnName));</span>
 						) {
-<span class="fc" id="L150">					String trigger3d = &quot;CREATE\\sTRIGGER\\s\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_delete\&quot;?\\sAFTER\\sDELETE\\sON\\s\&quot;?&lt;t&gt;\&quot;?\\s*WHEN\\sOLD.\&quot;?&lt;c&gt;\&quot;?\\sNOT\\sNULL\\s*BEGIN\\s*DELETE\\sFROM\\s\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\sWHERE\\s\\w*\\s?=\\s?OLD.\&quot;?\\w*\&quot;?;\\s*END&quot;;</span>
+<span class="fc" id="L150">					String trigger3d = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_delete\&quot;?\\s+AFTER\\s+DELETE\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s*WHEN\\s+OLD.\&quot;?&lt;c&gt;\&quot;?\\sNOT\\s*NULL\\s+BEGIN\\s+DELETE\\s+FROM\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\&quot;?\\w*\&quot;?;\\s*END&quot;;</span>
 <span class="fc" id="L151">					trigger3d = trigger3d.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
 <span class="fc" id="L152">					final String sql3d = resultSet3d.getString(&quot;sql&quot;);</span>
 <span class="fc bfc" id="L153" title="All 2 branches covered.">					if(!Pattern.compile(trigger3d, Pattern.CASE_INSENSITIVE).matcher(sql3d).matches()){</span>
-<span class="pc" id="L154">						Assert.assertTrue(false, </span>
-<span class="fc" id="L155">								ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;delete trigger&quot;, tableName));</span>
+<span class="nc" id="L154">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;delete trigger&quot;, tableName, trigger3d, sql3d));</span>
 					}
 
-<span class="pc bpc" id="L158" title="8 of 16 branches missed.">				}</span>
+<span class="pc bpc" id="L157" title="8 of 16 branches missed.">				}</span>
 
-<span class="fc" id="L160">				try (</span>
+<span class="fc" id="L159">				try (</span>
 						// 3c
-<span class="fc" id="L162">						final Statement statement3c = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L163">						ResultSet resultSet3c = statement3c.executeQuery(String.format(&quot;SELECT sql FROM sqlite_master WHERE type='trigger' AND name LIKE 'rtree_%s_%s_update%%' ORDER BY name ASC&quot;, tableName, columnName));</span>
+<span class="fc" id="L161">						final Statement statement3c = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L162">						ResultSet resultSet3c = statement3c.executeQuery(String.format(&quot;SELECT sql FROM sqlite_master WHERE type='trigger' AND name LIKE 'rtree_%s_%s_update%%' ORDER BY name ASC&quot;, tableName, columnName));</span>
 						) {
 					// Update 1
-<span class="fc" id="L166">					resultSet3c.next();</span>
-<span class="fc" id="L167">					final String sql3c1 = resultSet3c.getString(&quot;sql&quot;);</span>
-<span class="fc" id="L168">					String trigger1 = &quot;CREATE\\sTRIGGER\\s\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update1\&quot;?\\sAFTER\\sUPDATE\\sOF\\s\&quot;?&lt;c&gt;\&quot;?\\sON\\s\&quot;?&lt;t&gt;\&quot;?\\s*WHEN\\sOLD.\&quot;?\\w*\&quot;?\\s?=\\s?NEW.\&quot;?\\w*\&quot;?\\sAND\\s*\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\sNOT\\s?NULL\\sAND\\sNOT\\sST_IsEmpty\\s?\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s*BEGIN\\s*INSERT\\sOR\\sREPLACE\\sINTO\\s\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\sVALUES\\s?\\(\\s*NEW.\&quot;?\\w*\&quot;?,\\s*ST_MinX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s?ST_MaxX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MinY\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s?ST_MaxY\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\s*\\);\\s*END;?&quot;;</span>
-<span class="fc" id="L169">					trigger1 = trigger1.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
-<span class="pc bpc" id="L170" title="1 of 2 branches missed.">					if(!Pattern.compile(trigger1, Pattern.CASE_INSENSITIVE).matcher(sql3c1).matches()){</span>
-<span class="nc" id="L171">						Assert.assertTrue(false, </span>
-<span class="nc" id="L172">								ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;update trigger 1&quot;, tableName));</span>
+<span class="fc" id="L165">					resultSet3c.next();</span>
+<span class="fc" id="L166">					final String sql3c1 = resultSet3c.getString(&quot;sql&quot;);</span>
+<span class="fc" id="L167">					String trigger1 = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update1\&quot;?\\s+AFTER\\s+UPDATE\\s+OF\\s+\&quot;?&lt;c&gt;\&quot;?\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s+WHEN\\s+OLD.\&quot;?\\w*\&quot;?\\s*=\\s*NEW.\&quot;?\\w*\&quot;?\\s+AND\\s+\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s+BEGIN\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+VALUES\\s*\\(\\s*NEW.\&quot;?\\w*\&quot;?,\\s*ST_MinX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MinY\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxY\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\s*\\);\\s*END;?&quot;;</span>
+<span class="fc" id="L168">					trigger1 = trigger1.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">					if(!Pattern.compile(trigger1, Pattern.CASE_INSENSITIVE).matcher(sql3c1).matches()){</span>
+<span class="nc" id="L170">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;update trigger 1&quot;, tableName, trigger1, sql3c1));</span>
 					}
 
 					// Update 2
-<span class="fc" id="L176">					resultSet3c.next();</span>
-<span class="fc" id="L177">					final String sql3c2 = resultSet3c.getString(&quot;sql&quot;);</span>
-<span class="fc" id="L178">					String trigger2 = &quot;CREATE\\sTRIGGER\\s\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update2\&quot;?\\sAFTER\\sUPDATE\\sOF\\s\&quot;?&lt;c&gt;\&quot;?\\sON\\s\&quot;?&lt;t&gt;\&quot;?\\s*WHEN\\sOLD.\&quot;?\\w*\&quot;?\\s?=\\s?NEW.\&quot;?\\w*\&quot;?\\sAND\\s*\\(\\s?NEW.\&quot;?&lt;c&gt;\&quot;?\\sIS\\s?NULL\\sOR\\sST_IsEmpty\\s?\\(\\s?NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s*BEGIN\\s*DELETE\\sFROM\\s\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\sWHERE\\s\\w*\\s?=\\s?OLD.\&quot;?\\w*\&quot;?;\\s*END&quot;;</span>
-<span class="fc" id="L179">					trigger2 = trigger2.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
-<span class="pc bpc" id="L180" title="1 of 2 branches missed.">					if(!Pattern.compile(trigger2, Pattern.CASE_INSENSITIVE).matcher(sql3c2).matches()){</span>
-<span class="nc" id="L181">						Assert.assertTrue(false, </span>
-<span class="nc" id="L182">								ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;update trigger 2&quot;, tableName));</span>
+<span class="fc" id="L174">					resultSet3c.next();</span>
+<span class="fc" id="L175">					final String sql3c2 = resultSet3c.getString(&quot;sql&quot;);</span>
+<span class="fc" id="L176">					String trigger2 = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update2\&quot;?\\s+AFTER\\s+UPDATE\\s+OF\\s+\&quot;?&lt;c&gt;\&quot;?\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s+WHEN\\s+OLD.\&quot;?\\w*\&quot;?\\s*=\\s*NEW.\&quot;?\\w*\&quot;?\\s+AND\\s+\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\s+IS\\s*NULL\\s+OR\\s+ST_IsEmpty\\s*\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s+BEGIN\\s+DELETE\\s+FROM\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\&quot;?\\w*\&quot;?;\\s*END&quot;;</span>
+<span class="fc" id="L177">					trigger2 = trigger2.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">					if(!Pattern.compile(trigger2, Pattern.CASE_INSENSITIVE).matcher(sql3c2).matches()){</span>
+<span class="nc" id="L179">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;update trigger 2&quot;, tableName, trigger2, sql3c2));</span>
 					}
 
 					// Update 3
-<span class="fc" id="L186">					resultSet3c.next();</span>
-<span class="fc" id="L187">					final String sql3c3 = resultSet3c.getString(&quot;sql&quot;);</span>
-<span class="fc" id="L188">					String trigger3 = &quot;CREATE\\sTRIGGER\\s\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update3\&quot;?\\sAFTER\\sUPDATE\\sOF\\s\&quot;?&lt;c&gt;\&quot;?\\sON\\s\&quot;?&lt;t&gt;\&quot;?\\s*WHEN\\sOLD.\&quot;?\\w*\&quot;?\\s?!=\\s?NEW.\&quot;?\\w*\&quot;?\\sAND\\s*\\(\\s?NEW.\&quot;?&lt;c&gt;\&quot;?\\sNOT\\s?NULL\\sAND\\sNOT\\sST_IsEmpty\\s?\\(\\s?NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s*BEGIN\\s*DELETE\\sFROM\\s\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\sWHERE\\s\\w*\\s?=\\s?OLD.\&quot;?\\w*\&quot;?;\\s*INSERT\\sOR\\sREPLACE\\sINTO\\s\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\sVALUES\\s?\\(\\s*NEW.\&quot;?\\w*\&quot;?,\\s*ST_MinX\\(\\s?NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s?ST_MaxX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MinY\\(\\s?NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s?ST_MaxY\\(\\s?NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\s*\\);\\s*END&quot;;</span>
-<span class="fc" id="L189">					trigger3 = trigger3.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
-<span class="pc bpc" id="L190" title="1 of 2 branches missed.">					if(!Pattern.compile(trigger3, Pattern.CASE_INSENSITIVE).matcher(sql3c3).matches()){</span>
-<span class="nc" id="L191">						Assert.assertTrue(false, </span>
-<span class="nc" id="L192">								ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;update trigger 3&quot;, tableName));</span>
+<span class="fc" id="L183">					resultSet3c.next();</span>
+<span class="fc" id="L184">					final String sql3c3 = resultSet3c.getString(&quot;sql&quot;);</span>
+<span class="fc" id="L185">					String trigger3 = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update3\&quot;?\\s+AFTER\\s+UPDATE\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s+WHEN\\s+OLD.\&quot;?\\w*\&quot;?\\s*!=\\s*NEW.\&quot;?\\w*\&quot;?\\s+AND\\s+\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\&quot;?\\w*\&quot;?;\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+VALUES\\s*\\(\\s*NEW.\&quot;?\\w*\&quot;?,\\s*ST_MinX\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MinY\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxY\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\s*\\);\\s*END&quot;;</span>
+<span class="fc" id="L186">					trigger3 = trigger3.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">					if(!Pattern.compile(trigger3, Pattern.CASE_INSENSITIVE).matcher(sql3c3).matches()){</span>
+<span class="fc" id="L188">						String trigger3old = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update3\&quot;?\\s+AFTER\\s+UPDATE\\s+OF\\s+\&quot;?&lt;c&gt;\&quot;?\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s+WHEN\\s+OLD.\&quot;?\\w*\&quot;?\\s*!=\\s*NEW.\&quot;?\\w*\&quot;?\\s+AND\\s+\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\&quot;?\\w*\&quot;?;\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+VALUES\\s*\\(\\s*NEW.\&quot;?\\w*\&quot;?,\\s*ST_MinX\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MinY\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxY\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\s*\\);\\s*END&quot;;</span>
+<span class="fc" id="L189">						trigger3old = trigger3old.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
+						// The old version of the trigger is still grandfathered in on older version versions
+<span class="fc" id="L191">						GeoPackageVersion gpv = getGeopackageVersion();</span>
+<span class="pc bpc" id="L192" title="1 of 6 branches missed.">						if(((gpv == GeoPackageVersion.V102) || (gpv == GeoPackageVersion.V110) || (gpv == GeoPackageVersion.V120)) &amp;&amp; </span>
+<span class="pc bpc" id="L193" title="1 of 2 branches missed.">								!Pattern.compile(trigger3old, Pattern.CASE_INSENSITIVE).matcher(sql3c3).matches()){</span>
+<span class="nc" id="L194">							Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;update trigger 3&quot;, tableName, trigger3, sql3c3));</span>
+						}
 					}
 
 					// Update 4
-<span class="fc" id="L196">					resultSet3c.next();</span>
-<span class="fc" id="L197">					final String sql3c4 = resultSet3c.getString(&quot;sql&quot;);</span>
-<span class="fc" id="L198">					String trigger4 = &quot;CREATE\\sTRIGGER\\s\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update4\&quot;?\\sAFTER\\sUPDATE\\sON\\s\&quot;?&lt;t&gt;\&quot;?\\s*WHEN\\sOLD.\&quot;?\\w*\&quot;?\\s?!=\\s?NEW.\&quot;?\\w*\&quot;?\\sAND\\s*\\(\\s?NEW.\&quot;?&lt;c&gt;\&quot;?\\sIS\\s?NULL\\sOR\\sST_IsEmpty\\s?\\(\\s?NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s*BEGIN\\s*DELETE\\sFROM\\s\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\sWHERE\\s\\w*\\sIN\\s?\\(\\s?OLD.\&quot;?\\w*\&quot;?\\s?,\\s?NEW.\&quot;?\\w*\&quot;?\\);\\s*END&quot;;</span>
-<span class="fc" id="L199">					trigger4 = trigger4.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
-<span class="fc bfc" id="L200" title="All 2 branches covered.">					if(!Pattern.compile(trigger4, Pattern.CASE_INSENSITIVE).matcher(sql3c4).matches()){</span>
-<span class="pc" id="L201">						Assert.assertTrue(false, </span>
-<span class="fc" id="L202">								ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;update trigger 4&quot;, tableName));</span>
+<span class="fc" id="L199">					resultSet3c.next();</span>
+<span class="fc" id="L200">					final String sql3c4 = resultSet3c.getString(&quot;sql&quot;);</span>
+<span class="fc" id="L201">					String trigger4 = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update4\&quot;?\\s+AFTER\\s+UPDATE\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s+WHEN\\s+OLD.\&quot;?\\w*\&quot;?\\s*!=\\s*NEW.\&quot;?\\w*\&quot;?\\s+AND\\s+\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\s+IS\\s*NULL\\s+OR\\s+ST_IsEmpty\\s*\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+WHERE\\s+\\w*\\sIN\\s*\\(\\s*OLD.\&quot;?\\w*\&quot;?\\s*,\\s*NEW.\&quot;?\\w*\&quot;?\\);\\s*END&quot;;</span>
+<span class="fc" id="L202">					trigger4 = trigger4.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
+<span class="fc bfc" id="L203" title="All 2 branches covered.">					if(!Pattern.compile(trigger4, Pattern.CASE_INSENSITIVE).matcher(sql3c4).matches()){</span>
+<span class="nc" id="L204">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;update trigger 4&quot;, tableName, trigger4, sql3c4));</span>
 					}					
-<span class="pc bpc" id="L204" title="8 of 16 branches missed.">				}</span>
+<span class="pc bpc" id="L206" title="8 of 16 branches missed.">				}</span>
 
-<span class="pc" id="L206">				try (</span>
+<span class="pc" id="L208">				try (</span>
 						// 3b
-<span class="fc" id="L208">						final Statement statement3b = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L209">						ResultSet resultSet3b = statement3b.executeQuery(String.format(&quot;SELECT sql FROM sqlite_master WHERE type='trigger' AND name = 'rtree_%s_%s_insert'&quot;, tableName, columnName));</span>
+<span class="fc" id="L210">						final Statement statement3b = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L211">						ResultSet resultSet3b = statement3b.executeQuery(String.format(&quot;SELECT sql FROM sqlite_master WHERE type='trigger' AND name = 'rtree_%s_%s_insert'&quot;, tableName, columnName));</span>
 						) {
-<span class="fc" id="L211">					String trigger3b = &quot;CREATE\\sTRIGGER\\s\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_insert\&quot;?\\sAFTER\\sINSERT\\sON\\s\&quot;?&lt;t&gt;\&quot;?\\s*WHEN\\s?\\(new.\&quot;?&lt;c&gt;\&quot;?\\sNOT\\s?NULL\\sAND\\sNOT\\sST_IsEmpty\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s*BEGIN\\s*INSERT\\sOR\\sREPLACE\\sINTO\\s\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\sVALUES\\s\\(\\s*NEW.\&quot;?\\w+\&quot;?,\\s*ST_MinX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s?ST_MaxX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MinY\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s?ST_MaxY\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\s*\\);\\s*END;?&quot;;</span>
-<span class="fc" id="L212">					trigger3b = trigger3b.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
-<span class="fc" id="L213">					final String sql3b = resultSet3b.getString(&quot;sql&quot;);</span>
-<span class="pc bpc" id="L214" title="1 of 2 branches missed.">					if(!Pattern.compile(trigger3b, Pattern.CASE_INSENSITIVE).matcher(sql3b).matches()){</span>
-<span class="nc" id="L215">						Assert.assertTrue(false, </span>
-<span class="nc" id="L216">								ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;insert trigger&quot;, tableName));</span>
+<span class="fc" id="L213">					String trigger3b = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_insert\&quot;?\\s+AFTER\\s+INSERT\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s+WHEN\\s*\\(new.\&quot;?&lt;c&gt;\&quot;?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s+BEGIN\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+VALUES\\s+\\(\\s*NEW.\&quot;?\\w+\&quot;?,\\s*ST_MinX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MinY\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxY\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\s*\\);\\s*END;?&quot;;</span>
+<span class="fc" id="L214">					trigger3b = trigger3b.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
+<span class="fc" id="L215">					final String sql3b = resultSet3b.getString(&quot;sql&quot;);</span>
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">					if(!Pattern.compile(trigger3b, Pattern.CASE_INSENSITIVE).matcher(sql3b).matches()){</span>
+<span class="nc" id="L217">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;insert trigger&quot;, tableName, trigger3b, sql3b));</span>
 					}
-<span class="pc bpc" id="L218" title="12 of 16 branches missed.">				}</span>
-<span class="fc" id="L219">			}</span>
-<span class="pc bpc" id="L220" title="8 of 16 branches missed.">		}</span>
-<span class="fc" id="L221">	}</span>
+<span class="pc bpc" id="L219" title="12 of 16 branches missed.">				}</span>
+<span class="fc" id="L220">			}</span>
+<span class="pc bpc" id="L221" title="8 of 16 branches missed.">		}</span>
+<span class="fc" id="L222">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>
