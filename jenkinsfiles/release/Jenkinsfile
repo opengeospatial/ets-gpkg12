@@ -1,8 +1,5 @@
 pipeline {
   agent any
-  environment {
-    GIT_SSH_COMMAND = 'ssh -i ~/.ssh/ets-gpkg12'
-  }
   tools {
     maven 'mvn'
     jdk 'JDK 8'
