@@ -73,18 +73,19 @@ public class FeaturesTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r13: Requirement 29")
 	public void featureTableIntegerPrimaryKey() throws SQLException {
+		// 1
 		for (final String tableName : this.featureTableNames) {
 			try (
 					final Statement statement = this.databaseConnection.createStatement();
-					// 1
-					final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName));
+					// 3a
+					final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info('%s');", tableName));
 					) {
-				// 2
+				// 3b
 				assertTrue(resultSet.next(),
 						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));				
 			}
 
-			// 3
+			// 3c/3d
 			checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName));
 		}
 	}
@@ -126,7 +127,7 @@ public class FeaturesTests extends CommonFixture {
 				try (
 						final Statement statement3 = this.databaseConnection.createStatement();
 						// 3a
-						final ResultSet resultSet3 = statement3.executeQuery(String.format("SELECT %s, %s FROM %s;", cn, pkColumn, tn));
+						final ResultSet resultSet3 = statement3.executeQuery(String.format("SELECT %s, %s FROM '%s';", cn, pkColumn, tn));
 						) {
 					// 3b
 					while (resultSet3.next()){
