@@ -36,8 +36,8 @@ import org.testng.annotations.Test;
  * <strong>Sources</strong>
  * </p>
  * <ul>
- * <li><a href="http://www.geopackage.org/spec/#features" target= "_blank">
- * GeoPackage Encoding Standard - Annex F.11 Tiled Gridded Coverage Data</a> (OGC 12-128r15) referencing to OGC GeoPackage Extension for Tiled Gridded Coverage Data (http://docs.opengeospatial.org/is/17-066r1/17-066r1.html) (17-066r1)</li>
+ * <li><a href="http://docs.opengeospatial.org/is/17-066r1/17-066r1.html" target= "_blank">
+ * GeoPackage Extension for Tiled Gridded Coverage Data</a> (OGC 17-066r1)</li>
  * </ul>
  *
  * @author Jeff Yutzler
@@ -75,10 +75,10 @@ public class TiledGriddedCoverageTests extends TileTests {
 		}
 		/*
 		 * Test case
-		 * {@code /extensions/elevation/table_val/gpkg_contents}
+		 * {@code /extensions/coverage/table_val/gpkg_contents}
 		 *
-		 * @see <a href="#r120" target= "_blank">Elevation 
-		 * Extension - Requirement 124</a>
+		 * @see <a href="#r5" target= "_blank">Tiled Gridded 
+		 * Coverage Data Extension - Requirement 5</a>
 		 */
 
 		try (
@@ -93,7 +93,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_def/gpkg_2d_gridded_coverage_ancillary}
+	 * {@code /extensions/coverage/table_def/gpkg_2d_gridded_coverage_ancillary}
 	 *
 	 * @see <a href="#r1" target= "_blank">Requirement 1</a>
 	 *
@@ -158,7 +158,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_def/gpkg_2d_gridded_tile_ancillary}
+	 * {@code /extensions/coverage/table_def/gpkg_2d_gridded_tile_ancillary}
 	 *
 	 * @see <a href="#r2" target= "_blank">Requirement 2</a>
 	 *
@@ -227,7 +227,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_val/gpkg_spatial_ref_sys/rows}
+	 * {@code /extensions/coverage/table_val/gpkg_spatial_ref_sys/rows}
 	 *
 	 * @see <a href="#r3" target= "_blank">Requirement 3</a>
 	 *
@@ -247,14 +247,14 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /opt/extensions/elevation/srs/required_references}
+	 * {@code /opt/extensions/coverage/srs/required_references}
 	 *
-	 * @see <a href="#r4" target= "_blank">Requirement 4,5</a>
+	 * @see <a href="#r4" target= "_blank">Requirement 4</a>
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = "See OGC 17-066r1: Requirement 4, 5")
+	@Test(description = "See OGC 17-066r1: Requirement 4")
 	public void requiredSRSReferences() throws SQLException {
 		for (final String tableName : this.elevationTableNames) {
 			try (	
@@ -275,7 +275,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_val/gpkg_extensions}
+	 * {@code /extensions/coverage/table_val/gpkg_extensions}
 	 *
 	 * @see <a href="#r6" target= "_blank">Requirement 6</a>
 	 *
@@ -333,7 +333,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_ref/gpkg_contents/gpkg_2d_gridded_coverage_ancillary}
+	 * {@code /extensions/coverage/table_ref/gpkg_contents/gpkg_2d_gridded_coverage_ancillary}
 	 *
 	 * @see <a href="#r7" target= "_blank">Requirement 7</a>
 	 *
@@ -356,7 +356,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_ref/gpkg_2d_gridded_coverage_ancillary/gpkg_tile_matrix_set}
+	 * {@code /extensions/coverage/table_ref/gpkg_2d_gridded_coverage_ancillary/gpkg_tile_matrix_set}
 	 *
 	 * @see <a href="#r8" target= "_blank">Requirement 8</a>
 	 *
@@ -388,7 +388,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_val/gpkg_2d_gridded_coverage_ancillary}
+	 * {@code /extensions/coverage/table_val/gpkg_2d_gridded_coverage_ancillary}
 	 *
 	 * @see <a href="#r9" target= "_blank">Requirement 9</a>
 	 *
@@ -445,7 +445,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_ref/tpudt/gpkg_2d_gridded_tile_ancillary}
+	 * {@code /extensions/coverage/table_ref/tpudt/gpkg_2d_gridded_tile_ancillary}
 	 *
 	 * @see <a href="#10" target= "_blank">Requirement 10, 12</a>
 	 *
@@ -479,7 +479,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_val/gpkg_2d_gridded_tile_ancillary}
+	 * {@code /extensions/coverage/table_val/gpkg_2d_gridded_tile_ancillary}
 	 *
 	 * @see <a href="#11" target= "_blank">Requirement 11</a>
 	 *
@@ -555,6 +555,9 @@ public class TiledGriddedCoverageTests extends TileTests {
 	 * gridded elevation data SHALL be of MIME type image/tiff and the data SHALL 
 	 * be 32-bit floating point as described by the TIFF Encoding (Requirement 120).
 	 * 
+	 * Test case
+	 * {@code /extensions/coverage/table_val/tile-pyramid-user-data-tables}
+	 *
 	 * @see <a href="#r13" target="_blank">MIME Type PNG or TIFF - Requirement 13/14</a>
 	 *
 	 * @throws SQLException
