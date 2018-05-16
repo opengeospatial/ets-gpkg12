@@ -28,7 +28,7 @@ GeoPackage 1.2 Conformance Test Suite,org.opengis.cite.gpkg12,TestRunListener,0,
 GeoPackage 1.2 Conformance Test Suite,org.opengis.cite.gpkg12,TestRunArg,9,33,0,0,0,4,2,3,2,3
 GeoPackage 1.2 Conformance Test Suite,org.opengis.cite.gpkg12,SuiteFixtureListener,15,88,2,4,3,20,2,6,0,5
 GeoPackage 1.2 Conformance Test Suite,org.opengis.cite.gpkg12.extensions.crswkt,CRSWKT,189,257,40,26,4,31,30,7,0,4
-GeoPackage 1.2 Conformance Test Suite,org.opengis.cite.gpkg12.core,DataContentsTests,266,576,56,44,5,72,44,15,0,9
+GeoPackage 1.2 Conformance Test Suite,org.opengis.cite.gpkg12.core,DataContentsTests,266,580,56,44,5,72,44,15,0,9
 GeoPackage 1.2 Conformance Test Suite,org.opengis.cite.gpkg12.core,SQLiteContainerTests,449,675,93,51,5,133,67,14,0,9
 GeoPackage 1.2 Conformance Test Suite,org.opengis.cite.gpkg12.core,SpatialReferenceSystemsTests,313,619,67,43,1,61,47,13,0,5
 GeoPackage 1.2 Conformance Test Suite,org.opengis.cite.gpkg12.features,FeaturesTests,1235,1272,268,158,4,219,190,38,0,15

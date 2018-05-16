@@ -73,21 +73,22 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 29&quot;)
 	public void featureTableIntegerPrimaryKey() throws SQLException {
-<span class="fc bfc" id="L76" title="All 2 branches covered.">		for (final String tableName : this.featureTableNames) {</span>
-<span class="pc" id="L77">			try (</span>
-<span class="fc" id="L78">					final Statement statement = this.databaseConnection.createStatement();</span>
-					// 1
-<span class="fc" id="L80">					final ResultSet resultSet = statement.executeQuery(String.format(&quot;PRAGMA table_info(%s);&quot;, tableName));</span>
+		// 1
+<span class="fc bfc" id="L77" title="All 2 branches covered.">		for (final String tableName : this.featureTableNames) {</span>
+<span class="pc" id="L78">			try (</span>
+<span class="fc" id="L79">					final Statement statement = this.databaseConnection.createStatement();</span>
+					// 3a
+<span class="fc" id="L81">					final ResultSet resultSet = statement.executeQuery(String.format(&quot;PRAGMA table_info('%s');&quot;, tableName));</span>
 					) {
-				// 2
-<span class="fc" id="L83">				assertTrue(resultSet.next(),</span>
-<span class="fc" id="L84">						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));				</span>
-<span class="pc bpc" id="L85" title="12 of 16 branches missed.">			}</span>
+				// 3b
+<span class="fc" id="L84">				assertTrue(resultSet.next(),</span>
+<span class="fc" id="L85">						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));				</span>
+<span class="pc bpc" id="L86" title="12 of 16 branches missed.">			}</span>
 
-			// 3
-<span class="fc" id="L88">			checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName));</span>
-<span class="fc" id="L89">		}</span>
-<span class="fc" id="L90">	}</span>
+			// 3c/3d
+<span class="fc" id="L89">			checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName));</span>
+<span class="fc" id="L90">		}</span>
+<span class="fc" id="L91">	}</span>
 
 
 	/**
@@ -105,66 +106,66 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirements 19, 20&quot;)
 	public void featureGeometryEncodingTableBlob() throws SQLException {
-<span class="pc" id="L108">		try (</span>
+<span class="pc" id="L109">		try (</span>
 				// 1
-<span class="fc" id="L110">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L111">				final Statement statement1 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L112">				final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT table_name AS tn, column_name AS cn FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = 'features');&quot;);</span>
+<span class="fc" id="L113">				final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT table_name AS tn, column_name AS cn FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = 'features');&quot;);</span>
 				) {
 			// 2
-<span class="fc bfc" id="L115" title="All 2 branches covered.">			while (resultSet1.next()){</span>
-<span class="fc" id="L116">				final String cn = resultSet1.getString(&quot;cn&quot;);</span>
-<span class="fc" id="L117">				final String tn = resultSet1.getString(&quot;tn&quot;);</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">			while (resultSet1.next()){</span>
+<span class="fc" id="L117">				final String cn = resultSet1.getString(&quot;cn&quot;);</span>
+<span class="fc" id="L118">				final String tn = resultSet1.getString(&quot;tn&quot;);</span>
 				String pkColumn;
 				try {
-<span class="fc" id="L120">					pkColumn = getPrimaryKeyColumn(tn);</span>
-<span class="fc" id="L121">				} catch (AssertionError exc) {</span>
+<span class="fc" id="L121">					pkColumn = getPrimaryKeyColumn(tn);</span>
+<span class="fc" id="L122">				} catch (AssertionError exc) {</span>
 					// If we don't find a primary key, just use the rowid;
-<span class="fc" id="L123">					pkColumn = &quot;rowid&quot;;</span>
-<span class="fc" id="L124">				}</span>
+<span class="fc" id="L124">					pkColumn = &quot;rowid&quot;;</span>
+<span class="fc" id="L125">				}</span>
 
-<span class="pc" id="L126">				try (</span>
-<span class="fc" id="L127">						final Statement statement3 = this.databaseConnection.createStatement();</span>
+<span class="pc" id="L127">				try (</span>
+<span class="fc" id="L128">						final Statement statement3 = this.databaseConnection.createStatement();</span>
 						// 3a
-<span class="fc" id="L129">						final ResultSet resultSet3 = statement3.executeQuery(String.format(&quot;SELECT %s, %s FROM %s;&quot;, cn, pkColumn, tn));</span>
+<span class="fc" id="L130">						final ResultSet resultSet3 = statement3.executeQuery(String.format(&quot;SELECT %s, %s FROM '%s';&quot;, cn, pkColumn, tn));</span>
 						) {
 					// 3b
-<span class="fc bfc" id="L132" title="All 2 branches covered.">					while (resultSet3.next()){</span>
-<span class="fc" id="L133">						final int pk = resultSet3.getInt(pkColumn);</span>
-<span class="fc" id="L134">						final byte[] sgbpb = new byte[4];</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">					while (resultSet3.next()){</span>
+<span class="fc" id="L134">						final int pk = resultSet3.getInt(pkColumn);</span>
+<span class="fc" id="L135">						final byte[] sgbpb = new byte[4];</span>
 
 						// 3c
-<span class="pc" id="L137">						try (InputStream sgpb = resultSet3.getBinaryStream(cn)) {</span>
-<span class="fc" id="L138">							sgpb.read(sgbpb);</span>
-<span class="pc bpc" id="L139" title="6 of 8 branches missed.">						} catch (NullPointerException npe) {</span>
+<span class="pc" id="L138">						try (InputStream sgpb = resultSet3.getBinaryStream(cn)) {</span>
+<span class="fc" id="L139">							sgpb.read(sgbpb);</span>
+<span class="pc bpc" id="L140" title="6 of 8 branches missed.">						} catch (NullPointerException npe) {</span>
 							// This exception will be thrown if the geometry BLOB is NULL
-<span class="fc" id="L141">							continue;</span>
+<span class="fc" id="L142">							continue;</span>
 						}
-<span class="nc" id="L143">						catch (IOException e) {</span>
+<span class="nc" id="L144">						catch (IOException e) {</span>
 							// TODO Auto-generated catch block
-<span class="nc" id="L145">							assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;Couldn't read WKB prefix&quot;));</span>
-<span class="fc" id="L146">						}</span>
+<span class="nc" id="L146">							assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;Couldn't read WKB prefix&quot;));</span>
+<span class="fc" id="L147">						}</span>
 
 						// 3ci
-<span class="fc" id="L149">						final byte[] gp = Arrays.copyOfRange(sgbpb, 0, 2);</span>
-<span class="fc" id="L150">						assertTrue(Arrays.equals(gp, GPKG12.BINARY_GP), ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;First two bytes of WKB are wrong.&quot;));</span>
+<span class="fc" id="L150">						final byte[] gp = Arrays.copyOfRange(sgbpb, 0, 2);</span>
+<span class="fc" id="L151">						assertTrue(Arrays.equals(gp, GPKG12.BINARY_GP), ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;First two bytes of WKB are wrong.&quot;));</span>
 
 						// 3cii
-<span class="pc bpc" id="L153" title="1 of 2 branches missed.">						assertTrue(sgbpb[2] == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;Third byte of WKB must be 0.&quot;));</span>
+<span class="pc bpc" id="L154" title="1 of 2 branches missed.">						assertTrue(sgbpb[2] == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;Third byte of WKB must be 0.&quot;));</span>
 
 						// 3ciii
-<span class="pc bpc" id="L156" title="1 of 2 branches missed.">						assertTrue((sgbpb[3] &amp; 0b00100000) == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;Sixth bit of byte 4 of WKB must be 0.&quot;));</span>
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">						assertTrue((sgbpb[3] &amp; 0b00100000) == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;Sixth bit of byte 4 of WKB must be 0.&quot;));</span>
 
 						// 3civ
-<span class="fc" id="L159">						final int envelope = (sgbpb[3] &amp; 0b00001110) &gt;&gt; 1;</span>
-<span class="pc bpc" id="L160" title="1 of 2 branches missed.">						assertTrue(envelope &lt;= 4, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;Envelope type of WKB (byte 4) is invalid.&quot;));</span>
+<span class="fc" id="L160">						final int envelope = (sgbpb[3] &amp; 0b00001110) &gt;&gt; 1;</span>
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">						assertTrue(envelope &lt;= 4, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;Envelope type of WKB (byte 4) is invalid.&quot;));</span>
 
 						// TODO: 3cv 
-<span class="fc" id="L163">					}					</span>
-<span class="pc bpc" id="L164" title="12 of 16 branches missed.">				}</span>
-<span class="fc" id="L165">			}</span>
-<span class="pc bpc" id="L166" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L167">	}</span>
+<span class="fc" id="L164">					}					</span>
+<span class="pc bpc" id="L165" title="12 of 16 branches missed.">				}</span>
+<span class="fc" id="L166">			}</span>
+<span class="pc bpc" id="L167" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L168">	}</span>
 
 	/**
 	 * Test case
@@ -178,55 +179,55 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 21&quot;)
 	public void featureGeometryColumnsTableDef() throws SQLException {
-<span class="pc" id="L181">		try (</span>
+<span class="pc" id="L182">		try (</span>
 				// 1
-<span class="fc" id="L183">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L184">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L185">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkg_geometry_columns');&quot;);</span>
+<span class="fc" id="L186">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkg_geometry_columns');&quot;);</span>
 				) {
 
 			// 2
-<span class="fc" id="L189">			int passFlag = 0;</span>
-<span class="fc" id="L190">			final int flagMask = 0b00111111;</span>
+<span class="fc" id="L190">			int passFlag = 0;</span>
+<span class="fc" id="L191">			final int flagMask = 0b00111111;</span>
 
-<span class="fc bfc" id="L192" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">			while (resultSet.next()) {</span>
 				// 3
-<span class="fc" id="L194">				final String name = resultSet.getString(&quot;name&quot;);</span>
-<span class="fc bfc" id="L195" title="All 2 branches covered.">				if (&quot;geometry_type_name&quot;.equals(name)){</span>
-<span class="fc" id="L196">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L197" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L198" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="fc" id="L199">					passFlag |= 1;</span>
-<span class="fc bfc" id="L200" title="All 2 branches covered.">				} else if (&quot;table_name&quot;.equals(name)){</span>
-<span class="fc" id="L201">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L202" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L203" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="fc" id="L204">					passFlag |= (1 &lt;&lt; 1);</span>
-<span class="fc bfc" id="L205" title="All 2 branches covered.">				} else if (&quot;m&quot;.equals(name)){</span>
-<span class="fc" id="L206">					assertTrue(&quot;TINYINT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L207" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L208" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="fc" id="L209">					passFlag |= (1 &lt;&lt; 2);</span>
-<span class="fc bfc" id="L210" title="All 2 branches covered.">				} else if (&quot;z&quot;.equals(name)){</span>
-<span class="fc" id="L211">					assertTrue(&quot;TINYINT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L212" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L213" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="fc" id="L214">					passFlag |= (1 &lt;&lt; 3);</span>
-<span class="fc bfc" id="L215" title="All 2 branches covered.">				} else if (&quot;srs_id&quot;.equals(name)){</span>
-<span class="fc" id="L216">					assertTrue(&quot;INTEGER&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L217" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L218" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="fc" id="L219">					passFlag |= (1 &lt;&lt; 4);</span>
-<span class="pc bpc" id="L220" title="1 of 2 branches missed.">				} else if (&quot;column_name&quot;.equals(name)){</span>
-<span class="fc" id="L221">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L222" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L223" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 2, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="fc" id="L224">					passFlag |= (1 &lt;&lt; 5);</span>
+<span class="fc" id="L195">				final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">				if (&quot;geometry_type_name&quot;.equals(name)){</span>
+<span class="fc" id="L197">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="fc" id="L200">					passFlag |= 1;</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">				} else if (&quot;table_name&quot;.equals(name)){</span>
+<span class="fc" id="L202">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="fc" id="L205">					passFlag |= (1 &lt;&lt; 1);</span>
+<span class="fc bfc" id="L206" title="All 2 branches covered.">				} else if (&quot;m&quot;.equals(name)){</span>
+<span class="fc" id="L207">					assertTrue(&quot;TINYINT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="fc" id="L210">					passFlag |= (1 &lt;&lt; 2);</span>
+<span class="fc bfc" id="L211" title="All 2 branches covered.">				} else if (&quot;z&quot;.equals(name)){</span>
+<span class="fc" id="L212">					assertTrue(&quot;TINYINT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L213" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L214" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="fc" id="L215">					passFlag |= (1 &lt;&lt; 3);</span>
+<span class="fc bfc" id="L216" title="All 2 branches covered.">				} else if (&quot;srs_id&quot;.equals(name)){</span>
+<span class="fc" id="L217">					assertTrue(&quot;INTEGER&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="fc" id="L220">					passFlag |= (1 &lt;&lt; 4);</span>
+<span class="pc bpc" id="L221" title="1 of 2 branches missed.">				} else if (&quot;column_name&quot;.equals(name)){</span>
+<span class="fc" id="L222">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L223" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 2, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="fc" id="L225">					passFlag |= (1 &lt;&lt; 5);</span>
 				}
-<span class="fc" id="L226">			} </span>
-<span class="pc bpc" id="L227" title="1 of 2 branches missed.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);			</span>
-<span class="pc bpc" id="L228" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L229">	}</span>
+<span class="fc" id="L227">			} </span>
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);			</span>
+<span class="pc bpc" id="L229" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L230">	}</span>
 
 	/**
 	 * Test case
@@ -240,25 +241,25 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 22&quot;)
 	public void featureGeometryColumnsDataValues() throws SQLException {
-<span class="pc" id="L243">		try (		</span>
+<span class="pc" id="L244">		try (		</span>
 				// 1
-<span class="fc" id="L245">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L246">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L247">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type = 'features';&quot;);</span>
+<span class="fc" id="L248">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type = 'features';&quot;);</span>
 				) {
 			// 2
-<span class="pc bpc" id="L250" title="1 of 2 branches missed.">			if (resultSet.next()){</span>
-<span class="pc" id="L251">				try (</span>
+<span class="pc bpc" id="L251" title="1 of 2 branches missed.">			if (resultSet.next()){</span>
+<span class="pc" id="L252">				try (</span>
 						// 3
-<span class="fc" id="L253">						final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L254">						final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L255">						final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type = 'features' AND table_name NOT IN (SELECT table_name FROM gpkg_geometry_columns);&quot;);</span>
+<span class="fc" id="L256">						final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type = 'features' AND table_name NOT IN (SELECT table_name FROM gpkg_geometry_columns);&quot;);</span>
 						) {
-<span class="pc bpc" id="L257" title="1 of 2 branches missed.">					assertTrue(!resultSet2.next(), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_MISMATCH);</span>
-<span class="pc bpc" id="L258" title="12 of 16 branches missed.">				}</span>
+<span class="pc bpc" id="L258" title="1 of 2 branches missed.">					assertTrue(!resultSet2.next(), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_MISMATCH);</span>
+<span class="pc bpc" id="L259" title="12 of 16 branches missed.">				}</span>
 			}			
-<span class="pc bpc" id="L260" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L261">	}</span>
+<span class="pc bpc" id="L261" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L262">	}</span>
 
 	/**
 	 * Test case
@@ -275,32 +276,32 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 23, 26&quot;)
 	public void featureGeometryColumnsDataValuesTableName() throws SQLException {
-<span class="pc" id="L278">		try (</span>
+<span class="pc" id="L279">		try (</span>
 				// 1
-<span class="fc" id="L280">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L281">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L282">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA foreign_key_list('gpkg_geometry_columns');&quot;);</span>
+<span class="fc" id="L283">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA foreign_key_list('gpkg_geometry_columns');&quot;);</span>
 				) {
-<span class="fc" id="L284">			boolean foundContents = false;</span>
-<span class="fc" id="L285">			boolean foundSpatialRefSys = false;</span>
+<span class="fc" id="L285">			boolean foundContents = false;</span>
+<span class="fc" id="L286">			boolean foundSpatialRefSys = false;</span>
 
 			// 2
-<span class="fc bfc" id="L288" title="All 2 branches covered.">			while (resultSet.next()){</span>
+<span class="fc bfc" id="L289" title="All 2 branches covered.">			while (resultSet.next()){</span>
 				// 3
-<span class="fc" id="L290">				final String table = resultSet.getString(&quot;table&quot;);</span>
-<span class="fc bfc" id="L291" title="All 2 branches covered.">				if (&quot;gpkg_spatial_ref_sys&quot;.equals(table)){</span>
-<span class="pc bpc" id="L292" title="2 of 4 branches missed.">					if (&quot;srs_id&quot;.equals(resultSet.getString(&quot;from&quot;)) &amp;&amp; &quot;srs_id&quot;.equals(resultSet.getString(&quot;to&quot;))){</span>
-<span class="fc" id="L293">						foundSpatialRefSys = true;</span>
+<span class="fc" id="L291">				final String table = resultSet.getString(&quot;table&quot;);</span>
+<span class="fc bfc" id="L292" title="All 2 branches covered.">				if (&quot;gpkg_spatial_ref_sys&quot;.equals(table)){</span>
+<span class="pc bpc" id="L293" title="2 of 4 branches missed.">					if (&quot;srs_id&quot;.equals(resultSet.getString(&quot;from&quot;)) &amp;&amp; &quot;srs_id&quot;.equals(resultSet.getString(&quot;to&quot;))){</span>
+<span class="fc" id="L294">						foundSpatialRefSys = true;</span>
 					}
-<span class="pc bpc" id="L295" title="1 of 2 branches missed.">				} else if (&quot;gpkg_contents&quot;.equals(table)){</span>
-<span class="pc bpc" id="L296" title="2 of 4 branches missed.">					if (&quot;table_name&quot;.equals(resultSet.getString(&quot;from&quot;)) &amp;&amp; &quot;table_name&quot;.equals(resultSet.getString(&quot;to&quot;))){</span>
-<span class="fc" id="L297">						foundContents = true;</span>
+<span class="pc bpc" id="L296" title="1 of 2 branches missed.">				} else if (&quot;gpkg_contents&quot;.equals(table)){</span>
+<span class="pc bpc" id="L297" title="2 of 4 branches missed.">					if (&quot;table_name&quot;.equals(resultSet.getString(&quot;from&quot;)) &amp;&amp; &quot;table_name&quot;.equals(resultSet.getString(&quot;to&quot;))){</span>
+<span class="fc" id="L298">						foundContents = true;</span>
 					}
 				}
-<span class="fc" id="L300">			}</span>
-<span class="pc bpc" id="L301" title="2 of 4 branches missed.">			assertTrue(foundContents &amp;&amp; foundSpatialRefSys, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_NO_FK);</span>
-<span class="pc bpc" id="L302" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L303">	}</span>
+<span class="fc" id="L301">			}</span>
+<span class="pc bpc" id="L302" title="2 of 4 branches missed.">			assertTrue(foundContents &amp;&amp; foundSpatialRefSys, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_NO_FK);</span>
+<span class="pc bpc" id="L303" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L304">	}</span>
 
 	/**
 	 * Test case
@@ -314,36 +315,36 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 24&quot;)
 	public void featureGeometryColumnsDataValuesColumnName() throws SQLException {
-<span class="pc" id="L317">		try (</span>
+<span class="pc" id="L318">		try (</span>
 				// 1
-<span class="fc" id="L319">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L320">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L321">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name, column_name FROM gpkg_geometry_columns;&quot;);</span>
+<span class="fc" id="L322">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name, column_name FROM gpkg_geometry_columns;&quot;);</span>
 				) {
 			// 2
-<span class="fc bfc" id="L324" title="All 2 branches covered.">			while (resultSet.next()){</span>
-<span class="fc" id="L325">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
-<span class="fc" id="L326">				final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
+<span class="fc bfc" id="L325" title="All 2 branches covered.">			while (resultSet.next()){</span>
+<span class="fc" id="L326">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
+<span class="fc" id="L327">				final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
 
-<span class="pc" id="L328">				try (</span>
-<span class="fc" id="L329">						final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="pc" id="L329">				try (</span>
+<span class="fc" id="L330">						final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L331">						final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;PRAGMA table_info('%s');&quot;, tableName));</span>
+<span class="fc" id="L332">						final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;PRAGMA table_info('%s');&quot;, tableName));</span>
 						) {
-<span class="fc" id="L333">					boolean foundMatch = false;</span>
+<span class="fc" id="L334">					boolean foundMatch = false;</span>
 
-<span class="pc bpc" id="L335" title="1 of 2 branches missed.">					while (resultSet2.next()) {</span>
-<span class="fc bfc" id="L336" title="All 2 branches covered.">						if (resultSet2.getString(&quot;name&quot;).equals(columnName)){</span>
-<span class="fc" id="L337">							foundMatch = true;</span>
-<span class="fc" id="L338">							break;</span>
+<span class="pc bpc" id="L336" title="1 of 2 branches missed.">					while (resultSet2.next()) {</span>
+<span class="fc bfc" id="L337" title="All 2 branches covered.">						if (resultSet2.getString(&quot;name&quot;).equals(columnName)){</span>
+<span class="fc" id="L338">							foundMatch = true;</span>
+<span class="fc" id="L339">							break;</span>
 						}
 					}
 
-<span class="fc" id="L342">					assertTrue(foundMatch, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_COL, tableName, columnName));</span>
-<span class="pc bpc" id="L343" title="12 of 16 branches missed.">				}</span>
-<span class="fc" id="L344">			}	</span>
-<span class="pc bpc" id="L345" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L346">	}</span>
+<span class="fc" id="L343">					assertTrue(foundMatch, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_COL, tableName, columnName));</span>
+<span class="pc bpc" id="L344" title="12 of 16 branches missed.">				}</span>
+<span class="fc" id="L345">			}	</span>
+<span class="pc bpc" id="L346" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L347">	}</span>
 
 	/**
 	 * Test case
@@ -357,41 +358,41 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 25&quot;)
 	public void featureGeometryColumnsDataValuesGeometryType() throws SQLException {
-<span class="pc" id="L360">		try (</span>
+<span class="pc" id="L361">		try (</span>
 				// 1
-<span class="fc" id="L362">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L363">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L364">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns&quot;);</span>
+<span class="fc" id="L365">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns&quot;);</span>
 				) {
 			// 2
-<span class="fc bfc" id="L367" title="All 2 branches covered.">			while (resultSet.next()){</span>
+<span class="fc bfc" id="L368" title="All 2 branches covered.">			while (resultSet.next()){</span>
 				// 3
-<span class="fc" id="L369">				final String geometryTypeName = resultSet.getString(&quot;geometry_type_name&quot;);</span>
-<span class="fc" id="L370">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
-<span class="fc" id="L371">				final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
+<span class="fc" id="L370">				final String geometryTypeName = resultSet.getString(&quot;geometry_type_name&quot;);</span>
+<span class="fc" id="L371">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
+<span class="fc" id="L372">				final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
 
-<span class="fc" id="L373">				boolean pass = false;</span>
+<span class="fc" id="L374">				boolean pass = false;</span>
 
-<span class="fc bfc" id="L375" title="All 2 branches covered.">				if (getGeopackageVersion().equals(GeoPackageVersion.V120)){</span>
-<span class="fc" id="L376">					pass = ALLOWED_GEOMETRY_TYPES.contains(geometryTypeName);</span>
+<span class="fc bfc" id="L376" title="All 2 branches covered.">				if (getGeopackageVersion().equals(GeoPackageVersion.V120)){</span>
+<span class="fc" id="L377">					pass = ALLOWED_GEOMETRY_TYPES.contains(geometryTypeName);</span>
 				} else {
-<span class="fc" id="L378">					final Iterator&lt;String&gt; iterator = ALLOWED_GEOMETRY_TYPES.iterator();</span>
-<span class="pc bpc" id="L379" title="1 of 2 branches missed.">					while(iterator.hasNext()){</span>
-<span class="fc bfc" id="L380" title="All 2 branches covered.">						if (geometryTypeName.equalsIgnoreCase(iterator.next())){</span>
-<span class="fc" id="L381">							pass = true;</span>
-<span class="fc" id="L382">							break;</span>
+<span class="fc" id="L379">					final Iterator&lt;String&gt; iterator = ALLOWED_GEOMETRY_TYPES.iterator();</span>
+<span class="pc bpc" id="L380" title="1 of 2 branches missed.">					while(iterator.hasNext()){</span>
+<span class="fc bfc" id="L381" title="All 2 branches covered.">						if (geometryTypeName.equalsIgnoreCase(iterator.next())){</span>
+<span class="fc" id="L382">							pass = true;</span>
+<span class="fc" id="L383">							break;</span>
 						}
 					}
 				}
 
-<span class="fc bfc" id="L387" title="All 2 branches covered.">				if (!pass) {</span>
-<span class="fc" id="L388">					pass = isExtendedType(tableName, columnName);</span>
+<span class="fc bfc" id="L388" title="All 2 branches covered.">				if (!pass) {</span>
+<span class="fc" id="L389">					pass = isExtendedType(tableName, columnName);</span>
 				}
 
-<span class="fc" id="L391">				assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName, tableName));</span>
-<span class="fc" id="L392">			}</span>
-<span class="pc bpc" id="L393" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L394">	}</span>
+<span class="fc" id="L392">				assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName, tableName));</span>
+<span class="fc" id="L393">			}</span>
+<span class="pc bpc" id="L394" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L395">	}</span>
 
 	/**
 	 * Test case
@@ -405,27 +406,27 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 27&quot;)
 	public void featureGeometryColumnsDataValuesZ() throws SQLException {
-<span class="pc" id="L408">		try (</span>
+<span class="pc" id="L409">		try (</span>
 				// 1
-<span class="fc" id="L410">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L411">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L412">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT z FROM gpkg_geometry_columns&quot;);</span>
+<span class="fc" id="L413">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT z FROM gpkg_geometry_columns&quot;);</span>
 				) {
 			// 2
-<span class="pc bpc" id="L415" title="1 of 2 branches missed.">			if (resultSet.next()){</span>
-<span class="pc" id="L416">				try (</span>
+<span class="pc bpc" id="L416" title="1 of 2 branches missed.">			if (resultSet.next()){</span>
+<span class="pc" id="L417">				try (</span>
 						// 3
-<span class="fc" id="L418">						final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L419">						final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L420">						final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT z FROM gpkg_geometry_columns WHERE z NOT IN (0,1,2)&quot;);</span>
+<span class="fc" id="L421">						final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT z FROM gpkg_geometry_columns WHERE z NOT IN (0,1,2)&quot;);</span>
 						) {
-<span class="pc bpc" id="L422" title="1 of 2 branches missed.">					if(resultSet2.next()){</span>
-<span class="nc" id="L423">						assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_Z, resultSet2.getInt(&quot;z&quot;)));</span>
+<span class="pc bpc" id="L423" title="1 of 2 branches missed.">					if(resultSet2.next()){</span>
+<span class="nc" id="L424">						assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_Z, resultSet2.getInt(&quot;z&quot;)));</span>
 					}
-<span class="pc bpc" id="L425" title="12 of 16 branches missed.">				}</span>
+<span class="pc bpc" id="L426" title="12 of 16 branches missed.">				}</span>
 			}
-<span class="pc bpc" id="L427" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L428">	}</span>
+<span class="pc bpc" id="L428" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L429">	}</span>
 
 	/**
 	 * Test case
@@ -439,27 +440,27 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 28&quot;)
 	public void featureGeometryColumnsDataValuesM() throws SQLException {
-<span class="pc" id="L442">		try (</span>
+<span class="pc" id="L443">		try (</span>
 				// 1
-<span class="fc" id="L444">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L445">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L446">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT m FROM gpkg_geometry_columns&quot;);</span>
+<span class="fc" id="L447">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT m FROM gpkg_geometry_columns&quot;);</span>
 				) {
 			// 2
-<span class="pc bpc" id="L449" title="1 of 2 branches missed.">			if (resultSet.next()){</span>
-<span class="pc" id="L450">				try (</span>
+<span class="pc bpc" id="L450" title="1 of 2 branches missed.">			if (resultSet.next()){</span>
+<span class="pc" id="L451">				try (</span>
 						// 3
-<span class="fc" id="L452">						final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L453">						final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L454">						final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT m FROM gpkg_geometry_columns WHERE m NOT IN (0,1,2)&quot;);</span>
+<span class="fc" id="L455">						final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT m FROM gpkg_geometry_columns WHERE m NOT IN (0,1,2)&quot;);</span>
 						) {
-<span class="pc bpc" id="L456" title="1 of 2 branches missed.">					if(resultSet2.next()){</span>
-<span class="nc" id="L457">						assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_M, resultSet2.getInt(&quot;m&quot;)));</span>
+<span class="pc bpc" id="L457" title="1 of 2 branches missed.">					if(resultSet2.next()){</span>
+<span class="nc" id="L458">						assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_M, resultSet2.getInt(&quot;m&quot;)));</span>
 					}
-<span class="pc bpc" id="L459" title="12 of 16 branches missed.">				}</span>
+<span class="pc bpc" id="L460" title="12 of 16 branches missed.">				}</span>
 			}
-<span class="pc bpc" id="L461" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L462">	}</span>
+<span class="pc bpc" id="L462" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L463">	}</span>
 
 	/**
 	 * Test case
@@ -473,27 +474,27 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 30&quot;)
 	public void featureTableOneGeometryColumn() throws SQLException {
-<span class="pc" id="L476">		try (		</span>
+<span class="pc" id="L477">		try (		</span>
 				// 1
-<span class="fc" id="L478">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L479">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L480">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type='features'&quot;);</span>
+<span class="fc" id="L481">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type='features'&quot;);</span>
 				) {
 			// 2
-<span class="fc bfc" id="L483" title="All 2 branches covered.">			while (resultSet.next()){</span>
+<span class="fc bfc" id="L484" title="All 2 branches covered.">			while (resultSet.next()){</span>
 				// 3
-<span class="fc" id="L485">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
-<span class="pc" id="L486">				try (</span>
-<span class="fc" id="L487">						final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L486">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
+<span class="pc" id="L487">				try (</span>
+<span class="fc" id="L488">						final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L489">						final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;SELECT count(*) FROM gpkg_geometry_columns WHERE table_name = '%s'&quot;, tableName));</span>
+<span class="fc" id="L490">						final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;SELECT count(*) FROM gpkg_geometry_columns WHERE table_name = '%s'&quot;, tableName));</span>
 						) {
-<span class="fc" id="L491">					resultSet2.next();</span>
-<span class="pc bpc" id="L492" title="1 of 2 branches missed.">					assertTrue(resultSet2.getInt(1) == 1, ErrorMessageKeys.FEATURES_ONE_GEOMETRY_COLUMN);</span>
-<span class="pc bpc" id="L493" title="12 of 16 branches missed.">				}</span>
-<span class="fc" id="L494">			}</span>
-<span class="pc bpc" id="L495" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L496">	}</span>
+<span class="fc" id="L492">					resultSet2.next();</span>
+<span class="pc bpc" id="L493" title="1 of 2 branches missed.">					assertTrue(resultSet2.getInt(1) == 1, ErrorMessageKeys.FEATURES_ONE_GEOMETRY_COLUMN);</span>
+<span class="pc bpc" id="L494" title="12 of 16 branches missed.">				}</span>
+<span class="fc" id="L495">			}</span>
+<span class="pc bpc" id="L496" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L497">	}</span>
 
 	/**
 	 * Test case
@@ -508,48 +509,48 @@ import org.testng.annotations.Test;
 	@Test(description = &quot;See OGC 12-128r13: Requirement 31&quot;)
 	public void featureTableGeometryColumnType() throws SQLException {
 		// We're just going to skip this test on older GeoPackages and hope for the best.
-<span class="fc bfc" id="L511" title="All 2 branches covered.">		if (getGeopackageVersion().equals(GeoPackageVersion.V120)){</span>
-<span class="pc" id="L512">			try (</span>
+<span class="fc bfc" id="L512" title="All 2 branches covered.">		if (getGeopackageVersion().equals(GeoPackageVersion.V120)){</span>
+<span class="pc" id="L513">			try (</span>
 					// 1
-<span class="fc" id="L514">					final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L515">					final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L516">					final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = 'features')&quot;);</span>
+<span class="fc" id="L517">					final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = 'features')&quot;);</span>
 					) {
 				// 2
-<span class="fc bfc" id="L519" title="All 2 branches covered.">				while (resultSet.next()){</span>
+<span class="fc bfc" id="L520" title="All 2 branches covered.">				while (resultSet.next()){</span>
 					// 2a
-<span class="fc" id="L521">					final String geometryTypeName = resultSet.getString(&quot;geometry_type_name&quot;);</span>
+<span class="fc" id="L522">					final String geometryTypeName = resultSet.getString(&quot;geometry_type_name&quot;);</span>
 					// This assertion being removed as per https://github.com/opengeospatial/geopackage/issues/347
 					//				assertTrue(allowedGeometryTypes.contains(geometryTypeName), ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
 
 					//2b
-<span class="fc" id="L526">					final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
-<span class="fc" id="L527">					final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
-<span class="pc" id="L528">					try (</span>
-<span class="fc" id="L529">							final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L527">					final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
+<span class="fc" id="L528">					final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
+<span class="pc" id="L529">					try (</span>
+<span class="fc" id="L530">							final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L531">							final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;PRAGMA table_info('%s')&quot;, tableName));</span>
+<span class="fc" id="L532">							final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;PRAGMA table_info('%s')&quot;, tableName));</span>
 							) {
-<span class="pc bpc" id="L533" title="1 of 2 branches missed.">						while (resultSet2.next()){</span>
-<span class="fc bfc" id="L534" title="All 2 branches covered.">							if (columnName.equals(resultSet2.getString(&quot;name&quot;))) {</span>
-<span class="fc" id="L535">								assertTrue(geometryTypeName.equals(resultSet2.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_MISMATCH);</span>
-<span class="fc" id="L536">								break;</span>
+<span class="pc bpc" id="L534" title="1 of 2 branches missed.">						while (resultSet2.next()){</span>
+<span class="fc bfc" id="L535" title="All 2 branches covered.">							if (columnName.equals(resultSet2.getString(&quot;name&quot;))) {</span>
+<span class="fc" id="L536">								assertTrue(geometryTypeName.equals(resultSet2.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_MISMATCH);</span>
+<span class="fc" id="L537">								break;</span>
 							}
 						}
-<span class="pc bpc" id="L539" title="12 of 16 branches missed.">					}</span>
-<span class="fc" id="L540">				}				</span>
-<span class="pc bpc" id="L541" title="12 of 16 branches missed.">			}</span>
+<span class="pc bpc" id="L540" title="12 of 16 branches missed.">					}</span>
+<span class="fc" id="L541">				}				</span>
+<span class="pc bpc" id="L542" title="12 of 16 branches missed.">			}</span>
 		}
-<span class="fc" id="L543">	}</span>
+<span class="fc" id="L544">	}</span>
 
 	// TODO: Don't know how to test R32/33 as they require a spatial library
 
-<span class="fc" id="L547">	private static final Collection&lt;String&gt; ALLOWED_GEOMETRY_TYPES = </span>
-<span class="fc" id="L548">			Arrays.asList(&quot;GEOMETRY&quot;,&quot;POINT&quot;,&quot;LINESTRING&quot;,&quot;POLYGON&quot;,&quot;MULTIPOINT&quot;,&quot;MULTILINESTRING&quot;,&quot;MULTIPOLYGON&quot;,&quot;GEOMETRYCOLLECTION&quot;);</span>
+<span class="fc" id="L548">	private static final Collection&lt;String&gt; ALLOWED_GEOMETRY_TYPES = </span>
+<span class="fc" id="L549">			Arrays.asList(&quot;GEOMETRY&quot;,&quot;POINT&quot;,&quot;LINESTRING&quot;,&quot;POLYGON&quot;,&quot;MULTIPOINT&quot;,&quot;MULTILINESTRING&quot;,&quot;MULTIPOLYGON&quot;,&quot;GEOMETRYCOLLECTION&quot;);</span>
 	protected static Collection&lt;String&gt; getAllowedGeometryTypes() {
-<span class="fc" id="L550">		return ALLOWED_GEOMETRY_TYPES;</span>
+<span class="fc" id="L551">		return ALLOWED_GEOMETRY_TYPES;</span>
 	}
 
-<span class="fc" id="L553">	private final Collection&lt;String&gt; featureTableNames = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L554">	private final Collection&lt;String&gt; featureTableNames = new ArrayList&lt;&gt;();</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

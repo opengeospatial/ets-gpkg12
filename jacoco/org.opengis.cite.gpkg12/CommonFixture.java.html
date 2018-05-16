@@ -178,7 +178,7 @@ import org.testng.annotations.Test;
 <span class="fc" id="L178">    	try (</span>
 <span class="fc" id="L179">    			final Statement statement = this.databaseConnection.createStatement();</span>
     			// 1
-<span class="fc" id="L181">    			final ResultSet resultSet = statement.executeQuery(String.format(&quot;PRAGMA table_info(%s);&quot;, tableName));</span>
+<span class="fc" id="L181">    			final ResultSet resultSet = statement.executeQuery(String.format(&quot;PRAGMA table_info('%s');&quot;, tableName));</span>
     			) {
     		// 2
 <span class="fc" id="L184">    		assertTrue(resultSet.next(),</span>
@@ -253,7 +253,7 @@ import org.testng.annotations.Test;
 <span class="fc" id="L253">		try (</span>
 <span class="fc" id="L254">				final Statement statement = this.databaseConnection.createStatement();</span>
 				// 1
-<span class="fc" id="L256">				final ResultSet resultSet = statement.executeQuery(String.format(&quot;PRAGMA table_info(%s);&quot;, tableName));</span>
+<span class="fc" id="L256">				final ResultSet resultSet = statement.executeQuery(String.format(&quot;PRAGMA table_info('%s');&quot;, tableName));</span>
 				) {
 
 			// 2
@@ -288,7 +288,7 @@ import org.testng.annotations.Test;
 				// 4
 <span class="fc" id="L289">				final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L291">				final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;SELECT COUNT(distinct %s) - COUNT(*) from %s&quot;, pkName, tableName));</span>
+<span class="fc" id="L291">				final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;SELECT COUNT(distinct %s) - COUNT(*) from '%s'&quot;, pkName, tableName));</span>
 				) {
 			// 5
 <span class="pc bpc" id="L294" title="1 of 2 branches missed.">			assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.TABLE_PK_NOT_UNIQUE, tableName));</span>

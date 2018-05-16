@@ -88,13 +88,14 @@ import org.testng.annotations.Test;
 <span class="fc" id="L88">                            assertTrue(correctDataType,</span>
 <span class="fc" id="L89">                                       ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE,</span>
                                                            dataType,
+                                                           columnName,
                                                            tableName));
-<span class="fc" id="L92">                        }</span>
-<span class="pc bpc" id="L93" title="8 of 16 branches missed.">                    }</span>
+<span class="fc" id="L93">                        }</span>
+<span class="pc bpc" id="L94" title="8 of 16 branches missed.">                    }</span>
                 }
-<span class="fc" id="L95">            }</span>
-<span class="pc bpc" id="L96" title="8 of 16 branches missed.">        }</span>
-<span class="fc" id="L97">    }</span>
+<span class="fc" id="L96">            }</span>
+<span class="pc bpc" id="L97" title="8 of 16 branches missed.">        }</span>
+<span class="fc" id="L98">    }</span>
 
     /**
      * A GeoPackage file SHALL include a {@code gpkg_contents} table per table
@@ -114,30 +115,30 @@ import org.testng.annotations.Test;
     {
         try
         {
-<span class="fc" id="L117">            final Map&lt;String, ColumnDefinition&gt; contentColumns = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L118">            final Map&lt;String, ColumnDefinition&gt; contentColumns = new HashMap&lt;&gt;();</span>
 
-<span class="fc" id="L119">            contentColumns.put(&quot;table_name&quot;,  new ColumnDefinition(&quot;TEXT&quot;,     true,  true,  true,  null));</span>
-<span class="fc" id="L120">            contentColumns.put(&quot;data_type&quot;,   new ColumnDefinition(&quot;TEXT&quot;,     true,  false, false, null));</span>
-<span class="fc" id="L121">            contentColumns.put(&quot;identifier&quot;,  new ColumnDefinition(&quot;TEXT&quot;,     false, false, true,  null));</span>
-<span class="fc" id="L122">            contentColumns.put(&quot;description&quot;, new ColumnDefinition(&quot;TEXT&quot;,     false, false, false, &quot;''&quot;));</span>
-<span class="fc" id="L123">            contentColumns.put(&quot;last_change&quot;, new ColumnDefinition(&quot;DATETIME&quot;, true,  false, false, &quot;strftime('%Y-%m-%dT%H:%M:%fZ', 'now')&quot;));</span>
-<span class="fc" id="L124">            contentColumns.put(&quot;min_x&quot;,       new ColumnDefinition(&quot;DOUBLE&quot;,   false, false, false, null));</span>
-<span class="fc" id="L125">            contentColumns.put(&quot;min_y&quot;,       new ColumnDefinition(&quot;DOUBLE&quot;,   false, false, false, null));</span>
-<span class="fc" id="L126">            contentColumns.put(&quot;max_x&quot;,       new ColumnDefinition(&quot;DOUBLE&quot;,   false, false, false, null));</span>
-<span class="fc" id="L127">            contentColumns.put(&quot;max_y&quot;,       new ColumnDefinition(&quot;DOUBLE&quot;,   false, false, false, null));</span>
-<span class="fc" id="L128">            contentColumns.put(&quot;srs_id&quot;,      new ColumnDefinition(&quot;INTEGER&quot;,  false, false, false, null));</span>
+<span class="fc" id="L120">            contentColumns.put(&quot;table_name&quot;,  new ColumnDefinition(&quot;TEXT&quot;,     true,  true,  true,  null));</span>
+<span class="fc" id="L121">            contentColumns.put(&quot;data_type&quot;,   new ColumnDefinition(&quot;TEXT&quot;,     true,  false, false, null));</span>
+<span class="fc" id="L122">            contentColumns.put(&quot;identifier&quot;,  new ColumnDefinition(&quot;TEXT&quot;,     false, false, true,  null));</span>
+<span class="fc" id="L123">            contentColumns.put(&quot;description&quot;, new ColumnDefinition(&quot;TEXT&quot;,     false, false, false, &quot;''&quot;));</span>
+<span class="fc" id="L124">            contentColumns.put(&quot;last_change&quot;, new ColumnDefinition(&quot;DATETIME&quot;, true,  false, false, &quot;strftime('%Y-%m-%dT%H:%M:%fZ', 'now')&quot;));</span>
+<span class="fc" id="L125">            contentColumns.put(&quot;min_x&quot;,       new ColumnDefinition(&quot;DOUBLE&quot;,   false, false, false, null));</span>
+<span class="fc" id="L126">            contentColumns.put(&quot;min_y&quot;,       new ColumnDefinition(&quot;DOUBLE&quot;,   false, false, false, null));</span>
+<span class="fc" id="L127">            contentColumns.put(&quot;max_x&quot;,       new ColumnDefinition(&quot;DOUBLE&quot;,   false, false, false, null));</span>
+<span class="fc" id="L128">            contentColumns.put(&quot;max_y&quot;,       new ColumnDefinition(&quot;DOUBLE&quot;,   false, false, false, null));</span>
+<span class="fc" id="L129">            contentColumns.put(&quot;srs_id&quot;,      new ColumnDefinition(&quot;INTEGER&quot;,  false, false, false, null));</span>
 
-<span class="fc" id="L130">            TableVerifier.verifyTable(this.databaseConnection,</span>
+<span class="fc" id="L131">            TableVerifier.verifyTable(this.databaseConnection,</span>
                                       &quot;gpkg_contents&quot;,
                                       contentColumns,
-<span class="fc" id="L133">                                      new HashSet&lt;&gt;(Arrays.asList(new ForeignKeyDefinition(&quot;gpkg_spatial_ref_sys&quot;, &quot;srs_id&quot;, &quot;srs_id&quot;))),</span>
-<span class="fc" id="L134">                                      Collections.emptyList());</span>
+<span class="fc" id="L134">                                      new HashSet&lt;&gt;(Arrays.asList(new ForeignKeyDefinition(&quot;gpkg_spatial_ref_sys&quot;, &quot;srs_id&quot;, &quot;srs_id&quot;))),</span>
+<span class="fc" id="L135">                                      Collections.emptyList());</span>
         }
-<span class="nc" id="L136">        catch(final AssertionError ex)</span>
+<span class="nc" id="L137">        catch(final AssertionError ex)</span>
         {
-<span class="nc" id="L138">            fail(ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_TABLE_DEFINITION, ex.getMessage()));</span>
-<span class="fc" id="L139">        }</span>
-<span class="fc" id="L140">    }</span>
+<span class="nc" id="L139">            fail(ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_TABLE_DEFINITION, ex.getMessage()));</span>
+<span class="fc" id="L140">        }</span>
+<span class="fc" id="L141">    }</span>
 
     /**
      * The {@code table_name} column value in a {@code gpkg_contents} table row
@@ -152,27 +153,27 @@ import org.testng.annotations.Test;
     @Test(description = &quot;See OGC 12-128r14: Requirement 14&quot;)
     public void contentsTablesExist() throws SQLException
     {
-<span class="fc" id="L155">        final String query = &quot;SELECT DISTINCT table_name &quot; +</span>
+<span class="fc" id="L156">        final String query = &quot;SELECT DISTINCT table_name &quot; +</span>
                              &quot;FROM  gpkg_contents &quot; +
                              &quot;WHERE table_name NOT IN (SELECT name FROM sqlite_master);&quot;;
 
         // 1
-<span class="pc" id="L160">        try(final Statement statement   = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L161">            final ResultSet resultSet = statement.executeQuery(query))</span>
+<span class="pc" id="L161">        try(final Statement statement   = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L162">            final ResultSet resultSet = statement.executeQuery(query))</span>
         {
-<span class="fc" id="L163">            final Collection&lt;String&gt; invalidContentsTableNames = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L164">            final Collection&lt;String&gt; invalidContentsTableNames = new LinkedList&lt;&gt;();</span>
 
             // 2
-<span class="pc bpc" id="L166" title="1 of 2 branches missed.">            while(resultSet.next())</span>
+<span class="pc bpc" id="L167" title="1 of 2 branches missed.">            while(resultSet.next())</span>
             {
-<span class="nc" id="L168">                invalidContentsTableNames.add(resultSet.getString(1));</span>
+<span class="nc" id="L169">                invalidContentsTableNames.add(resultSet.getString(1));</span>
             }
 
-<span class="fc" id="L171">            assertTrue(invalidContentsTableNames.isEmpty(),</span>
-<span class="fc" id="L172">                       ErrorMessage.format(ErrorMessageKeys.CONTENT_TABLE_DOES_NOT_EXIST,</span>
-<span class="fc" id="L173">                                           String.join(&quot;, &quot;, invalidContentsTableNames)));</span>
-<span class="pc bpc" id="L174" title="12 of 16 branches missed.">        }</span>
-<span class="fc" id="L175">    }</span>
+<span class="fc" id="L172">            assertTrue(invalidContentsTableNames.isEmpty(),</span>
+<span class="fc" id="L173">                       ErrorMessage.format(ErrorMessageKeys.CONTENT_TABLE_DOES_NOT_EXIST,</span>
+<span class="fc" id="L174">                                           String.join(&quot;, &quot;, invalidContentsTableNames)));</span>
+<span class="pc bpc" id="L175" title="12 of 16 branches missed.">        }</span>
+<span class="fc" id="L176">    }</span>
 
     /**
      * Values of the {@code gpkg_contents} table {@code last_change}
@@ -192,32 +193,32 @@ import org.testng.annotations.Test;
     public void timestampFormat() throws SQLException
     {
     	// 1
-<span class="pc" id="L195">        try(final Statement statement = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L196">            final ResultSet resultSet = statement.executeQuery(&quot;SELECT last_change, table_name FROM gpkg_contents;&quot;))</span>
+<span class="pc" id="L196">        try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L197">            final ResultSet resultSet = statement.executeQuery(&quot;SELECT last_change, table_name FROM gpkg_contents;&quot;))</span>
         {
-<span class="fc" id="L198">            final Collection&lt;String&gt; invalidDateTableNames = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L199">            final Collection&lt;String&gt; invalidDateTableNames = new LinkedList&lt;&gt;();</span>
         	// 2
-<span class="fc bfc" id="L200" title="All 2 branches covered.">            while(resultSet.next())</span>
+<span class="fc bfc" id="L201" title="All 2 branches covered.">            while(resultSet.next())</span>
             {
             	// 3
-<span class="fc" id="L203">                final String lastChange = resultSet.getString(&quot;last_change&quot;);</span>
+<span class="fc" id="L204">                final String lastChange = resultSet.getString(&quot;last_change&quot;);</span>
 
                 try
                 {
                 	// 3a
-<span class="fc" id="L208">                    new SimpleDateFormat(&quot;yyyy-MM-dd'T'HH:mm:ss'.'SS'Z'&quot;).parse(lastChange);</span>
+<span class="fc" id="L209">                    new SimpleDateFormat(&quot;yyyy-MM-dd'T'HH:mm:ss'.'SS'Z'&quot;).parse(lastChange);</span>
                 }
-<span class="nc" id="L210">                catch(final ParseException ignore)</span>
+<span class="nc" id="L211">                catch(final ParseException ignore)</span>
                 {
-<span class="nc" id="L212">                	invalidDateTableNames.add(resultSet.getString(&quot;table_name&quot;));</span>
-<span class="fc" id="L213">                }</span>
-<span class="fc" id="L214">            }</span>
+<span class="nc" id="L213">                	invalidDateTableNames.add(resultSet.getString(&quot;table_name&quot;));</span>
+<span class="fc" id="L214">                }</span>
+<span class="fc" id="L215">            }</span>
             // 4
-<span class="fc" id="L216">            assertTrue(invalidDateTableNames.isEmpty(),</span>
-<span class="fc" id="L217">                    ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_ENTRY_LAST_CHANGE_FORMAT,</span>
-<span class="fc" id="L218">                                        String.join(&quot;, &quot;, invalidDateTableNames)));</span>
-<span class="pc bpc" id="L219" title="12 of 16 branches missed.">        }</span>
-<span class="fc" id="L220">    }</span>
+<span class="fc" id="L217">            assertTrue(invalidDateTableNames.isEmpty(),</span>
+<span class="fc" id="L218">                    ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_ENTRY_LAST_CHANGE_FORMAT,</span>
+<span class="fc" id="L219">                                        String.join(&quot;, &quot;, invalidDateTableNames)));</span>
+<span class="pc bpc" id="L220" title="12 of 16 branches missed.">        }</span>
+<span class="fc" id="L221">    }</span>
 
     /**
      * Values of the {@code gpkg_contents} table {@code srs_id} column SHALL
@@ -233,13 +234,13 @@ import org.testng.annotations.Test;
     @Test(description = &quot;See OGC 12-128r14: Requirement 16&quot;)
     public void srsIdReferencesSrsTable() throws SQLException
     {
-<span class="pc" id="L236">        try(final Statement statement  = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L237">            final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA foreign_key_check('gpkg_contents');&quot;))</span>
+<span class="pc" id="L237">        try(final Statement statement  = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L238">            final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA foreign_key_check('gpkg_contents');&quot;))</span>
         {
-<span class="pc bpc" id="L239" title="1 of 2 branches missed.">            assertTrue(!resultSet.next(),</span>
-<span class="fc" id="L240">                       ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_TABLE_SRS_FOREIGN_KEY));</span>
-<span class="pc bpc" id="L241" title="12 of 16 branches missed.">        }</span>
-<span class="fc" id="L242">    }</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">            assertTrue(!resultSet.next(),</span>
+<span class="fc" id="L241">                       ErrorMessage.format(ErrorMessageKeys.BAD_CONTENTS_TABLE_SRS_FOREIGN_KEY));</span>
+<span class="pc bpc" id="L242" title="12 of 16 branches missed.">        }</span>
+<span class="fc" id="L243">    }</span>
 
     /**
      * Verify that a GeoPackage contains a features or tiles table and 
@@ -262,11 +263,11 @@ import org.testng.annotations.Test;
 //            assertTrue(resultSet.getInt(1) &gt; 0,
 //                       ErrorMessage.format(ErrorMessageKeys.OPTIONS_NO_FEATURES_OR_TILES));
 //        }
-<span class="fc" id="L265">    }</span>
-<span class="fc" id="L266">    private static final Pattern TEXT_TYPE = Pattern.compile(&quot;TEXT\\([0-9]+\\)&quot;);</span>
-<span class="fc" id="L267">    private static final Pattern BLOB_TYPE = Pattern.compile(&quot;BLOB\\([0-9]+\\)&quot;);</span>
+<span class="fc" id="L266">    }</span>
+<span class="fc" id="L267">    private static final Pattern TEXT_TYPE = Pattern.compile(&quot;TEXT\\([0-9]+\\)&quot;);</span>
+<span class="fc" id="L268">    private static final Pattern BLOB_TYPE = Pattern.compile(&quot;BLOB\\([0-9]+\\)&quot;);</span>
 
-<span class="fc" id="L269">    private static final Collection&lt;String&gt; ALLOWED_SQL_TYPES = Arrays.asList(&quot;BOOLEAN&quot;, &quot;TINYINT&quot;, &quot;SMALLINT&quot;, &quot;MEDIUMINT&quot;,</span>
+<span class="fc" id="L270">    private static final Collection&lt;String&gt; ALLOWED_SQL_TYPES = Arrays.asList(&quot;BOOLEAN&quot;, &quot;TINYINT&quot;, &quot;SMALLINT&quot;, &quot;MEDIUMINT&quot;,</span>
                                                                         &quot;INT&quot;, &quot;FLOAT&quot;, &quot;DOUBLE&quot;, &quot;REAL&quot;,
                                                                         &quot;TEXT&quot;, &quot;BLOB&quot;, &quot;DATE&quot;, &quot;DATETIME&quot;,
                                                                         &quot;GEOMETRY&quot;, &quot;POINT&quot;, &quot;LINESTRING&quot;, &quot;POLYGON&quot;,
@@ -274,7 +275,7 @@ import org.testng.annotations.Test;
                                                                         &quot;INTEGER&quot;);
 
 	public static Collection&lt;String&gt; getAllowedSqlTypes() {
-<span class="fc" id="L277">		return ALLOWED_SQL_TYPES;</span>
+<span class="fc" id="L278">		return ALLOWED_SQL_TYPES;</span>
 	}
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

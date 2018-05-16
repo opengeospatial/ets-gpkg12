@@ -169,7 +169,7 @@ import org.testng.annotations.Test;
 <span class="fc bfc" id="L169" title="All 2 branches covered.">		for(final String tableName : this.tileTableNames)</span>
 		{
 <span class="pc" id="L171">			try(final Statement statement = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L172">					final ResultSet resultSet = statement.executeQuery(String.format(&quot;SELECT tile_data, id FROM %s;&quot;, tableName)))</span>
+<span class="fc" id="L172">					final ResultSet resultSet = statement.executeQuery(String.format(&quot;SELECT tile_data, id FROM '%s';&quot;, tableName)))</span>
 			{
 <span class="fc" id="L174">				final Collection&lt;Integer&gt; failedTileIds = new LinkedList&lt;&gt;();</span>
 
@@ -455,7 +455,7 @@ import org.testng.annotations.Test;
 <span class="fc" id="L455">			final Collection&lt;Integer&gt; tilePyramidZooms = new LinkedList&lt;&gt;();</span>
 
 <span class="pc" id="L457">			try(final Statement statement    = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L458">					final ResultSet pyZoomLevels = statement.executeQuery(String.format(&quot;SELECT DISTINCT zoom_level FROM %s ORDER BY zoom_level;&quot;, tableName)))</span>
+<span class="fc" id="L458">					final ResultSet pyZoomLevels = statement.executeQuery(String.format(&quot;SELECT DISTINCT zoom_level FROM '%s' ORDER BY zoom_level;&quot;, tableName)))</span>
 			{
 <span class="fc bfc" id="L460" title="All 2 branches covered.">				while(pyZoomLevels.next())</span>
 				{
@@ -834,7 +834,7 @@ import org.testng.annotations.Test;
 
 <span class="pc bpc" id="L835" title="1 of 2 branches missed.">			if (nullZoom) { return; }</span>
 
-<span class="pc" id="L837">			try (final PreparedStatement zoomStatement = this.databaseConnection.prepareStatement(String.format(&quot;SELECT zoom_level FROM %s WHERE zoom_level &lt; ? OR zoom_level &gt; ?&quot;, tableName))) {</span>
+<span class="pc" id="L837">			try (final PreparedStatement zoomStatement = this.databaseConnection.prepareStatement(String.format(&quot;SELECT zoom_level FROM '%s' WHERE zoom_level &lt; ? OR zoom_level &gt; ?&quot;, tableName))) {</span>
 <span class="fc" id="L838">				zoomStatement.setInt(1, minZoom);</span>
 <span class="fc" id="L839">				zoomStatement.setInt(2, maxZoom);</span>
 
@@ -871,8 +871,8 @@ import org.testng.annotations.Test;
 <span class="fc" id="L871">			final String query = String.format(&quot;SELECT zoom_level as zl, matrix_width as width &quot; +</span>
 					&quot;FROM   gpkg_tile_matrix &quot;        +
 					&quot;WHERE  table_name = ? &quot;       +
-					&quot;AND (zoom_level in (SELECT zoom_level FROM %1$s WHERE tile_column &lt; 0) &quot; +
-					&quot;OR  (EXISTS(SELECT NULL FROM %1$s WHERE zoom_level = zl AND tile_column &gt; width - 1)));&quot;,
+					&quot;AND (zoom_level in (SELECT zoom_level FROM '%1$s' WHERE tile_column &lt; 0) &quot; +
+					&quot;OR  (EXISTS(SELECT NULL FROM '%1$s' WHERE zoom_level = zl AND tile_column &gt; width - 1)));&quot;,
 					tableName);
 
 <span class="pc" id="L878">			try (final PreparedStatement statement = this.databaseConnection.prepareStatement(query)) {</span>
@@ -913,8 +913,8 @@ import org.testng.annotations.Test;
 <span class="fc" id="L913">			final String query = String.format(&quot;SELECT zoom_level as zl, matrix_height as height &quot; +</span>
 					&quot;FROM   gpkg_tile_matrix &quot;        +
 					&quot;WHERE  table_name = ? &quot;       +
-					&quot;AND (zoom_level in (SELECT zoom_level FROM %1$s WHERE tile_row &lt; 0) &quot; +
-					&quot;OR  (EXISTS(SELECT NULL FROM %1$s WHERE zoom_level = zl AND tile_row &gt; height - 1)));&quot;,
+					&quot;AND (zoom_level in (SELECT zoom_level FROM '%1$s' WHERE tile_row &lt; 0) &quot; +
+					&quot;OR  (EXISTS(SELECT NULL FROM '%1$s' WHERE zoom_level = zl AND tile_row &gt; height - 1)));&quot;,
 					tableName);
 
 <span class="pc" id="L920">			try (final PreparedStatement statement = this.databaseConnection.prepareStatement(query)) {</span>
