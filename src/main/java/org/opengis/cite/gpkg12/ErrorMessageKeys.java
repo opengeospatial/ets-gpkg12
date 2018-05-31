@@ -108,4 +108,25 @@ public class ErrorMessageKeys {
     public static final String COVERAGE_ANCILLARY_DATATYPE_INVALID = "CoverageAncillaryDatatypeInvalid";
     public static final String TILE_ANCILLARY_REFERENCES = "TileAncillaryReferences";
     public static final String TILE_ANCILLARY_TABLE_REF_INVALID = "TileAncillaryTableRefInvalid";
+    public static final String FEATURE_TABLE_NAMES_MISSING = "FeatureTableNamesMissing";
+    public static final String FEATURE_GEOMETRY_INVALID_MAGIC_NUMBER = "FeatureGeometryColumnInvalidMagicNumber";
+    public static final String FEATURE_GEOMETRY_INVALID_VERSION = "FeatureGeometryColumnInvalidVersion";
+    public static final String FEATURE_GEOMETRY_INVALID_BINARY_CODE = "FeatureGeometryColumnInvalidBinaryCode";
+    public static final String FEATURE_GEOMETRY_INVALID_ENVELOPE_CODE = "FeatureGeometryColumnInvalidEnvelopeCode";
+    public static final String FEATURE_GEOMETRY_INVALID_DETECTED_EMPTY_GEOMETRY_FLAG_BUT_ENVELOPE_HAS_CONTENT = "FeatureGeometryColumnDetectedEmptyGeometryFlagButEnvelopeHasContent";
+    public static final String FEATURE_GEOMETRY_SRS_NOT_IN_GPKG_CONTENTS = "FeatureGeometryColumnSRSNotInGpkgContents";
+    public static final String FEATURE_GEOMETRY_POSSIBLE_BYTE_SWAP_ERROR_SRS_MATCH = "FeatureGeometryColumnSRSMatchWhenBytesSwapped";
+    public static final String FEATURE_GEOMETRY_SRS_MISMATCH = "FeatureGeometryColumnSRSDoesNotMatchSpecifiedSRSForFeature";
+    public static final String FEATURE_GEOMETRY_TYPE_INVALID = "FeatureGeometryColumnGeometryTypeNotValid";
+    public static final String FEATURE_GEOMETRY_TYPE_INVALID_POSSIBLE_BYTE_SWAP = "FeatureGeometryColumnGeometryTypeNotValidButByteSwapErrorPossible";
+    public static final String FEATURE_GEOMETRY_NOT_ASSIGNABLE_TO_SUPERTYPE = "Feature_GeometryColumnGeometryNotAssignableToSupertype";
+    public static final String FEATURE_GEOMETRY_TYPE_NOT_PRESENT_AS_EXTENSION = "FeatureGeometryColumnGeometryTypeNotPresentAsExtension";
+    public static final String FEATURE_GEOMETRY_ENVELOPE_OUTSIDE_BOUNDS_OF_GEOPACKAGE = "FeatureGeometryColumnEnvelopeOutsideExtentsOfGeoPackage";
+    public static final String FEATURE_GEOMETRY_ENVELOPE_OUTSIDE_TOLERANCE_OF_RTREE_TRIGGER_MIN_MAX = "FeatureGeometryColumnEnvelopeOutsideToleranceOfRTreeTriggerMinMax";
+    public static final String FEATURE_FOREIGN_KEY_NOT_SPECIFIED_CORRECTLY = "FeatureForeignKeyNotSpecifiedCorrectly";
+    public static final String FEATURE_GEOMETRY_ENVELOPE_RTREE_TABLE_MISSING_OR_IN_ERROR = "FeatureGeometryColumnRtreeTableMissingOrInError";
+    public static final String FEATURE_GEOMETRY_BLOB_PROCESSING_TEST_FAILURE = "FeatureGeometryColumnBLOBProcessingTestFailure";
+    public static final String FEATURE_GEOMETRY_WKB_ITEM_COUNT_ILLEGAL = "FeatureGeometryWKBItemCountIllegal";
+    public static final String FEATURE_GEOMETRY_COLUMNS_DOES_NOT_MATCH_CONTENTS_COUNT = "FeatureGeometryColumnsDoeNotMatchContents";
+    public static final String FEATURE_GEOMETRY_COLUMNS_SRS_ID_NOT_CONSISTENT_WITH_CONTENTS = "FeatureGeometryColumnsSRSIDNotConsistentWithContents";
 }
