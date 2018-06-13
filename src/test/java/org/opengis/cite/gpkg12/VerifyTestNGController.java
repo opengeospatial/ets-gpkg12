@@ -53,6 +53,7 @@ public class VerifyTestNGController {
     @Test
     public void cleanTestRun() throws Exception {
     	
+        runTests(ClassLoader.getSystemResource("gpkg/emp ty.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/features-0.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/imagery-0.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/gpkg-test-5208.gpkg"), 0);
