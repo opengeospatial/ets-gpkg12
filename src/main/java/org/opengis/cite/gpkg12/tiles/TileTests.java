@@ -169,7 +169,7 @@ public class TileTests extends CommonFixture
 		for(final String tableName : this.tileTableNames)
 		{
 			try(final Statement statement = this.databaseConnection.createStatement();
-					final ResultSet resultSet = statement.executeQuery(String.format("SELECT tile_data, id FROM %s;", tableName)))
+					final ResultSet resultSet = statement.executeQuery(String.format("SELECT tile_data, id FROM '%s';", tableName)))
 			{
 				final Collection<Integer> failedTileIds = new LinkedList<>();
 
@@ -455,7 +455,7 @@ public class TileTests extends CommonFixture
 			final Collection<Integer> tilePyramidZooms = new LinkedList<>();
 
 			try(final Statement statement    = this.databaseConnection.createStatement();
-					final ResultSet pyZoomLevels = statement.executeQuery(String.format("SELECT DISTINCT zoom_level FROM %s ORDER BY zoom_level;", tableName)))
+					final ResultSet pyZoomLevels = statement.executeQuery(String.format("SELECT DISTINCT zoom_level FROM '%s' ORDER BY zoom_level;", tableName)))
 			{
 				while(pyZoomLevels.next())
 				{
@@ -834,7 +834,7 @@ public class TileTests extends CommonFixture
 
 			if (nullZoom) { return; }
 
-			try (final PreparedStatement zoomStatement = this.databaseConnection.prepareStatement(String.format("SELECT zoom_level FROM %s WHERE zoom_level < ? OR zoom_level > ?", tableName))) {
+			try (final PreparedStatement zoomStatement = this.databaseConnection.prepareStatement(String.format("SELECT zoom_level FROM '%s' WHERE zoom_level < ? OR zoom_level > ?", tableName))) {
 				zoomStatement.setInt(1, minZoom);
 				zoomStatement.setInt(2, maxZoom);
 
@@ -871,8 +871,8 @@ public class TileTests extends CommonFixture
 			final String query = String.format("SELECT zoom_level as zl, matrix_width as width " +
 					"FROM   gpkg_tile_matrix "        +
 					"WHERE  table_name = ? "       +
-					"AND (zoom_level in (SELECT zoom_level FROM %1$s WHERE tile_column < 0) " +
-					"OR  (EXISTS(SELECT NULL FROM %1$s WHERE zoom_level = zl AND tile_column > width - 1)));",
+					"AND (zoom_level in (SELECT zoom_level FROM '%1$s' WHERE tile_column < 0) " +
+					"OR  (EXISTS(SELECT NULL FROM '%1$s' WHERE zoom_level = zl AND tile_column > width - 1)));",
 					tableName);
 
 			try (final PreparedStatement statement = this.databaseConnection.prepareStatement(query)) {
@@ -913,8 +913,8 @@ public class TileTests extends CommonFixture
 			final String query = String.format("SELECT zoom_level as zl, matrix_height as height " +
 					"FROM   gpkg_tile_matrix "        +
 					"WHERE  table_name = ? "       +
-					"AND (zoom_level in (SELECT zoom_level FROM %1$s WHERE tile_row < 0) " +
-					"OR  (EXISTS(SELECT NULL FROM %1$s WHERE zoom_level = zl AND tile_row > height - 1)));",
+					"AND (zoom_level in (SELECT zoom_level FROM '%1$s' WHERE tile_row < 0) " +
+					"OR  (EXISTS(SELECT NULL FROM '%1$s' WHERE zoom_level = zl AND tile_row > height - 1)));",
 					tableName);
 
 			try (final PreparedStatement statement = this.databaseConnection.prepareStatement(query)) {

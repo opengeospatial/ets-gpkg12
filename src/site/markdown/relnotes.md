@@ -1,5 +1,8 @@
 # Release Notes GeoPackage (gpkg) 1.2
 
+## 0.6 (2018-05-16)
+* Fix [#52](https://github.com/opengeospatial/ets-gpkg12/issues/52): ETS fails on poorly named contents tables
+
 ## 0.5 (2018-04-13)
 * Fix [#46](https://github.com/opengeospatial/ets-gpkg12/issues/46): Rename Tiled Gridded Elevation Data conformance class
 * Merge[#50](https://github.com/opengeospatial/ets-gpkg12/pull/50): flexible white space in RTree regexes

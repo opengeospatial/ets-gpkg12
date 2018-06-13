@@ -88,6 +88,7 @@ public class DataContentsTests extends CommonFixture
                             assertTrue(correctDataType,
                                        ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE,
                                                            dataType,
+                                                           columnName,
                                                            tableName));
                         }
                     }

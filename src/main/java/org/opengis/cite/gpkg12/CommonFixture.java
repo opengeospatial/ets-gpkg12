@@ -178,7 +178,7 @@ public class CommonFixture {
     	try (
     			final Statement statement = this.databaseConnection.createStatement();
     			// 1
-    			final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName));
+    			final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info('%s');", tableName));
     			) {
     		// 2
     		assertTrue(resultSet.next(),
@@ -253,7 +253,7 @@ public class CommonFixture {
 		try (
 				final Statement statement = this.databaseConnection.createStatement();
 				// 1
-				final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName));
+				final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info('%s');", tableName));
 				) {
 
 			// 2
@@ -288,7 +288,7 @@ public class CommonFixture {
 				// 4
 				final Statement statement2 = this.databaseConnection.createStatement();
 
-				final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct %s) - COUNT(*) from %s", pkName, tableName));
+				final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct %s) - COUNT(*) from '%s'", pkName, tableName));
 				) {
 			// 5
 			assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.TABLE_PK_NOT_UNIQUE, tableName));
