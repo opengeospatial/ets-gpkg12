@@ -200,6 +200,8 @@ public class CommonFixture {
     				pass = true;
     			}
     		} while (resultSet.next());
+    		
+    		// TODO: The dirty truth is that we can't definitively identify the primary key of a view so we need to guess
 
     		assertTrue(pass && (result != null), ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));    		
     	}
