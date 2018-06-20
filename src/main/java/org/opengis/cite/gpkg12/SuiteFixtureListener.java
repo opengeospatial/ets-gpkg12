@@ -52,7 +52,7 @@ public class SuiteFixtureListener implements ISuiteListener {
         if ((null == iutParam) || iutParam.isEmpty()) {
             throw new IllegalArgumentException("Required test run parameter not found: " + TestRunArg.IUT.toString());
         }
-        URI iutRef = URI.create(iutParam.trim());
+        URI iutRef = URI.create(new File(iutParam.trim()).toURI().toString());
         File gpkgFile = null;
         try {
             gpkgFile = URIUtils.dereferenceURI(iutRef);
