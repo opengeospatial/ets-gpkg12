@@ -69,7 +69,7 @@ public class SpatialReferenceSystemsTests extends CommonFixture {
 			int passFlag = 0;
 			final int flagMask = 0b00111111;
 
-			checkPrimaryKey(tableName, "srs_id");
+			checkPrimaryKey(tableName, "srs_id", true);
 
 			// Technically nonnull columns should have a default but this should not cause a test failure.
 			while (resultSet.next()) {
