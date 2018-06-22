@@ -56,7 +56,6 @@ public class VerifyTestNGController {
         runTests(ClassLoader.getSystemResource("gpkg/emp ty.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_view.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/rivers.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/rivers-bad.gpkg"), 8);
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_spi_nonlinear_webp_elevation.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/features-0_FIXED.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/features-0.gpkg"), 0);
@@ -76,6 +75,7 @@ public class VerifyTestNGController {
         runTests(ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg"), 1); // This is an invalid 1.0 or 1.1 GPKG - it has an invalid metadata table (md_standard_URI instead of md_standard_uri) 
         runTests(ClassLoader.getSystemResource("gpkg/sample1_1.gpkg"), 1); // R77
         runTests(ClassLoader.getSystemResource("gpkg/sample1_2.gpkg"), 1); // R77
+        runTests(ClassLoader.getSystemResource("gpkg/rivers-bad.gpkg"), 8); // Why did this fail again?
         runTests(ClassLoader.getSystemResource("gpkg/sample1_2F10.gpkg"), 2); // Default "undefined", R77
         runTests(ClassLoader.getSystemResource("gpkg/geonames_belgium.gpkg"), 5); // lower case data types R5, R77, R61, R105
 //        runTests(ClassLoader.getSystemResource("gpkg/haiti-vectors-split.gpkg"), 3); // lower case data types R5, R77 Dropping this one because it is big and doesn't offer anything new

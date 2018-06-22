@@ -113,7 +113,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 			int passFlag = 0;
 			final int flagMask = 0b01111111;
 
-			checkPrimaryKey("gpkg_2d_gridded_coverage_ancillary", "id");
+			checkPrimaryKey("gpkg_2d_gridded_coverage_ancillary", "id", true);
 
 			while (resultSet.next()) {
 				// 3
@@ -179,7 +179,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 			final long flagMask = 0b111111111;
 
 			while (resultSet.next()) {
-				checkPrimaryKey("gpkg_2d_gridded_tile_ancillary", "id");
+				checkPrimaryKey("gpkg_2d_gridded_tile_ancillary", "id", true);
 				// 3
 				final String name = resultSet.getString("name");
 				if ("id".equals(name)){

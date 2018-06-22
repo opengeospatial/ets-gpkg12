@@ -170,9 +170,12 @@ public class CommonFixture {
      * 
      * @return the name of the primary key column
      * @param tableName the name of the table
+     * @param enforcePk 
+     *   true: the column must be a primary key
+     *   false: default to the first column as long as it is an integer
      * @throws SQLException on any error
      */
-    protected String getPrimaryKeyColumn(String tableName) throws SQLException {
+    protected String getPrimaryKeyColumn(String tableName, boolean enforcePk) throws SQLException {
     	String result = null;
     	
     	try (
@@ -185,11 +188,19 @@ public class CommonFixture {
     				ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
     		
     		boolean pass = false;
+    		boolean first = true;
+    		String firstName = "";
+    		String firstType = "";
     		// 3
     		do {
     			final int pk = resultSet.getInt("pk");
     			final String name = resultSet.getString("name");
     			final String type = resultSet.getString("type");
+    			if (first) {
+    				firstName = name;
+    				firstType = type;
+    				first = false;
+    			}
     			if (pk > 0) {
     				assertTrue(pk == 1, 
     						ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, 
@@ -202,6 +213,12 @@ public class CommonFixture {
     		} while (resultSet.next());
     		
     		// TODO: The dirty truth is that we can't definitively identify the primary key of a view so we need to guess
+    		if(!(enforcePk || pass)) {
+				if ("INTEGER".equalsIgnoreCase(firstType)) {
+    				result = firstName;
+    				pass = true;
+				}
+    		}
 
     		assertTrue(pass && (result != null), ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));    		
     	}
@@ -240,9 +257,10 @@ public class CommonFixture {
      * See https://github.com/opengeospatial/geopackage/issues/282 for more details. 
      * @param tableName the name of the table (required)
      * @param pkName the name of the required primary key (may be null, in which case it is detected)
+     * @param enforcePk true: the column must be a primary key, false: the column may be PK-like, an integer with unique values
      * @throws SQLException on any error
      */
-    protected void checkPrimaryKey(String tableName, String pkName) throws SQLException {
+    protected void checkPrimaryKey(String tableName, String pkName, boolean enforcePk) throws SQLException {
     	// 0 sanity checks
 		if (pkName == null) {
 			throw new IllegalArgumentException("pkName must not be null.");
@@ -252,40 +270,41 @@ public class CommonFixture {
 		}
 		
 		boolean pass = false;
-		try (
+		if (enforcePk) {
+			try (
 				final Statement statement = this.databaseConnection.createStatement();
 				// 1
 				final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info('%s');", tableName));
-				) {
-
-			// 2
-			assertTrue(resultSet.next(),
-					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
-
-			pass = false;
-			// 3
-			do {
-				final int pk = resultSet.getInt("pk");
-				final String name = resultSet.getString("name");
-				final String type = resultSet.getString("type");
-				if (pk > 0) {
-					assertTrue(pk == 1, 
-							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, 
-									String.format("%s is a primary key of %d", name, pk)));
-					assertTrue("INTEGER".equals(type), 
-							ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));
-					assertTrue(pkName.equals(name),
-							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName,
-									"pk " + name));
-					pass = true;
-				}
-			} while (resultSet.next());
+			) {
+	
+				// 2
+				assertTrue(resultSet.next(),
+						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
+	
+				pass = false;
+				// 3
+				do {
+					final int pk = resultSet.getInt("pk");
+					final String name = resultSet.getString("name");
+					final String type = resultSet.getString("type");
+					if (pk > 0) {
+						assertTrue(pk == 1, 
+								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, 
+										String.format("%s is a primary key of %d", name, pk)));
+						assertTrue("INTEGER".equals(type), 
+								ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));
+						assertTrue(pkName.equals(name),
+								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName,
+										"pk " + name));
+						pass = true;
+					}
+				} while (resultSet.next());
+	
+				assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));
+			}
 		}
 
 
-
-		assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));
-		
 		try (
 				// 4
 				final Statement statement2 = this.databaseConnection.createStatement();

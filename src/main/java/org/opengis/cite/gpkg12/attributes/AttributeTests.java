@@ -69,7 +69,7 @@ public class AttributeTests extends CommonFixture {
             try (final Statement statement = databaseConnection.createStatement(); final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName));) {
                 assertTrue(resultSet.next(), ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
             }
-            checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName));
+            checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName, false), false);
         }
     }
 }

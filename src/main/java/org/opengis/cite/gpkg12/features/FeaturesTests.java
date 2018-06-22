@@ -428,7 +428,7 @@ public class FeaturesTests extends CommonFixture {
 			}
 
 			// 3c/3d
-			checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName));
+			checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName, false), false);
 		}
 	}
 
