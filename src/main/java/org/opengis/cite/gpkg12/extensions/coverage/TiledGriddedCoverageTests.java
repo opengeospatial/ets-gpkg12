@@ -547,13 +547,13 @@ public class TiledGriddedCoverageTests extends TileTests {
 	 * For data where the datatype column of the corresponding row in the 
 	 * gpkg_2d_gridded_coverage_ancillary table is integer, 
 	 * the tile_data BLOB in the tile pyramid user data table containing tiled, 
-	 * gridded elevation data SHALL be of MIME type image/png and the data SHALL 
+	 * gridded coverage data SHALL be of MIME type image/png and the data SHALL 
 	 * be 16-bit unsigned integer (single channel - "greyscale").
 	 * For data where the datatype column of the corresponding row in the 
 	 * gpkg_2d_gridded_coverage_ancillary table is float, 
 	 * the tile_data BLOB in the tile pyramid user data table containing tiled, 
-	 * gridded elevation data SHALL be of MIME type image/tiff and the data SHALL 
-	 * be 32-bit floating point as described by the TIFF Encoding (Requirement 120).
+	 * gridded coverage data SHALL be of MIME type image/tiff and the data SHALL 
+	 * be 32-bit floating point as described by the TIFF Encoding (Requirement 13/14).
 	 * 
 	 * Test case
 	 * {@code /extensions/coverage/table_val/tile-pyramid-user-data-tables}
