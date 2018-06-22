@@ -54,11 +54,11 @@ public class VerifyTestNGController {
     public void cleanTestRun() throws Exception {
     	
         runTests(ClassLoader.getSystemResource("gpkg/emp ty.gpkg"), 0);
+        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_spi_nonlinear_webp_elevation.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/features-0_FIXED.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/features-0.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/imagery-0.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/gpkg-test-5208.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_spi_nonlinear_webp_elevation.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_spatial_index_extension.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_no_extensions.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_no_extensions_with_gpkg_ogr_contents.gpkg"), 0);

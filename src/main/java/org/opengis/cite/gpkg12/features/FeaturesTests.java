@@ -491,6 +491,10 @@ public class FeaturesTests extends CommonFixture {
     				final long rowID = (long) resultSetInternal.getLong(1);
     				final byte[] bytes = resultSetInternal.getBytes("geom");
 
+    				// We must allow for null geometries.
+    				if (bytes == null){
+    					continue;
+    				}
     				// From the geometry blob, populate a few of the values that we can easily extract from the geometry
     				final byte envelopeCode = (byte) ((bytes[startOfFlags] & maskFlagEnvelope) >> shiftFlagEnvelope);
     				final byte binaryTypeFlag = (byte) ((bytes[startOfFlags] & maskFlagBinaryType) >> shiftFlagBinaryType);
