@@ -66,7 +66,7 @@ public class VerifyTestNGController {
         runTests(ClassLoader.getSystemResource("gpkg/states10.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/bluemarble.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/elevation.gpkg"), 0); // These two are the id notnull thing
+        runTests(ClassLoader.getSystemResource("gpkg/elevation.gpkg"), 0); 
         runTests(ClassLoader.getSystemResource("gpkg/coastline-polyline-hydro-115mil-and-smaller.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/v12_bad_attributes.gpkg"), 1); // R119
         runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 1); // R77
@@ -75,7 +75,7 @@ public class VerifyTestNGController {
         runTests(ClassLoader.getSystemResource("gpkg/sample1_2.gpkg"), 1); // R77
         runTests(ClassLoader.getSystemResource("gpkg/sample1_2F10.gpkg"), 2); // Default "undefined", R77
         runTests(ClassLoader.getSystemResource("gpkg/geonames_belgium.gpkg"), 3); // lower case data types, R77
-        runTests(ClassLoader.getSystemResource("gpkg/haiti-vectors-split.gpkg"), 3); // lower case data types, R77
+//        runTests(ClassLoader.getSystemResource("gpkg/haiti-vectors-split.gpkg"), 3); // lower case data types, R77 Dropping this one because it is big and doesn't offer anything new
         runTests(ClassLoader.getSystemResource("gpkg/bentiu_southsudan-osm-20170213.gpkg"), 2); //R5, R29
     }
     private void runTests(URL testSubject, int fails) throws Exception {
