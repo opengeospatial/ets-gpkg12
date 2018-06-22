@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -78,15 +77,15 @@ public class FeaturesTests extends CommonFixture {
 																	 // and it should be split into sub items to better report these issues.
 		private static final int maxErrorsToReport32 = 5;            // Per feature maximum, this test reports one issue - but it'll list all instances found
 		private static final int maxErrorsToReport33 = 5;            // Per feature maximum, this test reports one issue - but it'll list all instances found
-		private static final int maxErrorsToReportNSG19b = 5;
+//		private static final int maxErrorsToReportNSG19b = 5;
 		private static final int maxErrorsToReport66 = 5;
 		private static final int maxErrorsToReport67 = 5;
 		private static final int maxErrorsToReport78 = 5;
 		private static final int maxErrorsToReport20 = 5;
 		
 		// Masks and starting byte index for Geometry BLOB Contents
-		private static final byte magicB0 = 0x47;
-		private static final byte magicB1 = 0x50;
+//		private static final byte magicB0 = 0x47;
+//		private static final byte magicB1 = 0x50;
 		private static final byte maskFlagBinaryType = 0x20;
 		private static final int  shiftFlagBinaryType = 5;
 		private static final byte maskFlagEmptyGeometry = 0x10;
@@ -99,7 +98,7 @@ public class FeaturesTests extends CommonFixture {
 		private static final int  startOfSRIDIndex = 4;
 		private static final int  startOfEnvelopeIndex = 8;
 		private static final int  startOfGeometryType = 1;
-		private static final int  startOfEnvelopeCodeIndex = 3;
+//		private static final int  startOfEnvelopeCodeIndex = 3;
 		private static final int maximumEnvelopeSize = 8 * Double.BYTES;  // As per the OGC spec, no more than 8 doubles should be in the envelope
 		
 	    private static final String myminx = "minx";
@@ -666,13 +665,12 @@ public class FeaturesTests extends CommonFixture {
     				// ** START ************** 19v ************************ 19 ************************** 19 **************************
     				try {
 
-    					boolean envelopeHasValue = false;
     					// v. *Fail if the geometry is empty but the envelope is not empty (gc.flags.envelope != 0 and envelope values are not NaN)
     					if (envelopeSize > 0 && envelopeSize < maximumEnvelopeSize) {
     						final byte bytesEnvelope[] = byteArraySubset(bytes, startOfEnvelopeIndex , envelopeSize);
     						try {
-    							// This value will not be used in this test, but we are actually looking for the exception processing at this time
-    							envelopeHasValue = mygetEnvelope(envelopeSize, swapHeaderBytes, bytesEnvelope, envelopeVals);
+    							// Ignoring the return value; we are just looking for the exception processing at this time
+    							mygetEnvelope(envelopeSize, swapHeaderBytes, bytesEnvelope, envelopeVals);
 
     						} catch(IllegalArgumentException ee)  // this should catch the indication that we a nan values in the envelope 
     						{
@@ -910,6 +908,9 @@ public class FeaturesTests extends CommonFixture {
 
     				// This next set looks at the gpkg_contents as compared to the values in the feature
     				// instance geometry BLOB.  This is for NSG requirement 19 B
+    				// NOTE: This test does not test profiles but we're going to keep it (commented out) for now
+    				// because a requirement could be added as part of GPKG 1.3.0.
+    				/*
     				try {
     					if (!envelopeVals.isEmpty()) {
     						try(final Statement statementST = this.databaseConnection.createStatement();
@@ -958,7 +959,7 @@ public class FeaturesTests extends CommonFixture {
     									ErrorMessageKeys.FEATURE_GEOMETRY_BLOB_PROCESSING_TEST_FAILURE, 
     									String.format("Failure testing requirement NSG 19B on feature {0}", thisTableName), th.getMessage()));
     				}
-
+						*/
     				// ** END   ****** NSG 19B ************************ NSG 19B ************************** NSG 19B **************************
 
 
@@ -1860,6 +1861,7 @@ public class FeaturesTests extends CommonFixture {
     * @return String     Empty string, if no issue. Otherwise it reports the first issue found
     * 
     */ 
+   /* This test is only used as part of the NSG 19B test, but could be reinstated later.
    private String geometryEnvelopeWithinExtents(Map<String, Double> envelopein, Map<String, Double> extentin)
    {
    	String fallswithin = "";
@@ -1883,7 +1885,7 @@ public class FeaturesTests extends CommonFixture {
 
    	return fallswithin;
    }
-
+	*/
    /**
     * Return the expected size of the envelope based on the envelope code
     *
