@@ -342,6 +342,31 @@ public class TileTests extends CommonFixture
 	}
 
 	/**
+	 * Test case
+	 * {@code /opt/tiles/gpkg_tile_matrix_set/data/data_values_srs_id_match}
+	 *
+	 * @see <a href="_requirement-147" target= "_blank">Tile Matrix Set SRS ID
+	 *      Column - Requirement 147</a>
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = "See OGC 12-128r15: Requirement 147")
+	public void featureGeometryColumnsDataValuesSrsId() throws SQLException {
+		try (
+			// 1
+			final Statement statement = this.databaseConnection.createStatement();
+
+			final ResultSet resultSet = statement.executeQuery("SELECT a.srs_id srs_id, a.table_name tn FROM gpkg_tile_matrix_set a, gpkg_contents b WHERE a.table_name = b.table_name and a.srs_id != b.srs_id");
+		) {
+			// 2
+			if (resultSet.next()){
+				fail(ErrorMessage.format(ErrorMessageKeys.SRS_MISMATCH, "gpkg_tile_matrix_set", resultSet.getInt("srs_id"), resultSet.getString("tn")));
+			}
+		}
+	}
+
+	/**
 	 * A GeoPackage that contains a tile pyramid user data table SHALL contain
 	 * a {@code gpkg_tile_matrix} table or view per clause 2.2.7.1.1 <a href=
 	 * "http://www.geopackage.org/spec/#tile_matrix_data_table_definition">
