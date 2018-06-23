@@ -1313,6 +1313,31 @@ public class FeaturesTests extends CommonFixture {
 
 	/**
 	 * Test case
+	 * {@code /opt/features/geometry_columns/data/data_values_srs_id_match}
+	 *
+	 * @see <a href="_requirement-146" target= "_blank">Vector
+	 *      Features Geometry Columns Column - Requirement 146</a>
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = "See OGC 12-128r13: Requirement 146")
+	public void featureGeometryColumnsDataValuesSrsId() throws SQLException {
+		try (
+			// 1
+			final Statement statement = this.databaseConnection.createStatement();
+
+			final ResultSet resultSet = statement.executeQuery("SELECT a.srs_id srs_id, a.table_name tn FROM gpkg_geometry_columns a, gpkg_contents b WHERE a.table_name = b.table_name and a.srs_id != b.srs_id");
+		) {
+			// 2
+			if (resultSet.next()){
+				fail(ErrorMessage.format(ErrorMessageKeys.SRS_MISMATCH, "gpkg_geometry_columns", resultSet.getInt("srs_id"), resultSet.getString("tn")));
+			}
+		}
+	}
+
+	/**
+	 * Test case
 	 * {@code /opt/features/geometry_columns/data/data_values_geometry_type_name}
 	 *
 	 * @see <a href="_requirement-25" target= "_blank">Vector

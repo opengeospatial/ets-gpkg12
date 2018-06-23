@@ -45,6 +45,7 @@ public class ErrorMessageKeys {
     public static final String NO_UNDEFINED_CARTESIAN_SRS = "NoUndefinedCartesianSrs";
     public static final String NO_UNDEFINED_GEOGRAPHIC_SRS = "NoUndefinedGeographicSrs";
     public static final String UNDEFINED_SRS = "UndefinedSrs";
+    public static final String SRS_MISMATCH = "SRSMismatch";
     public static final String CONTENT_TABLE_DOES_NOT_EXIST = "ContentTableDoesNotExist";
     public static final String BAD_CONTENTS_ENTRY_LAST_CHANGE_FORMAT = "BadContentsEntryLastChangeFormat";
     public static final String BAD_CONTENTS_TABLE_SRS_FOREIGN_KEY = "BadContentsTableSrsForeignKey";
