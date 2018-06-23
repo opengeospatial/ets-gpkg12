@@ -1,23 +1,17 @@
 package org.opengis.cite.gpkg12.core;
 
 import static org.testng.Assert.assertTrue;
-import static org.testng.AssertJUnit.fail;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.opengis.cite.gpkg12.ColumnDefinition;
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
-import org.opengis.cite.gpkg12.TableVerifier;
 import org.testng.annotations.Test;
 
 /**
