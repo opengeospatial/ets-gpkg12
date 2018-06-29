@@ -90,8 +90,11 @@ public class SQLiteContainerTests extends CommonFixture {
 	 */
 	@Test(description = "See OGC 12-128r12: Requirement 2")
 	public void applicationID() throws IOException, SQLException {
-		// Note: Most of this is actually handled in CommonFixture::setupVersion()
-		final GeoPackageVersion version = getGeopackageVersion();
+		// This does steps 1-4
+        final GeoPackageVersion version = getGeopackageVersion();
+    	// 5
+        assertTrue(version != null, ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, new String(getAppId(), StandardCharsets.US_ASCII)));
+
 		assertTrue(Arrays.asList(getAllowedVersions()).contains(version),
 				ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID));
 		if (version.equals(GeoPackageVersion.V120)){
