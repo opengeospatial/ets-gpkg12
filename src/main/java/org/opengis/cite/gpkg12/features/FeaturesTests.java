@@ -25,6 +25,7 @@ import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.TableVerifier;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
+import org.testng.SkipException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -484,7 +485,9 @@ public class FeaturesTests extends CommonFixture {
     			 * b. Not testable if none found
     			 */
 
-    			while(resultSetInternal.next() )
+    			// quick fix for https://github.com/opengeospatial/ets-gpkg12/issues/74
+				//while(resultSetInternal.next() )
+    			if(resultSetInternal.next() )
     			{
     				// The SQL should give us a numeric identifier and a geometry blob.  All of the tests in this series operate off
     				// of these two values and the parameters passed in by the iterator.
@@ -493,7 +496,8 @@ public class FeaturesTests extends CommonFixture {
 
     				// We must allow for null geometries.
     				if (bytes == null){
-    					continue;
+    					//continue;
+						throw new SkipException( "No geom available." );
     				}
     				// From the geometry blob, populate a few of the values that we can easily extract from the geometry
     				final byte envelopeCode = (byte) ((bytes[startOfFlags] & maskFlagEnvelope) >> shiftFlagEnvelope);
