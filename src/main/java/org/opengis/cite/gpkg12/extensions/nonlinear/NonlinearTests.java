@@ -7,9 +7,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Collection;
+
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
-import org.opengis.cite.gpkg12.features.FeaturesTests;
+import org.opengis.cite.gpkg12.FeaturesFixture;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
@@ -30,7 +31,7 @@ import org.testng.annotations.Test;
  *
  * @author Jeff Yutzler
  */
-public class NonlinearTests extends FeaturesTests {
+public class NonlinearTests extends FeaturesFixture {
 
 
 	/**

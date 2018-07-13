@@ -19,9 +19,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.opengis.cite.gpkg12.ColumnDefinition;
-import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.FeaturesFixture;
 import org.opengis.cite.gpkg12.TableVerifier;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
@@ -44,7 +44,7 @@ import org.testng.annotations.Test;
  *
  * @author Jeff Yutzler
  */
-public class FeaturesTests extends CommonFixture {
+public class FeaturesTests extends FeaturesFixture {
 
 	    // --------------------- Private Class Variables -----------------
 		private final Boolean NativeOrderIsBE = ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN);
@@ -112,14 +112,6 @@ public class FeaturesTests extends CommonFixture {
 	    private static final String mymaxm = "maxm";
 
 	    
-	    private static final String geomGEOMETRY = "GEOMETRY";
-	    private static final String geomPOINT = "POINT";
-	    private static final String geomLINESTRING = "LINESTRING";
-	    private static final String geomPOLYGON = "POLYGON";
-	    private static final String geomMULTIPOINT = "MULTIPOINT";
-	    private static final String geomMULTILINESTRING = "MULTILINESTRING";
-	    private static final String geomMULTIPOLYGON = "MULTIPOLYGON";
-	    private static final String geomGEOMETRYCOLLECTION = "GEOMETRYCOLLECTION";
 	    private static final String geomCIRCULARSTRING = "CIRCULARSTRING";
 	    private static final String geomCOMPOUNDCURVE = "COMPOUNDCURVE";
 	    private static final String geomCURVEPOLYGON = "CURVEPOLYGON";
@@ -1539,11 +1531,7 @@ public class FeaturesTests extends CommonFixture {
 	}
 
 
-	private static final Collection<String> ALLOWED_GEOMETRY_TYPES = 
-			Arrays.asList(geomGEOMETRY,geomPOINT,geomLINESTRING,geomPOLYGON,geomMULTIPOINT,geomMULTILINESTRING,geomMULTIPOLYGON,geomGEOMETRYCOLLECTION);
-	protected static Collection<String> getAllowedGeometryTypes() {
-		return ALLOWED_GEOMETRY_TYPES;
-	}
+	
 
     // *************************SUPPORTING  METHODS *****************    SUPPORTING METHODS ***********************
     

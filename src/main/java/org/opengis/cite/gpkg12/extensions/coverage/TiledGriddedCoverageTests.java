@@ -21,7 +21,7 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
-import org.opengis.cite.gpkg12.tiles.TileTests;
+import org.opengis.cite.gpkg12.TileFixture;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
@@ -42,7 +42,7 @@ import org.testng.annotations.Test;
  *
  * @author Jeff Yutzler
  */
-public class TiledGriddedCoverageTests extends TileTests {
+public class TiledGriddedCoverageTests extends TileFixture {
 	public TiledGriddedCoverageTests(){
 		// This allows all of the tiles tests to run on coverage data
 		setDataType("2d-gridded-coverage");

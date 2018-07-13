@@ -5,7 +5,6 @@ import static org.testng.Assert.assertTrue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -145,12 +144,8 @@ public class CommonFixture {
      */
     @Test(description = "See OGC 12-128r12: Requirement 2")
     private void setupVersion() throws SQLException, IOException{
-        final byte[] headerBytes = new byte[GPKG12.DB_HEADER_LENGTH];
-        try (FileInputStream fileInputStream = new FileInputStream(this.gpkgFile)) {
-            fileInputStream.read(headerBytes);
-        }
         // 1
-        final byte[] appID = Arrays.copyOfRange(headerBytes, GPKG12.APP_ID_OFFSET, GPKG12.APP_ID_OFFSET + 4);
+        final byte[] appID = getAppId();
         // 2
     	if (Arrays.equals(appID, GPKG12.APP_GP10)){
     		geopackageVersion = GeoPackageVersion.V102;
@@ -161,9 +156,29 @@ public class CommonFixture {
     	} else if (Arrays.equals(appID, GPKG12.APP_GPKG)){
     		geopackageVersion = GeoPackageVersion.V120;
     	} 
-    	// 5
-        assertTrue(geopackageVersion != null, ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, new String(appID, StandardCharsets.US_ASCII)));
     }   
+    
+    /**
+     * 
+     * @return the bytes that make up the header
+     * @throws IOException
+     */
+    protected final byte[] getHeaderBytes() throws IOException{
+        final byte[] headerBytes = new byte[GPKG12.DB_HEADER_LENGTH];
+        try (FileInputStream fileInputStream = new FileInputStream(this.gpkgFile)) {
+            fileInputStream.read(headerBytes);
+        }
+        return headerBytes;
+    }
+    
+    /**
+     * 
+     * @return the bytes that make up the application ID
+     * @throws IOException
+     */
+    protected final byte[] getAppId() throws IOException{
+    	return Arrays.copyOfRange(getHeaderBytes(), GPKG12.APP_ID_OFFSET, GPKG12.APP_ID_OFFSET + 4);
+    }
     
     /**
      * This function returns the name of a single primary key column for the given table
