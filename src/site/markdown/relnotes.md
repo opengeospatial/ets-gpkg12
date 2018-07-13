@@ -1,5 +1,15 @@
 # Release Notes GeoPackage (gpkg) 1.2
 
+## 0.7 (2018-07-13)
+* Fix [#76](https://github.com/opengeospatial/ets-gpkg12/issues/76): Several tests are executed multiple times
+* Fix [#64](https://github.com/opengeospatial/ets-gpkg12/issues/64): Failure due to space in filename
+* Merge [#73](https://github.com/opengeospatial/ets-gpkg12/pull/73): R146 147
+* Fix [#51](https://github.com/opengeospatial/ets-gpkg12/issues/51): Review test requiredSRSReferences
+* Fix [#63](https://github.com/opengeospatial/ets-gpkg12/issues/63): ETS does not permit views
+* Fix [#60](https://github.com/opengeospatial/ets-gpkg12/issues/60): The spatial issue revisited
+* Merge [#69](https://github.com/opengeospatial/ets-gpkg12/pull/69): Adding two samples
+* Merge [#65](https://github.com/opengeospatial/ets-gpkg12/pull/65): Adding a test case with a file with a space in it
+
 ## 0.6 (2018-05-16)
 * Fix [#52](https://github.com/opengeospatial/ets-gpkg12/issues/52): ETS fails on poorly named contents tables
 
