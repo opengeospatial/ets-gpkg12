@@ -102,7 +102,7 @@ public final class TableVerifier
                                       final Map&lt;String, ColumnDefinition&gt; requiredColumns,
                                       final Collection&lt;UniqueDefinition&gt;  uniques) throws SQLException
     {
-<span class="pc" id="L105">        try(final Statement statement = connection.createStatement();</span>
+<span class="fc" id="L105">        try(final Statement statement = connection.createStatement();</span>
 <span class="fc" id="L106">            final ResultSet tableInfo = statement.executeQuery(String.format(&quot;PRAGMA table_info(%s);&quot;, tableName)))</span>
         {
 <span class="fc" id="L108">            final Map&lt;String, ColumnDefinition&gt; columns = new TreeMap&lt;&gt;(String.CASE_INSENSITIVE_ORDER);</span>
@@ -121,9 +121,9 @@ public final class TableVerifier
             // Make sure the required fields exist in the table
 <span class="fc bfc" id="L122" title="All 2 branches covered.">            for(final Map.Entry&lt;String, ColumnDefinition&gt; column : requiredColumns.entrySet())</span>
             {
-<span class="pc bpc" id="L124" title="1 of 2 branches missed.">                if(!columns.containsKey(column.getKey()))</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">                if(!columns.containsKey(column.getKey()))</span>
                 {
-<span class="nc" id="L126">                    throw new RuntimeException(String.format(&quot;Required column: %s.%s is missing&quot;, tableName, column.getKey()));  // TODO this needs to be in the error string table</span>
+<span class="fc" id="L126">                    throw new RuntimeException(String.format(&quot;Required column: %s.%s is missing&quot;, tableName, column.getKey()));  // TODO this needs to be in the error string table</span>
                 }
 
                 // We shouldn't be picky on table defaults as long as the content is correct
@@ -143,7 +143,7 @@ public final class TableVerifier
                     }
                 }
 <span class="fc" id="L145">            }</span>
-<span class="pc bpc" id="L146" title="12 of 16 branches missed.">        }</span>
+<span class="pc bpc" id="L146" title="8 of 16 branches missed.">        }</span>
 <span class="fc" id="L147">    }</span>
 
 	/** 

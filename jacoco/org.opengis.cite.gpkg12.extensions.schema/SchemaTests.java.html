@@ -262,7 +262,7 @@ import org.testng.annotations.Test;
     			}
 <span class="fc" id="L263">    		} </span>
 <span class="pc bpc" id="L264" title="1 of 2 branches missed.">    		assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;missing column(s)&quot;));</span>
-<span class="pc bpc" id="L265" title="12 of 16 branches missed.">    	}</span>
+<span class="pc bpc" id="L265" title="10 of 16 branches missed.">    	}</span>
 <span class="fc" id="L266">    }</span>
 
     /**
@@ -293,7 +293,7 @@ import org.testng.annotations.Test;
 <span class="nc" id="L293">    			Assert.assertTrue(AllowedConstraintTypes.contains(constraintType), </span>
 <span class="nc" id="L294">    					ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_VALUE, constraintType, &quot;constraint_type&quot;, &quot;gpkg_data_column_constraints&quot;));</span>
 <span class="nc" id="L295">    		}    		</span>
-<span class="pc bpc" id="L296" title="12 of 16 branches missed.">    	}</span>
+<span class="pc bpc" id="L296" title="10 of 16 branches missed.">    	}</span>
 <span class="fc" id="L297">    }</span>
 
     /**
@@ -329,7 +329,7 @@ import org.testng.annotations.Test;
 <span class="nc" id="L329">    						ErrorMessage.format(ErrorMessageKeys.NON_UNIQUE_VALUE, &quot;constraint_name&quot;, &quot;gpkg_data_column_constraints&quot;, constraintName));</span>
 <span class="nc bnc" id="L330" title="All 16 branches missed.">    			}</span>
 <span class="nc" id="L331">    		}</span>
-<span class="pc bpc" id="L332" title="12 of 16 branches missed.">    	}</span>
+<span class="pc bpc" id="L332" title="10 of 16 branches missed.">    	}</span>
 <span class="fc" id="L333">    }</span>
 
     /**
@@ -361,7 +361,7 @@ import org.testng.annotations.Test;
 <span class="nc bnc" id="L361" title="All 2 branches missed.">    			Assert.assertTrue(value == null, </span>
 <span class="nc" id="L362">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName));</span>
 <span class="nc" id="L363">    		}</span>
-<span class="pc bpc" id="L364" title="12 of 16 branches missed.">    	}</span>
+<span class="pc bpc" id="L364" title="10 of 16 branches missed.">    	}</span>
 <span class="fc" id="L365">    }</span>
 
     /**
@@ -397,7 +397,7 @@ import org.testng.annotations.Test;
     			// 3c
 <span class="nc bnc" id="L398" title="All 2 branches missed.">    			Assert.assertTrue(min &lt;= max, ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
 <span class="nc" id="L399">    		}    		</span>
-<span class="pc bpc" id="L400" title="12 of 16 branches missed.">    	}</span>
+<span class="pc bpc" id="L400" title="10 of 16 branches missed.">    	}</span>
 <span class="fc" id="L401">    }</span>
 
     /**
@@ -429,7 +429,7 @@ import org.testng.annotations.Test;
 <span class="nc" id="L429">    			resultSet1.getBoolean(maxIsInclusive);</span>
 <span class="nc bnc" id="L430" title="All 2 branches missed.">    			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
 <span class="nc" id="L431">    		}</span>
-<span class="pc bpc" id="L432" title="12 of 16 branches missed.">    	}</span>
+<span class="pc bpc" id="L432" title="10 of 16 branches missed.">    	}</span>
 <span class="fc" id="L433">    }</span>
 
     /**
@@ -472,7 +472,7 @@ import org.testng.annotations.Test;
 <span class="nc" id="L472">    			Assert.assertTrue(resultSet1.wasNull(), </span>
 <span class="nc" id="L473">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
 <span class="nc" id="L474">    		}    		</span>
-<span class="pc bpc" id="L475" title="12 of 16 branches missed.">    	}</span>
+<span class="pc bpc" id="L475" title="10 of 16 branches missed.">    	}</span>
 <span class="fc" id="L476">    }</span>
 
     /**
@@ -503,7 +503,7 @@ import org.testng.annotations.Test;
 <span class="nc bnc" id="L503" title="All 2 branches missed.">    			Assert.assertTrue(!resultSet1.wasNull(), </span>
 <span class="nc" id="L504">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName, &quot;not&quot;));</span>
 <span class="nc" id="L505">    		}    		</span>
-<span class="pc bpc" id="L506" title="12 of 16 branches missed.">    	} </span>
+<span class="pc bpc" id="L506" title="10 of 16 branches missed.">    	} </span>
 <span class="fc" id="L507">    }</span>
 <span class="fc" id="L508">    static private List&lt;String&gt; AllowedConstraintTypes = Arrays.asList(&quot;range&quot;, &quot;enum&quot;, &quot;glob&quot;);</span>
     private String maxIsInclusive;

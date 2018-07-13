@@ -20,7 +20,7 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
-import org.opengis.cite.gpkg12.tiles.TileTests;
+import org.opengis.cite.gpkg12.TileFixture;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
@@ -41,7 +41,7 @@ import org.testng.annotations.Test;
  *
  * @author Jeff Yutzler
  */
-<span class="fc" id="L44">public class WebPTests extends TileTests {</span>
+<span class="fc" id="L44">public class WebPTests extends TileFixture {</span>
 	/**
 	 * GeoPackages with one or more rows in the `gpkg_extensions` table with 
 	 * an `extension_name` of &quot;gpkg_webp&quot; SHALL comply with this extension.

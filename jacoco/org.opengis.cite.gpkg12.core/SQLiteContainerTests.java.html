@@ -90,31 +90,34 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r12: Requirement 2&quot;)
 	public void applicationID() throws IOException, SQLException {
-		// Note: Most of this is actually handled in CommonFixture::setupVersion()
-<span class="fc" id="L94">		final GeoPackageVersion version = getGeopackageVersion();</span>
-<span class="fc" id="L95">		assertTrue(Arrays.asList(getAllowedVersions()).contains(version),</span>
-<span class="fc" id="L96">				ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID));</span>
-<span class="fc bfc" id="L97" title="All 2 branches covered.">		if (version.equals(GeoPackageVersion.V120)){</span>
-<span class="pc" id="L98">			try (</span>
-<span class="fc" id="L99">					final Statement statement = this.databaseConnection.createStatement();</span>
+		// This does steps 1-4
+<span class="fc" id="L94">        final GeoPackageVersion version = getGeopackageVersion();</span>
+    	// 5
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">        assertTrue(version != null, ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, new String(getAppId(), StandardCharsets.US_ASCII)));</span>
+
+<span class="fc" id="L98">		assertTrue(Arrays.asList(getAllowedVersions()).contains(version),</span>
+<span class="fc" id="L99">				ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID));</span>
+<span class="fc bfc" id="L100" title="All 2 branches covered.">		if (version.equals(GeoPackageVersion.V120)){</span>
+<span class="pc" id="L101">			try (</span>
+<span class="fc" id="L102">					final Statement statement = this.databaseConnection.createStatement();</span>
 					// 4a
-<span class="fc" id="L101">					final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA user_version&quot;);</span>
+<span class="fc" id="L104">					final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA user_version&quot;);</span>
 					) {
 				final int versionNumber;
 				final String versionStr;
-<span class="pc bpc" id="L105" title="1 of 2 branches missed.">				if (resultSet.next()) {</span>
-<span class="fc" id="L106">					versionStr = resultSet.getString(1);</span>
-<span class="fc" id="L107">					versionNumber = Integer.parseInt(versionStr);</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">				if (resultSet.next()) {</span>
+<span class="fc" id="L109">					versionStr = resultSet.getString(1);</span>
+<span class="fc" id="L110">					versionNumber = Integer.parseInt(versionStr);</span>
 				} else {
-<span class="nc" id="L109">					versionNumber = 0;</span>
-<span class="nc" id="L110">					versionStr = &quot;&quot;;</span>
+<span class="nc" id="L112">					versionNumber = 0;</span>
+<span class="nc" id="L113">					versionStr = &quot;&quot;;</span>
 				}
 
 				// 4b
-<span class="pc bpc" id="L114" title="1 of 2 branches missed.">				assertTrue(versionNumber &gt;= 10200, ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, versionStr));</span>
-<span class="pc bpc" id="L115" title="12 of 16 branches missed.">			}</span>
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">				assertTrue(versionNumber &gt;= 10200, ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, versionStr));</span>
+<span class="pc bpc" id="L118" title="12 of 16 branches missed.">			}</span>
 		}
-<span class="fc" id="L117">	}</span>
+<span class="fc" id="L120">	}</span>
 
 	/**
 	 * A GeoPackage shall have the file extension name &quot;.gpkg&quot;.
@@ -124,11 +127,11 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r12: Requirement 3&quot;)
 	public void filenameExtension() {
-<span class="fc" id="L127">		final String fileName = this.gpkgFile.getName();</span>
-<span class="fc" id="L128">		final String suffix = fileName.substring(fileName.lastIndexOf('.'));</span>
-<span class="fc" id="L129">		assertEquals(suffix, GPKG12.GPKG_FILENAME_SUFFIX,</span>
-<span class="fc" id="L130">				ErrorMessage.format(ErrorMessageKeys.INVALID_SUFFIX, suffix));</span>
-<span class="fc" id="L131">	}</span>
+<span class="fc" id="L130">		final String fileName = this.gpkgFile.getName();</span>
+<span class="fc" id="L131">		final String suffix = fileName.substring(fileName.lastIndexOf('.'));</span>
+<span class="fc" id="L132">		assertEquals(suffix, GPKG12.GPKG_FILENAME_SUFFIX,</span>
+<span class="fc" id="L133">				ErrorMessage.format(ErrorMessageKeys.INVALID_SUFFIX, suffix));</span>
+<span class="fc" id="L134">	}</span>
 
 	/**
 	 * A GeoPackage shall only contain data elements, SQL constructs and
@@ -144,50 +147,50 @@ import org.testng.annotations.Test;
 	{
 		// 1
 
-<span class="pc" id="L147">		try (</span>
-<span class="fc" id="L148">				final Statement statement1 = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L149">				final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT COUNT(*) FROM gpkg_extensions;&quot;);</span>
+<span class="pc" id="L150">		try (</span>
+<span class="fc" id="L151">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L152">				final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT COUNT(*) FROM gpkg_extensions;&quot;);</span>
 				) {
-<span class="fc bfc" id="L151" title="All 2 branches covered.">			if(resultSet1.getInt(1) &gt; 0){</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">			if(resultSet1.getInt(1) &gt; 0){</span>
 				// NOOP: this is an Extended GeoPackage so the test does not apply
-<span class="fc" id="L153">				return;</span>
+<span class="fc" id="L156">				return;</span>
 			}
-<span class="pc bpc" id="L155" title="14 of 24 branches missed.">		} catch (SQLException e1) {</span>
+<span class="pc bpc" id="L158" title="14 of 24 branches missed.">		} catch (SQLException e1) {</span>
 			// NOOP: this is a GeoPackage with no extensions
-<span class="fc" id="L157">		}</span>
+<span class="fc" id="L160">		}</span>
 
-<span class="fc" id="L159">		final Iterator&lt;String&gt; iterator = SQLiteContainerTests.CoreTables.keySet().iterator();</span>
-<span class="fc bfc" id="L160" title="All 2 branches covered.">		while (iterator.hasNext()) {</span>
-<span class="fc" id="L161">			final String tableName = iterator.next();</span>
-<span class="pc" id="L162">			try (				</span>
-<span class="fc" id="L163">					final Statement statement2 = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L164">					final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;PRAGMA table_info(%s)&quot;, tableName));</span>
+<span class="fc" id="L162">		final Iterator&lt;String&gt; iterator = SQLiteContainerTests.CoreTables.keySet().iterator();</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">		while (iterator.hasNext()) {</span>
+<span class="fc" id="L164">			final String tableName = iterator.next();</span>
+<span class="pc" id="L165">			try (				</span>
+<span class="fc" id="L166">					final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L167">					final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;PRAGMA table_info(%s)&quot;, tableName));</span>
 					){
-<span class="fc bfc" id="L166" title="All 2 branches covered.">				while (resultSet2.next()){</span>
-<span class="fc" id="L167">					final String columnName = resultSet2.getString(&quot;name&quot;);</span>
-<span class="fc" id="L168">					assertTrue(SQLiteContainerTests.CoreTables.get(tableName).contains(columnName), </span>
-<span class="fc" id="L169">							ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_COLUMN, columnName, tableName));</span>
-<span class="fc" id="L170">				}</span>
-<span class="pc bpc" id="L171" title="10 of 16 branches missed.">			} catch (SQLException e2) {</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">				while (resultSet2.next()){</span>
+<span class="fc" id="L170">					final String columnName = resultSet2.getString(&quot;name&quot;);</span>
+<span class="fc" id="L171">					assertTrue(SQLiteContainerTests.CoreTables.get(tableName).contains(columnName), </span>
+<span class="fc" id="L172">							ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_COLUMN, columnName, tableName));</span>
+<span class="fc" id="L173">				}</span>
+<span class="pc bpc" id="L174" title="10 of 16 branches missed.">			} catch (SQLException e2) {</span>
 				// NOOP: This table doesn't exist, which may be allowed.
 				// If it isn't, some other test will catch it.
-<span class="fc" id="L174">			}</span>
-<span class="fc" id="L175">		}</span>
+<span class="fc" id="L177">			}</span>
+<span class="fc" id="L178">		}</span>
 
-<span class="pc" id="L177">		try (</span>
+<span class="pc" id="L180">		try (</span>
 				// 1
-<span class="fc" id="L179">				final Statement statement3 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L182">				final Statement statement3 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L181">				final ResultSet resultSet3 = statement3.executeQuery(&quot;SELECT DISTINCT data_type FROM gpkg_contents;&quot;);</span>
+<span class="fc" id="L184">				final ResultSet resultSet3 = statement3.executeQuery(&quot;SELECT DISTINCT data_type FROM gpkg_contents;&quot;);</span>
 				) {
 			// 2
-<span class="fc bfc" id="L184" title="All 2 branches covered.">			while (resultSet3.next()){</span>
-<span class="fc" id="L185">				final String dataType = resultSet3.getString(&quot;data_type&quot;);</span>
-<span class="fc" id="L186">				assertTrue(SQLiteContainerTests.CoreDataTypes.contains(dataType),</span>
-<span class="fc" id="L187">						ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, dataType, &quot;gpkg_contents&quot;));</span>
-<span class="fc" id="L188">			}</span>
-<span class="pc bpc" id="L189" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L190">	}</span>
+<span class="fc bfc" id="L187" title="All 2 branches covered.">			while (resultSet3.next()){</span>
+<span class="fc" id="L188">				final String dataType = resultSet3.getString(&quot;data_type&quot;);</span>
+<span class="fc" id="L189">				assertTrue(SQLiteContainerTests.CoreDataTypes.contains(dataType),</span>
+<span class="fc" id="L190">						ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, dataType, &quot;gpkg_contents&quot;));</span>
+<span class="fc" id="L191">			}</span>
+<span class="pc bpc" id="L192" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L193">	}</span>
 
 	/**
 	 * The SQLite PRAGMA integrity_check SQL command SHALL return &quot;ok&quot; for a
@@ -202,16 +205,16 @@ import org.testng.annotations.Test;
 	@Test(description = &quot;See OGC 12-128r12: Requirement 6&quot;)
 	public void pragmaIntegrityCheck() throws SQLException
 	{
-<span class="pc" id="L205">		try(final Statement statement = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L206">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA integrity_check;&quot;))</span>
+<span class="pc" id="L208">		try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L209">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA integrity_check;&quot;))</span>
 		{
-<span class="fc" id="L208">			resultSet.next();</span>
+<span class="fc" id="L211">			resultSet.next();</span>
 
-<span class="fc" id="L210">			assertEquals(resultSet.getString(&quot;integrity_check&quot;).toLowerCase(),</span>
+<span class="fc" id="L213">			assertEquals(resultSet.getString(&quot;integrity_check&quot;).toLowerCase(),</span>
 					GPKG12.PRAGMA_INTEGRITY_CHECK,
-<span class="fc" id="L212">					ErrorMessage.format(ErrorMessageKeys.PRAGMA_INTEGRITY_CHECK_NOT_OK));</span>
-<span class="pc bpc" id="L213" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L214">	}</span>
+<span class="fc" id="L215">					ErrorMessage.format(ErrorMessageKeys.PRAGMA_INTEGRITY_CHECK_NOT_OK));</span>
+<span class="pc bpc" id="L216" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L217">	}</span>
 
 	/**
 	 * The SQLite PRAGMA foreign_key_check SQL with no parameter value SHALL
@@ -227,13 +230,13 @@ import org.testng.annotations.Test;
 	@Test(description = &quot;See OGC 12-128r12: Requirement 7&quot;)
 	public void foreignKeyCheck() throws SQLException
 	{
-<span class="pc" id="L230">		try(final Statement statement = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L231">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA foreign_key_check;&quot;))</span>
+<span class="pc" id="L233">		try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L234">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA foreign_key_check;&quot;))</span>
 		{
-<span class="pc bpc" id="L233" title="1 of 2 branches missed.">			assertTrue(!resultSet.next(),</span>
-<span class="fc" id="L234">					ErrorMessage.format(ErrorMessageKeys.INVALID_FOREIGN_KEY));</span>
-<span class="pc bpc" id="L235" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L236">	}</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">			assertTrue(!resultSet.next(),</span>
+<span class="fc" id="L237">					ErrorMessage.format(ErrorMessageKeys.INVALID_FOREIGN_KEY));</span>
+<span class="pc bpc" id="L238" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L239">	}</span>
 
 	/**
 	 * A GeoPackage SQLite Configuration SHALL provide SQL access to
@@ -248,78 +251,78 @@ import org.testng.annotations.Test;
 	@Test(description = &quot;See OGC 12-128r12: Requirement 8&quot;)
 	public void sqlCheck() throws SQLException
 	{
-<span class="pc" id="L251">		try(final Statement stmt   = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L252">				final ResultSet result = stmt.executeQuery(&quot;SELECT * FROM sqlite_master;&quot;))</span>
+<span class="pc" id="L254">		try(final Statement stmt   = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L255">				final ResultSet result = stmt.executeQuery(&quot;SELECT * FROM sqlite_master;&quot;))</span>
 		{
 			// If the statement can execute it has implemented the SQLite SQL API interface
-<span class="fc" id="L255">			return;</span>
-<span class="pc bpc" id="L256" title="12 of 16 branches missed.">		}</span>
-<span class="nc" id="L257">		catch(final SQLException ignored)</span>
+<span class="fc" id="L258">			return;</span>
+<span class="pc bpc" id="L259" title="12 of 16 branches missed.">		}</span>
+<span class="nc" id="L260">		catch(final SQLException ignored)</span>
 		{
 			// fall through to failure
 		}
 
-<span class="nc" id="L262">		fail(ErrorMessage.format(ErrorMessageKeys.NO_SQL_ACCESS));</span>
-<span class="nc" id="L263">	}</span>
-<span class="fc" id="L264">	private static final Set&lt;String&gt; CoreDataTypes = new HashSet&lt;String&gt;();</span>
-<span class="fc" id="L265">	private static final Map&lt;String, Set&lt;String&gt;&gt; CoreTables = new HashMap&lt;String, Set&lt;String&gt;&gt;();</span>
+<span class="nc" id="L265">		fail(ErrorMessage.format(ErrorMessageKeys.NO_SQL_ACCESS));</span>
+<span class="nc" id="L266">	}</span>
+<span class="fc" id="L267">	private static final Set&lt;String&gt; CoreDataTypes = new HashSet&lt;String&gt;();</span>
+<span class="fc" id="L268">	private static final Map&lt;String, Set&lt;String&gt;&gt; CoreTables = new HashMap&lt;String, Set&lt;String&gt;&gt;();</span>
 	static {
-<span class="fc" id="L267">		final Set&lt;String&gt; contentsColumns = new HashSet&lt;String&gt;();</span>
-<span class="fc" id="L268">		contentsColumns.add(&quot;table_name&quot;);</span>
-<span class="fc" id="L269">		contentsColumns.add(&quot;data_type&quot;);</span>
-<span class="fc" id="L270">		contentsColumns.add(&quot;identifier&quot;);</span>
-<span class="fc" id="L271">		contentsColumns.add(&quot;description&quot;);</span>
-<span class="fc" id="L272">		contentsColumns.add(&quot;last_change&quot;);</span>
-<span class="fc" id="L273">		contentsColumns.add(&quot;min_x&quot;);</span>
-<span class="fc" id="L274">		contentsColumns.add(&quot;min_y&quot;);</span>
-<span class="fc" id="L275">		contentsColumns.add(&quot;max_x&quot;);</span>
-<span class="fc" id="L276">		contentsColumns.add(&quot;max_y&quot;);</span>
-<span class="fc" id="L277">		contentsColumns.add(&quot;srs_id&quot;);</span>
-<span class="fc" id="L278">		CoreTables.put(&quot;gpkg_contents&quot;, contentsColumns);</span>
-<span class="fc" id="L279">		final Set&lt;String&gt; srsColumns = new HashSet&lt;String&gt;();</span>
-<span class="fc" id="L280">		srsColumns.add(&quot;srs_name&quot;);</span>
-<span class="fc" id="L281">		srsColumns.add(&quot;srs_id&quot;);</span>
-<span class="fc" id="L282">		srsColumns.add(&quot;organization&quot;);</span>
-<span class="fc" id="L283">		srsColumns.add(&quot;description&quot;);</span>
-<span class="fc" id="L284">		srsColumns.add(&quot;organization_coordsys_id&quot;);</span>
-<span class="fc" id="L285">		srsColumns.add(&quot;definition&quot;);</span>
-<span class="fc" id="L286">		CoreTables.put(&quot;gpkg_spatial_ref_sys&quot;, srsColumns);</span>
-<span class="fc" id="L287">		final Set&lt;String&gt; geometryColumns = new HashSet&lt;String&gt;();</span>
-<span class="fc" id="L288">		geometryColumns.add(&quot;table_name&quot;);</span>
-<span class="fc" id="L289">		geometryColumns.add(&quot;column_name&quot;);</span>
-<span class="fc" id="L290">		geometryColumns.add(&quot;geometry_type_name&quot;);</span>
-<span class="fc" id="L291">		geometryColumns.add(&quot;srs_id&quot;);</span>
-<span class="fc" id="L292">		geometryColumns.add(&quot;z&quot;);</span>
-<span class="fc" id="L293">		geometryColumns.add(&quot;m&quot;);</span>
-<span class="fc" id="L294">		CoreTables.put(&quot;gpkg_geometry_columns&quot;, geometryColumns);</span>
-<span class="fc" id="L295">		final Set&lt;String&gt; tileMatrixSetColumns = new HashSet&lt;String&gt;();</span>
-<span class="fc" id="L296">		tileMatrixSetColumns.add(&quot;table_name&quot;);</span>
-<span class="fc" id="L297">		tileMatrixSetColumns.add(&quot;srs_id&quot;);</span>
-<span class="fc" id="L298">		tileMatrixSetColumns.add(&quot;min_x&quot;);</span>
-<span class="fc" id="L299">		tileMatrixSetColumns.add(&quot;min_y&quot;);</span>
-<span class="fc" id="L300">		tileMatrixSetColumns.add(&quot;max_x&quot;);</span>
-<span class="fc" id="L301">		tileMatrixSetColumns.add(&quot;max_y&quot;);</span>
-<span class="fc" id="L302">		CoreTables.put(&quot;gpkg_tile_matrix_set&quot;, tileMatrixSetColumns);</span>
-<span class="fc" id="L303">		final Set&lt;String&gt; tileMatrixColumns = new HashSet&lt;String&gt;();</span>
-<span class="fc" id="L304">		tileMatrixColumns.add(&quot;table_name&quot;);</span>
-<span class="fc" id="L305">		tileMatrixColumns.add(&quot;zoom_level&quot;);</span>
-<span class="fc" id="L306">		tileMatrixColumns.add(&quot;matrix_width&quot;);</span>
-<span class="fc" id="L307">		tileMatrixColumns.add(&quot;matrix_height&quot;);</span>
-<span class="fc" id="L308">		tileMatrixColumns.add(&quot;tile_width&quot;);</span>
-<span class="fc" id="L309">		tileMatrixColumns.add(&quot;tile_height&quot;);</span>
-<span class="fc" id="L310">		tileMatrixColumns.add(&quot;pixel_x_size&quot;);</span>
-<span class="fc" id="L311">		tileMatrixColumns.add(&quot;pixel_y_size&quot;);</span>
-<span class="fc" id="L312">		CoreTables.put(&quot;gpkg_tile_matrix&quot;, tileMatrixColumns);</span>
-<span class="fc" id="L313">		final Set&lt;String&gt; extensionsColumns = new HashSet&lt;String&gt;();</span>
-<span class="fc" id="L314">		extensionsColumns.add(&quot;table_name&quot;);</span>
-<span class="fc" id="L315">		extensionsColumns.add(&quot;column_name&quot;);</span>
-<span class="fc" id="L316">		extensionsColumns.add(&quot;extension_name&quot;);</span>
-<span class="fc" id="L317">		extensionsColumns.add(&quot;definition&quot;);</span>
-<span class="fc" id="L318">		extensionsColumns.add(&quot;scope&quot;);</span>
-<span class="fc" id="L319">		CoreTables.put(&quot;gpkg_extensions&quot;, extensionsColumns);</span>
-<span class="fc" id="L320">		CoreDataTypes.add(&quot;tiles&quot;);</span>
-<span class="fc" id="L321">		CoreDataTypes.add(&quot;features&quot;);</span>
-<span class="fc" id="L322">		CoreDataTypes.add(&quot;attributes&quot;);</span>
-<span class="fc" id="L323">	}</span>
+<span class="fc" id="L270">		final Set&lt;String&gt; contentsColumns = new HashSet&lt;String&gt;();</span>
+<span class="fc" id="L271">		contentsColumns.add(&quot;table_name&quot;);</span>
+<span class="fc" id="L272">		contentsColumns.add(&quot;data_type&quot;);</span>
+<span class="fc" id="L273">		contentsColumns.add(&quot;identifier&quot;);</span>
+<span class="fc" id="L274">		contentsColumns.add(&quot;description&quot;);</span>
+<span class="fc" id="L275">		contentsColumns.add(&quot;last_change&quot;);</span>
+<span class="fc" id="L276">		contentsColumns.add(&quot;min_x&quot;);</span>
+<span class="fc" id="L277">		contentsColumns.add(&quot;min_y&quot;);</span>
+<span class="fc" id="L278">		contentsColumns.add(&quot;max_x&quot;);</span>
+<span class="fc" id="L279">		contentsColumns.add(&quot;max_y&quot;);</span>
+<span class="fc" id="L280">		contentsColumns.add(&quot;srs_id&quot;);</span>
+<span class="fc" id="L281">		CoreTables.put(&quot;gpkg_contents&quot;, contentsColumns);</span>
+<span class="fc" id="L282">		final Set&lt;String&gt; srsColumns = new HashSet&lt;String&gt;();</span>
+<span class="fc" id="L283">		srsColumns.add(&quot;srs_name&quot;);</span>
+<span class="fc" id="L284">		srsColumns.add(&quot;srs_id&quot;);</span>
+<span class="fc" id="L285">		srsColumns.add(&quot;organization&quot;);</span>
+<span class="fc" id="L286">		srsColumns.add(&quot;description&quot;);</span>
+<span class="fc" id="L287">		srsColumns.add(&quot;organization_coordsys_id&quot;);</span>
+<span class="fc" id="L288">		srsColumns.add(&quot;definition&quot;);</span>
+<span class="fc" id="L289">		CoreTables.put(&quot;gpkg_spatial_ref_sys&quot;, srsColumns);</span>
+<span class="fc" id="L290">		final Set&lt;String&gt; geometryColumns = new HashSet&lt;String&gt;();</span>
+<span class="fc" id="L291">		geometryColumns.add(&quot;table_name&quot;);</span>
+<span class="fc" id="L292">		geometryColumns.add(&quot;column_name&quot;);</span>
+<span class="fc" id="L293">		geometryColumns.add(&quot;geometry_type_name&quot;);</span>
+<span class="fc" id="L294">		geometryColumns.add(&quot;srs_id&quot;);</span>
+<span class="fc" id="L295">		geometryColumns.add(&quot;z&quot;);</span>
+<span class="fc" id="L296">		geometryColumns.add(&quot;m&quot;);</span>
+<span class="fc" id="L297">		CoreTables.put(&quot;gpkg_geometry_columns&quot;, geometryColumns);</span>
+<span class="fc" id="L298">		final Set&lt;String&gt; tileMatrixSetColumns = new HashSet&lt;String&gt;();</span>
+<span class="fc" id="L299">		tileMatrixSetColumns.add(&quot;table_name&quot;);</span>
+<span class="fc" id="L300">		tileMatrixSetColumns.add(&quot;srs_id&quot;);</span>
+<span class="fc" id="L301">		tileMatrixSetColumns.add(&quot;min_x&quot;);</span>
+<span class="fc" id="L302">		tileMatrixSetColumns.add(&quot;min_y&quot;);</span>
+<span class="fc" id="L303">		tileMatrixSetColumns.add(&quot;max_x&quot;);</span>
+<span class="fc" id="L304">		tileMatrixSetColumns.add(&quot;max_y&quot;);</span>
+<span class="fc" id="L305">		CoreTables.put(&quot;gpkg_tile_matrix_set&quot;, tileMatrixSetColumns);</span>
+<span class="fc" id="L306">		final Set&lt;String&gt; tileMatrixColumns = new HashSet&lt;String&gt;();</span>
+<span class="fc" id="L307">		tileMatrixColumns.add(&quot;table_name&quot;);</span>
+<span class="fc" id="L308">		tileMatrixColumns.add(&quot;zoom_level&quot;);</span>
+<span class="fc" id="L309">		tileMatrixColumns.add(&quot;matrix_width&quot;);</span>
+<span class="fc" id="L310">		tileMatrixColumns.add(&quot;matrix_height&quot;);</span>
+<span class="fc" id="L311">		tileMatrixColumns.add(&quot;tile_width&quot;);</span>
+<span class="fc" id="L312">		tileMatrixColumns.add(&quot;tile_height&quot;);</span>
+<span class="fc" id="L313">		tileMatrixColumns.add(&quot;pixel_x_size&quot;);</span>
+<span class="fc" id="L314">		tileMatrixColumns.add(&quot;pixel_y_size&quot;);</span>
+<span class="fc" id="L315">		CoreTables.put(&quot;gpkg_tile_matrix&quot;, tileMatrixColumns);</span>
+<span class="fc" id="L316">		final Set&lt;String&gt; extensionsColumns = new HashSet&lt;String&gt;();</span>
+<span class="fc" id="L317">		extensionsColumns.add(&quot;table_name&quot;);</span>
+<span class="fc" id="L318">		extensionsColumns.add(&quot;column_name&quot;);</span>
+<span class="fc" id="L319">		extensionsColumns.add(&quot;extension_name&quot;);</span>
+<span class="fc" id="L320">		extensionsColumns.add(&quot;definition&quot;);</span>
+<span class="fc" id="L321">		extensionsColumns.add(&quot;scope&quot;);</span>
+<span class="fc" id="L322">		CoreTables.put(&quot;gpkg_extensions&quot;, extensionsColumns);</span>
+<span class="fc" id="L323">		CoreDataTypes.add(&quot;tiles&quot;);</span>
+<span class="fc" id="L324">		CoreDataTypes.add(&quot;features&quot;);</span>
+<span class="fc" id="L325">		CoreDataTypes.add(&quot;attributes&quot;);</span>
+<span class="fc" id="L326">	}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

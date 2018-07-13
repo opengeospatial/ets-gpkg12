@@ -69,7 +69,7 @@ import org.testng.annotations.Test;
 <span class="pc" id="L69">            try (final Statement statement = databaseConnection.createStatement(); final ResultSet resultSet = statement.executeQuery(String.format(&quot;PRAGMA table_info(%s);&quot;, tableName));) {</span>
 <span class="fc" id="L70">                assertTrue(resultSet.next(), ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));</span>
 <span class="pc bpc" id="L71" title="12 of 16 branches missed.">            }</span>
-<span class="fc" id="L72">            checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName));</span>
+<span class="fc" id="L72">            checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName, false), false);</span>
 <span class="fc" id="L73">        }</span>
 <span class="fc" id="L74">    }</span>
 }

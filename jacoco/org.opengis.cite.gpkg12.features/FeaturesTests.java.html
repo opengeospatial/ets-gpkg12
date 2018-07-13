@@ -1,23 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>FeaturesTests.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.features</a> &gt; <span class="el_source">FeaturesTests.java</span></div><h1>FeaturesTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.features;
 
 import static org.testng.Assert.assertTrue;
+import static org.testng.AssertJUnit.fail;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.math.BigInteger;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.opengis.cite.gpkg12.CommonFixture;
+import org.opengis.cite.gpkg12.ColumnDefinition;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
-import org.opengis.cite.gpkg12.GPKG12;
+import org.opengis.cite.gpkg12.FeaturesFixture;
+import org.opengis.cite.gpkg12.TableVerifier;
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
+import org.testng.SkipException;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
@@ -29,12 +39,150 @@ import org.testng.annotations.Test;
  * &lt;/p&gt;
  * &lt;ul&gt;
  * &lt;li&gt;&lt;a href=&quot;http://www.geopackage.org/spec/#features&quot; target= &quot;_blank&quot;&gt;
- * GeoPackage Encoding Standard - 2.1 Features&lt;/a&gt; (OGC 12-128r13)&lt;/li&gt;
+ * GeoPackage Encoding Standard - 2.1 Features&lt;/a&gt; (OGC 12-128r13) and OGC 12-128r14 &lt;/li&gt;
  * &lt;/ul&gt;
  *
  * @author Jeff Yutzler
  */
-<span class="fc" id="L37">public class FeaturesTests extends CommonFixture {</span>
+<span class="fc" id="L47">public class FeaturesTests extends FeaturesFixture {</span>
+
+	    // --------------------- Private Class Variables -----------------
+<span class="fc" id="L50">		private final Boolean NativeOrderIsBE = ByteOrder.nativeOrder().equals(ByteOrder.BIG_ENDIAN);</span>
+    
+		private static final Map&lt;String, ColumnDefinition&gt; FeatureTableExpectedColumns; 
+		private static final Map&lt;String, List&lt;String&gt;&gt; GeometrySubtypesAllowed; 
+		
+		// These flags can be set once and then used to quickly skip tests that depend on these two things
+		private boolean hasGeometryColumnsTable;
+		private boolean hasGPKGExtensionsTable;
+
+	
+<span class="fc" id="L60">		private final Collection&lt;String&gt; possibleFeatureTableNames         = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L61">		private final Collection&lt;String&gt; featureTableNames = new ArrayList&lt;&gt;();</span>
+
+		
+	
+		// For tests 19, 20, 32, 33, 19b, 67, 78 - they will all be run based on an iterator and we need the error reporting to be capped,
+		// hence these counters and limits are defined to cap those error reports.
+<span class="fc" id="L67">		 int errorDetected19 = 0;</span>
+<span class="fc" id="L68">		 int errorDetected32 = 0;</span>
+<span class="fc" id="L69">		 int errorDetected33 = 0;</span>
+<span class="fc" id="L70">		 int errorDetectedNSG19b = 0;</span>
+<span class="fc" id="L71">		 int errorDetected66 = 0;</span>
+<span class="fc" id="L72">		 int errorDetected67 = 0;</span>
+<span class="fc" id="L73">		 int errorDetected78 = 0;</span>
+<span class="fc" id="L74">		 int errorDetected20 = 0 ;</span>
+		 
+		// Since a feature typically will have all instances reporting the same errors, this maximum count reduces the reporting per feature.
+		private static final int maxErrorsToReport19 = 15;           // This is a per feature maximum report. This test has several different things going on.
+																	 // and it should be split into sub items to better report these issues.
+		private static final int maxErrorsToReport32 = 5;            // Per feature maximum, this test reports one issue - but it'll list all instances found
+		private static final int maxErrorsToReport33 = 5;            // Per feature maximum, this test reports one issue - but it'll list all instances found
+//		private static final int maxErrorsToReportNSG19b = 5;
+		private static final int maxErrorsToReport66 = 5;
+		private static final int maxErrorsToReport67 = 5;
+		private static final int maxErrorsToReport78 = 5;
+		private static final int maxErrorsToReport20 = 5;
+		
+		// Masks and starting byte index for Geometry BLOB Contents
+//		private static final byte magicB0 = 0x47;
+//		private static final byte magicB1 = 0x50;
+		private static final byte maskFlagBinaryType = 0x20;
+		private static final int  shiftFlagBinaryType = 5;
+		private static final byte maskFlagEmptyGeometry = 0x10;
+		private static final int  shiftFlagEmptyGeometry = 4;
+		private static final byte maskFlagEnvelope = 0x0E;
+		private static final int  shiftFlagEnvelope = 1;
+		private static final byte maskFlagHeaderEndian = 0x01;
+		private static final int  startOfVersion = 2;
+		private static final int  startOfFlags = 3;
+		private static final int  startOfSRIDIndex = 4;
+		private static final int  startOfEnvelopeIndex = 8;
+		private static final int  startOfGeometryType = 1;
+//		private static final int  startOfEnvelopeCodeIndex = 3;
+		private static final int maximumEnvelopeSize = 8 * Double.BYTES;  // As per the OGC spec, no more than 8 doubles should be in the envelope
+		
+	    private static final String myminx = &quot;minx&quot;;
+	    private static final String myminy = &quot;miny&quot;;
+	    private static final String mymaxx = &quot;maxx&quot;;
+	    private static final String mymaxy = &quot;maxy&quot;;
+	    private static final String myminz = &quot;minz&quot;;
+	    private static final String mymaxz = &quot;maxz&quot;;
+	    private static final String myminm = &quot;minm&quot;;
+	    private static final String mymaxm = &quot;maxm&quot;;
+
+	    
+	    private static final String geomCIRCULARSTRING = &quot;CIRCULARSTRING&quot;;
+	    private static final String geomCOMPOUNDCURVE = &quot;COMPOUNDCURVE&quot;;
+	    private static final String geomCURVEPOLYGON = &quot;CURVEPOLYGON&quot;;
+	    private static final String geomMULTICURVE = &quot;MULTICURVE&quot;;
+	    private static final String geomMULTISURFACE = &quot;MULTISURFACE&quot;;
+	    private static final String geomCURVE = &quot;CURVE&quot;;
+	    private static final String geomSURFACE = &quot;SURFACE&quot;;
+	    private static final String geomUNSUPPORTED = &quot;UNSUPPORTED&quot;;
+	    
+		// From Annex G: These are in a &quot;Note&quot; under table 28
+		   // GEOMETRY subtypes are POINT, CURVE, SURFACE and GEOMCOLLECTION  &lt;-- assume they must mean GEOMETRYCOLLECTION because GEOMCOLLECTION is not a geometry type
+		   // CURVE subtypes are LINESTRING, CIRCULARSTRING and COMPOUNDCURVE
+		   // SURFACE subtype is CURVEPOLYGON
+		   // CURVEPOLYGON subtype is POLYGON
+		   // GEOMETRYCOLLECTION subtypes are MULTIPOINT, MULTICURVE and MULTISURFACE
+		   // MULTICURVE subtype is MULTILINESTRING  &lt;- contradicted in 2.1.1
+		   // MULTISURFACE subtype is MULTIPOLYGON   &lt;- contradicted in 2.1.1
+		
+		// Assumption that subtypes of subtypes are also allowed
+		// This static hasmap defines for each supertype, all of the allowed subtype geometries.
+	    // TODO this section needs work. There are inconsistencies in the spec and the test requirement isn't very specific
+		 static
+		 {
+<span class="fc" id="L138">			 GeometrySubtypesAllowed = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L139">			 GeometrySubtypesAllowed.put(geomCURVE,  Arrays.asList(geomLINESTRING, geomCIRCULARSTRING, geomCOMPOUNDCURVE              // Subtypes</span>
+					));
+			 
+<span class="fc" id="L142">			 GeometrySubtypesAllowed.put(geomSURFACE,  Arrays.asList(geomCURVEPOLYGON,                                              // Subtypes</span>
+					 geomPOLYGON));   // Polygon is a subtype of a subtype
+			 
+<span class="fc" id="L145">			 GeometrySubtypesAllowed.put(geomCURVEPOLYGON,  Arrays.asList(geomPOLYGON,                                              // Subtypes</span>
+					 geomCURVE, geomLINESTRING, geomCIRCULARSTRING, geomCOMPOUNDCURVE));
+
+			 // 2.1.1 Polygon: A restricted form of CurvePolygon where each ring is defined as a simple, closed LineString.
+<span class="fc" id="L149">			 GeometrySubtypesAllowed.put(geomPOLYGON,  Arrays.asList(geomLINESTRING</span>
+					 ));
+			 
+<span class="fc" id="L152">			 GeometrySubtypesAllowed.put(geomGEOMETRYCOLLECTION,  Arrays.asList(geomMULTIPOINT, geomMULTICURVE, geomMULTISURFACE,       // Subtypes</span>
+					 geomMULTIPOLYGON, geomMULTILINESTRING));  // Multipolygon is a subtype of a subtype and Multilinestring is subtype of a subtype
+			 
+			 
+			 // 2.1.1 MultiSurface: A restricted form of GeometryCollection where each Geometry in the collection must be of type Surface.
+<span class="fc" id="L157">			 GeometrySubtypesAllowed.put(geomMULTISURFACE,  Arrays.asList(geomSURFACE     ));  </span>
+
+			 // 2.1.1 MultiPolygon: A restricted form of MultiSurface where each Surface in the collection must be of type Polygon.
+<span class="fc" id="L160">			 GeometrySubtypesAllowed.put(geomMULTIPOLYGON,  Arrays.asList(geomPOLYGON   ));    </span>
+			 
+			 // 2.1.1 MultiCurve: A restricted form of GeometryCollection where each Geometry in the collection must be of type Curve
+<span class="fc" id="L163">			 GeometrySubtypesAllowed.put(geomMULTICURVE,  Arrays.asList( geomCURVE  ));   </span>
+			 
+			 // 2.1.1 MultiLineString: A restricted form of MultiCurve where each Curve in the collection must be of type LineString.
+<span class="fc" id="L166">			 GeometrySubtypesAllowed.put(geomMULTILINESTRING,  Arrays.asList(geomLINESTRING ));  </span>
+
+			 // 2.1.1 ???
+<span class="fc" id="L169">			 GeometrySubtypesAllowed.put(geomMULTIPOINT,  Arrays.asList(geomPOINT ));  </span>
+			 
+<span class="fc" id="L171">			 GeometrySubtypesAllowed.put(geomGEOMETRY,  Arrays.asList(geomPOINT, geomCURVE, geomSURFACE, geomGEOMETRYCOLLECTION,          // Subtypes</span>
+					 geomLINESTRING, geomCIRCULARSTRING, geomCOMPOUNDCURVE, geomCURVEPOLYGON, geomPOLYGON,  geomMULTIPOINT, geomMULTICURVE, geomMULTISURFACE, geomMULTIPOLYGON, geomMULTILINESTRING));
+		 }
+	
+		 // Define the required columns of the feature table
+		static
+		{
+<span class="fc" id="L178">			FeatureTableExpectedColumns = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L179">			FeatureTableExpectedColumns.put(&quot;id&quot;,           new ColumnDefinition(&quot;INTEGER&quot;, false, true,  true,  null));</span>
+<span class="fc" id="L180">			FeatureTableExpectedColumns.put(&quot;geometry&quot;,    new ColumnDefinition(&quot;GEOMETRY&quot;, true,  false, false, null));</span>
+<span class="fc" id="L181">		}</span>
+		
+		// End Private Class Information
+		
+
 	/**
 	 * Sets up variables used across methods
 	 *
@@ -43,17 +191,204 @@ import org.testng.annotations.Test;
 	 */
 	@BeforeClass
 	public void setUp() throws SQLException {
-<span class="pc" id="L46">		try (</span>
-<span class="fc" id="L47">				final Statement statement = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L48">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type = 'features';&quot;);</span>
-				) {
-<span class="fc bfc" id="L50" title="All 2 branches covered.">			while (resultSet.next()) {</span>
-<span class="fc" id="L51">				this.featureTableNames.add(resultSet.getString(1));</span>
-			}
-<span class="pc bpc" id="L53" title="12 of 16 branches missed.">		}</span>
 
-<span class="fc bfc" id="L55" title="All 2 branches covered.">		Assert.assertTrue(!this.featureTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));</span>
-<span class="fc" id="L56">	}</span>
+		// Set internal flag denoting whether the geopackage has geometry columns table or not. If it does not, then many tests will be skipped.
+<span class="fc" id="L196">    	this.hasGeometryColumnsTable = DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_geometry_columns&quot;);</span>
+<span class="fc" id="L197">    	this.hasGPKGExtensionsTable = DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;);</span>
+
+    	// Capture any **potential** feature table names that are **NOT** listed within the gpkg_contents
+    	// Save these names as we will compare them later on to the names specified in the gpkg_contents.
+    	
+<span class="pc" id="L202">        try(Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L203">            ResultSet resultSet = statement.executeQuery(&quot;SELECT tbl_name FROM sqlite_master WHERE tbl_name NOT LIKE \'gpkg_%\' AND (type = \'tile\' OR type = \'view\');&quot;))</span>
+        {
+<span class="fc bfc" id="L205" title="All 2 branches covered.">            while(resultSet.next())</span>
+            {
+            	// Examine each of the potential feature tables in the geopackage to see if they are missing from the
+            	// contents specification. This test is not specifically identified in the standard.
+                try
+                {
+<span class="fc" id="L211">                    final String tableName = resultSet.getString(&quot;tbl_name&quot;);</span>
+
+                    // If we think we have a feature table, make sure it has the expected columns.
+                    // This throws if the table definition doesn't match, and won't be added to the collection
+<span class="nc" id="L215">                    TableVerifier.verifyTable(this.databaseConnection,</span>
+                                              tableName,
+                                              FeatureTableExpectedColumns,
+                                              null,
+                                              null);
+                    // Save the feature table on a list so that we may use it later on.
+<span class="nc" id="L221">                    this.possibleFeatureTableNames.add(tableName);</span>
+                }
+<span class="fc" id="L223">                catch(final Throwable ignore)</span>
+                {
+                    // If verification fails- it's not a features table and we don't care about it so ignore
+
+<span class="pc" id="L227">                }</span>
+            }
+<span class="pc bpc" id="L229" title="12 of 16 branches missed.">		}</span>
+		
+
+<span class="pc" id="L232">		try (</span>
+<span class="fc" id="L233">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L234">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type = \'features\';&quot;);</span>
+				) {
+<span class="fc bfc" id="L236" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc" id="L237">				this.featureTableNames.add(resultSet.getString(1));</span>
+			}
+<span class="pc bpc" id="L239" title="12 of 16 branches missed.">		}</span>
+
+
+<span class="fc bfc" id="L242" title="All 2 branches covered.">		Assert.assertTrue(!this.featureTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));</span>
+<span class="fc" id="L243">	}</span>
+
+
+	
+    
+    /**
+     * A DataProvider that supplies feature instance test methods with content from gpkg_geometry_columns
+     * such that feature instance test methods may verify feature internal content is consistent with
+     * gpkg_geometry_columns information.
+     * 
+     * @return An Iterator over an array containing a set of objects representing
+     *         the information needed to process tests against geometry BLOB information
+     */
+    @DataProvider(name = &quot;feature-geometry-information&quot;)
+    public Iterator&lt;Object[]&gt; getFeaturesWithGeometryInfo() {
+<span class="fc" id="L258">    	List&lt;Object[]&gt; data = new ArrayList&lt;Object[]&gt;();</span>
+        
+    	/*
+		 * 1. SELECT table_name AS tn, column_name AS cn FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = ‘features’)
+		 *    added srs_id, geometry_type_name, z, m in order to capture the remaining testable values in gpkg_geometry_columns for which we will visit every feature instance.
+		 */
+<span class="pc" id="L264">        try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L265">                final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name AS tn, column_name AS cn, srs_id, geometry_type_name AS gt_name, z as z_flag, m as m_flag FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = \'features\');&quot;))</span>
+        {
+<span class="fc bfc" id="L267" title="All 2 branches covered.">            while(resultSet.next())</span>
+            {
+  				/* Package the parameters:
+  				*  String TableName
+  				* String GeometryColumnName gpkg_geometry_columns
+  				* String GeometryType from gpkg_geometry_columns
+  				* Integer SRS id from gpkg_geometry_columns
+  				* byte Z flag from gpkg_geometry_columns
+  				* byte M flag from gpkg_geometry_columns
+  				*/
+
+<span class="fc" id="L278">  	        	Object[] tuple = {resultSet.getString(&quot;tn&quot;), 						</span>
+<span class="fc" id="L279">  	        			resultSet.getString(&quot;cn&quot;), 						</span>
+<span class="fc" id="L280">  	        			resultSet.getString(&quot;gt_name&quot;).toUpperCase(),</span>
+<span class="fc" id="L281">  	        			resultSet.getInt(&quot;srs_id&quot;), </span>
+<span class="fc" id="L282">  	        			(byte) resultSet.getInt(&quot;z_flag&quot;), </span>
+<span class="fc" id="L283">  	        			(byte) resultSet.getInt(&quot;m_flag&quot;)</span>
+  	        	}; 
+<span class="fc" id="L285">  	        	data.add(tuple);</span>
+<span class="fc" id="L286">  			}</span>
+                  	
+<span class="pc bpc" id="L288" title="12 of 16 branches missed.">        } catch (SQLException e) {</span>
+    		// TODO Auto-generated catch block
+<span class="nc" id="L290">    		e.printStackTrace();</span>
+<span class="fc" id="L291">    	}        </span>
+
+<span class="fc" id="L293">        return data.iterator();</span>
+    }
+
+
+	/**
+	 * Test case
+	 * /base/core/contents/data/table_def/srs_id
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec120/index.html&quot; target=
+	 * &quot;_blank&quot;&gt;Contents - Requirement 13&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+    @Test(description = &quot;See OGC 12-128r14: Requirement 13 srs_id&quot;)
+    public void featureSRSconsistency() throws SQLException {
+
+    	// This requirement is not currently called out under the TEST req area,
+    	// but it is defined within Requirement 13 and not currently tested under
+    	// the requirement 13 test code.
+    	//
+    	// Spatial Reference System ID:
+    	// gpkg_spatial_ref_sys.srs_id; when data_type is features, SHALL also match
+    	// gpkg_geometry_columns.srs_id; 
+
+
+<span class="fc" id="L319">		int gpkgGeomCount = 0;</span>
+<span class="fc" id="L320">		int gpkgContentCount = 0;</span>
+<span class="fc" id="L321">		int gpkgAndContentCount = 0;</span>
+<span class="pc" id="L322">		try (</span>
+<span class="fc" id="L323">				final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L324">				final ResultSet resultSet2 = statement2.executeQuery(</span>
+<span class="fc" id="L325">						String.format(&quot;SELECT count(*) as ggcCount FROM \'gpkg_geometry_columns\';&quot;));</span>
+				) {
+<span class="fc" id="L327">			gpkgGeomCount = resultSet2.getInt(&quot;ggcCount&quot;);</span>
+<span class="pc bpc" id="L328" title="12 of 16 branches missed.">		}</span>
+<span class="pc" id="L329">		try (</span>
+<span class="fc" id="L330">				final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L331">				final ResultSet resultSet2 = statement2.executeQuery(</span>
+<span class="fc" id="L332">						String.format(&quot;SELECT count(*) as ggcCount FROM \'gpkg_contents\' WHERE data_type = \'features\';&quot;));</span>
+				) {
+<span class="fc" id="L334">			gpkgContentCount = resultSet2.getInt(&quot;ggcCount&quot;);</span>
+<span class="pc bpc" id="L335" title="12 of 16 branches missed.">		}</span>
+<span class="pc" id="L336">		try (</span>
+<span class="fc" id="L337">				final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L338">				final ResultSet resultSet2 = statement2.executeQuery(</span>
+<span class="fc" id="L339">						String.format(</span>
+				&quot;SELECT count(*) as ggcCount FROM \'gpkg_contents\' INNER JOIN \'gpkg_geometry_columns\' ON ((gpkg_contents.srs_id = gpkg_geometry_columns.srs_id) AND (gpkg_contents.table_name = gpkg_geometry_columns.table_name));&quot;));
+				) {
+<span class="fc" id="L342">			gpkgAndContentCount = resultSet2.getInt(&quot;ggcCount&quot;);</span>
+<span class="pc bpc" id="L343" title="12 of 16 branches missed.">		}</span>
+		// If the geopackage geometry columns count is not the same as the geopackage content count (for features), then we have a problem.
+<span class="pc bpc" id="L345" title="1 of 2 branches missed.">		if (gpkgGeomCount != gpkgContentCount) {</span>
+<span class="nc" id="L346">			Assert.assertTrue(false,</span>
+<span class="nc" id="L347">					ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_COLUMNS_DOES_NOT_MATCH_CONTENTS_COUNT));</span>
+		// If we got a different count when looking at common feature names and srs_id values, then the test for requirement 13 fails
+<span class="pc bpc" id="L349" title="2 of 4 branches missed.">		} else if (gpkgGeomCount != gpkgAndContentCount || gpkgContentCount != gpkgAndContentCount) {</span>
+<span class="nc" id="L350">			Assert.assertTrue(false,</span>
+<span class="nc" id="L351">					ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_COLUMNS_SRS_ID_NOT_CONSISTENT_WITH_CONTENTS));</span>
+		}	
+
+<span class="fc" id="L354">    }	</span>
+	
+
+    /**
+     * Verify that the gpkg_contents table_name value table exists, and is apparently a feature table for every row with a data_type column value of 'features'
+     *
+     * Test Case
+     * {@code /opt/features/contents/data/features_row}
+     * @see &lt;a href=&quot;http://www.geopackage.org/spec120/index.html&quot; target=
+     *            &quot;_blank&quot;&gt;Vector Features - Requirement 18&lt;/a&gt;
+     *            
+     * 
+     * @throws SQLException
+     *                If an SQL query causes an error
+     */
+	@Test( description = &quot;See OGC 12-128r14: Requirement 18&quot;)
+	public void features_contents_data_features_row() throws SQLException
+	{
+		/*
+		 *  TEST METHOD
+		* 1.  Execute test&lt;br&gt;/opt/features/vector_features/data/feature_table_integer_primary_key
+		*/
+<span class="fc" id="L376">		final Collection&lt;String&gt; missingFeatureTableNames = this.possibleFeatureTableNames</span>
+<span class="fc" id="L377">				.stream()</span>
+<span class="pc bnc" id="L378" title="All 2 branches missed.">				.filter(tableName -&gt; !this.featureTableNames.contains(tableName))</span>
+<span class="fc" id="L379">				.collect(Collectors.toList());</span>
+
+<span class="fc" id="L381">	   final String reportOut = String.join(&quot;, &quot;, missingFeatureTableNames);</span>
+<span class="pc bpc" id="L382" title="2 of 4 branches missed.">	   Assert.assertTrue((missingFeatureTableNames == null || missingFeatureTableNames.isEmpty()),</span>
+<span class="fc" id="L383">			   ErrorMessage.format(ErrorMessageKeys.FEATURE_TABLE_NAMES_MISSING,</span>
+					   reportOut));
+
+<span class="fc" id="L386">	}</span>
+	
+
+     
+ 
+	 
 
 	/**
 	 * A GeoPackage MAY contain tables or updateable views containing vector 
@@ -74,98 +409,648 @@ import org.testng.annotations.Test;
 	@Test(description = &quot;See OGC 12-128r13: Requirement 29&quot;)
 	public void featureTableIntegerPrimaryKey() throws SQLException {
 		// 1
-<span class="fc bfc" id="L77" title="All 2 branches covered.">		for (final String tableName : this.featureTableNames) {</span>
-<span class="pc" id="L78">			try (</span>
-<span class="fc" id="L79">					final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc bfc" id="L412" title="All 2 branches covered.">		for (final String tableName : this.featureTableNames) {</span>
+<span class="pc" id="L413">			try (</span>
+<span class="fc" id="L414">					final Statement statement = this.databaseConnection.createStatement();</span>
 					// 3a
-<span class="fc" id="L81">					final ResultSet resultSet = statement.executeQuery(String.format(&quot;PRAGMA table_info('%s');&quot;, tableName));</span>
+<span class="fc" id="L416">					final ResultSet resultSet = statement.executeQuery(String.format(&quot;PRAGMA table_info(\'%s\');&quot;, tableName));</span>
 					) {
 				// 3b
-<span class="fc" id="L84">				assertTrue(resultSet.next(),</span>
-<span class="fc" id="L85">						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));				</span>
-<span class="pc bpc" id="L86" title="12 of 16 branches missed.">			}</span>
+<span class="fc" id="L419">				assertTrue(resultSet.next(),</span>
+<span class="fc" id="L420">						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));				</span>
+<span class="pc bpc" id="L421" title="12 of 16 branches missed.">			}</span>
 
 			// 3c/3d
-<span class="fc" id="L89">			checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName));</span>
-<span class="fc" id="L90">		}</span>
-<span class="fc" id="L91">	}</span>
+<span class="fc" id="L424">			checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName, false), false);</span>
+<span class="fc" id="L425">		}</span>
+<span class="fc" id="L426">	}</span>
 
 
-	/**
-	 * Test case
-	 * {@code /opt/features/geometry_encoding/data/blob} and 
-	 * {@code /opt/features/geometry_encoding/data/core_types_existing_sparse_data}
-	 * This test will also fail if the primary key is missing since that makes it difficult
-	 * to isolate which ro
-	 *
-	 * @see &lt;a href=&quot;_requirement-19&quot; target= &quot;_blank&quot;&gt;Vector
-	 *      Features BLOB Format - Requirement 19 and 20&lt;/a&gt;
-	 *
-	 * @throws SQLException
-	 *             If an SQL query causes an error
-	 */
-	@Test(description = &quot;See OGC 12-128r13: Requirements 19, 20&quot;)
-	public void featureGeometryEncodingTableBlob() throws SQLException {
-<span class="pc" id="L109">		try (</span>
-				// 1
-<span class="fc" id="L111">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+	
+    /**
+     * Verify that geometries stored in feature table geometry columns are encoded in the StandardGeoPackageBinary format.
+     * and are consistent with the information specified in the gpkg_geometry_columns table for the feature type.
+     * Also verify that the geometry information is consistent with other elements of the geopackage as per
+     * specified test requirements. In order to optimize processing as much as possible, all tests involving
+     * the feature instance geometry element are performed within this block. 
+     * The entry to this test is via an iterator operating on each feature table - hence the test reports will
+     * be specific to each feature table processed.
+     *
+     * Test Case for tests 19, 20, 32, 33, 66 (partial) 67, 78
+     * {@code /opt/features/geometry_encoding/data/blob 
+     * /opt/features/geometry_encoding/data/core_types_existing_sparse_data 
+     * /opt/features/vector_features/data/data_values_geometry_type
+     *  /opt/features/vector_features/data/data_value_geometry_srs_id
+     *  /extensions/geometry_types/extension_name
+     *  /reg_ext/features/spatial_indexes/implementation/sql_functions}
+     * 
+     * 
+     * @see &lt;a href=&quot;http://www.geopackage.org/spec120/index.html&quot; target=
+     *            &quot;_blank&quot;&gt;Geometry Encoding - Requirements 19, 20, 32, 33, 66 (partial), 67, 78 and Geometry Extents check (NSG 19B)&lt;/a&gt;
+     *  
+     * @param thisTableName 	The feature table name being processed
+     * @param thisColumnName   The feature column name (the geometry column) being processed; as specified in the gpkg_geometry_columns entry table associated with this feature
+     * @param geomType			The geometry type as specified in the gpkg_geometry_columns entry table associated with this feature
+     * @param srs_id			The srs identifier as specified in the gpkg_geometry_columns entry table associated with this feature
+     * @param z_flag			The z flag as specified in the gpkg_geometry_columns entry table associated with this feature
+     * @param m_flag			The m flag as specified in the gpkg_geometry_columns entry table associated with this feature
+     * 
+     * @throws SQLException
+     *                If an SQL query causes an error
+     */
+    @Test( description = &quot;See OGC 12-128r14: Requirements 19, 20, 32, 33, 66 (partial), 67, 78; and NSG Requirement 19B&quot;, dataProvider = &quot;feature-geometry-information&quot;)
+    public void featureGeometryEncodingTesting(String thisTableName, String thisColumnName, String geomType, 
+   		 Integer srs_id, byte z_flag, byte m_flag) throws SQLException
+    {
 
-<span class="fc" id="L113">				final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT table_name AS tn, column_name AS cn FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = 'features');&quot;);</span>
-				) {
-			// 2
-<span class="fc bfc" id="L116" title="All 2 branches covered.">			while (resultSet1.next()){</span>
-<span class="fc" id="L117">				final String cn = resultSet1.getString(&quot;cn&quot;);</span>
-<span class="fc" id="L118">				final String tn = resultSet1.getString(&quot;tn&quot;);</span>
-				String pkColumn;
-				try {
-<span class="fc" id="L121">					pkColumn = getPrimaryKeyColumn(tn);</span>
-<span class="fc" id="L122">				} catch (AssertionError exc) {</span>
-					// If we don't find a primary key, just use the rowid;
-<span class="fc" id="L124">					pkColumn = &quot;rowid&quot;;</span>
-<span class="fc" id="L125">				}</span>
+    	try {
 
-<span class="pc" id="L127">				try (</span>
-<span class="fc" id="L128">						final Statement statement3 = this.databaseConnection.createStatement();</span>
-						// 3a
-<span class="fc" id="L130">						final ResultSet resultSet3 = statement3.executeQuery(String.format(&quot;SELECT %s, %s FROM '%s';&quot;, cn, pkColumn, tn));</span>
-						) {
-					// 3b
-<span class="fc bfc" id="L133" title="All 2 branches covered.">					while (resultSet3.next()){</span>
-<span class="fc" id="L134">						final int pk = resultSet3.getInt(pkColumn);</span>
-<span class="fc" id="L135">						final byte[] sgbpb = new byte[4];</span>
+    		/*
+    		 * 1. SELECT table_name AS tn, column_name AS cn FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = ‘features’)
+    		 * 2. Not testable if returns an empty result set
+    		 * 3. For each row from step 1
+    		 */
+<span class="pc" id="L473">    		try( final Statement statementInternal = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L474">    				final ResultSet resultSetInternal = statementInternal.executeQuery(String.format(&quot;SELECT rowid, %s as geom FROM \'%s\';&quot;, thisColumnName, thisTableName)))</span>
+    		{
+    			/* a. SELECT cn FROM tn
+    			 * b. Not testable if none found
+    			 */
 
-						// 3c
-<span class="pc" id="L138">						try (InputStream sgpb = resultSet3.getBinaryStream(cn)) {</span>
-<span class="fc" id="L139">							sgpb.read(sgbpb);</span>
-<span class="pc bpc" id="L140" title="6 of 8 branches missed.">						} catch (NullPointerException npe) {</span>
-							// This exception will be thrown if the geometry BLOB is NULL
-<span class="fc" id="L142">							continue;</span>
-						}
-<span class="nc" id="L144">						catch (IOException e) {</span>
-							// TODO Auto-generated catch block
-<span class="nc" id="L146">							assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;Couldn't read WKB prefix&quot;));</span>
-<span class="fc" id="L147">						}</span>
+    			// quick fix for https://github.com/opengeospatial/ets-gpkg12/issues/74
+				//while(resultSetInternal.next() )
+<span class="fc bfc" id="L482" title="All 2 branches covered.">    			if(resultSetInternal.next() )</span>
+    			{
+    				// The SQL should give us a numeric identifier and a geometry blob.  All of the tests in this series operate off
+    				// of these two values and the parameters passed in by the iterator.
+<span class="fc" id="L486">    				final long rowID = (long) resultSetInternal.getLong(1);</span>
+<span class="fc" id="L487">    				final byte[] bytes = resultSetInternal.getBytes(&quot;geom&quot;);</span>
 
-						// 3ci
-<span class="fc" id="L150">						final byte[] gp = Arrays.copyOfRange(sgbpb, 0, 2);</span>
-<span class="fc" id="L151">						assertTrue(Arrays.equals(gp, GPKG12.BINARY_GP), ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;First two bytes of WKB are wrong.&quot;));</span>
+    				// We must allow for null geometries.
+<span class="pc bpc" id="L490" title="1 of 2 branches missed.">    				if (bytes == null){</span>
+    					//continue;
+<span class="nc" id="L492">						throw new SkipException( &quot;No geom available.&quot; );</span>
+    				}
+    				// From the geometry blob, populate a few of the values that we can easily extract from the geometry
+<span class="fc" id="L495">    				final byte envelopeCode = (byte) ((bytes[startOfFlags] &amp; maskFlagEnvelope) &gt;&gt; shiftFlagEnvelope);</span>
+<span class="fc" id="L496">    				final byte binaryTypeFlag = (byte) ((bytes[startOfFlags] &amp; maskFlagBinaryType) &gt;&gt; shiftFlagBinaryType);</span>
+<span class="fc" id="L497">    				final byte emptyGeometryFlag = (byte) ((bytes[startOfFlags] &amp; maskFlagEmptyGeometry) &gt;&gt; shiftFlagEmptyGeometry);</span>
+<span class="fc" id="L498">    				final byte headerLE = (byte) (bytes[startOfFlags] &amp; maskFlagHeaderEndian);</span>
 
-						// 3cii
-<span class="pc bpc" id="L154" title="1 of 2 branches missed.">						assertTrue(sgbpb[2] == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;Third byte of WKB must be 0.&quot;));</span>
+    				// variables needed by this series of tests that will be used by more than one test
+<span class="fc" id="L501">    				Map&lt;String, Double&gt; envelopeVals = new HashMap&lt;&gt;();               // We will put the envelope in here in a bit</span>
+<span class="fc" id="L502">    				final int envelopeSize = mygetEnvelopeByteSize(envelopeCode);     </span>
+<span class="pc bpc" id="L503" title="4 of 8 branches missed.">    				final boolean swapHeaderBytes = (this.NativeOrderIsBE &amp;&amp; headerLE == 1) || (!this.NativeOrderIsBE &amp;&amp; headerLE == 0);</span>
+<span class="fc" id="L504">    				boolean nanDetected = false;</span>
 
-						// 3ciii
-<span class="pc bpc" id="L157" title="1 of 2 branches missed.">						assertTrue((sgbpb[3] &amp; 0b00100000) == 0, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;Sixth bit of byte 4 of WKB must be 0.&quot;));</span>
+    				// Tests begin now
 
-						// 3civ
-<span class="fc" id="L160">						final int envelope = (sgbpb[3] &amp; 0b00001110) &gt;&gt; 1;</span>
-<span class="pc bpc" id="L161" title="1 of 2 branches missed.">						assertTrue(envelope &lt;= 4, ErrorMessage.format(ErrorMessageKeys.FEATURES_BINARY_INVALID, tn, pk, &quot;Envelope type of WKB (byte 4) is invalid.&quot;));</span>
+    				// ** START ************** 19 ************************ 19 ************************** 19 **************************
+    				/* Requirement 19:
+    				 * c. For each cn value from step a                 [ cn is essentially a BLOB - layout partly shown below ]
+    				 *    i. Fail if the first two bytes of each gc are not 'GP'
+    				 *    ii. Fail if gc.version_number is not 0
+    				 *    iii. Fail if gc.flags.GeopackageBinary type != 0
+    				 *    iv.  (Fail if cn.flags.E is 5-7)   Previously in 128r12 was:  Fail if ST_IsEmpty(cn value) = 1 
+    				 *    v. *Fail if the geometry is empty but the envelope is not empty (gc.flags.envelope != 0 and envelope values are not NaN)
+    				 * 4. Pass if no fails
+    				 */
 
-						// TODO: 3cv 
-<span class="fc" id="L164">					}					</span>
-<span class="pc bpc" id="L165" title="12 of 16 branches missed.">				}</span>
-<span class="fc" id="L166">			}</span>
-<span class="pc bpc" id="L167" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L168">	}</span>
+
+    				// GeoPackageBinaryHeader {
+    				//  byte[2] magic = 0x4750;      // &quot;GP&quot; in ASCII
+    				//  byte version;                // 0 = version 1
+    				//  byte flags;                  // bit layout for flags below, note flags includes endianness for the rest of this header
+    				//  int32 srs_id;
+    				//  double[] envelope;           // size of this is implied by the envelope indicator code in the flags
+    				//  }     
+    				//
+    				// flags bit layout:
+    				//   7  6  5  4  3  2  1  0
+    				//   R  R  X  Y  E  E  E  B
+    				//
+    				//    7: R: Reserved set to 0
+    				//    6: R: Reserved set to 0
+    				//    5: X: GeoPackage Binary Type  0=Standard, 1=Extended
+    				//    4: Y: Empty Geometry Flag    0= non-empty geometry, 1=Empty Geometry  (so envelope should be empty or NaN too, test v.)
+    				//    3-1: E: Envelope Indicator Code (3-bit unsigned)
+    				//          0 = no envelope   0 byte envelope
+    				//          1 = envelope is [minx, maxx, miny, maxy] 32 bytes envelope
+    				//          2 = envelope is [minx, maxx, miny, maxy, minz, maxz] 48 bytes envelope
+    				//          3 = envelope is [minx, maxx, miny, maxy, minz, maxz, minm, maxm]  64 bytes envelope
+    				//          5-7 = invalid value for envelope  (test iv.)
+    				//    0: B: Byte order for header values   0 = Big Endian, 1 = Little Endian
+    				//
+    				// The GeoPackageBinaryHeader is followed by WKB
+
+
+
+    				try {
+    					// i. Fail if the first two bytes of each gc are not &quot;GP&quot; 
+<span class="fc" id="L550">    					final byte[] GP_HEADER = new String(&quot;GP&quot;)</span>
+<span class="fc" id="L551">    							.getBytes(StandardCharsets.US_ASCII);</span>
+<span class="pc bpc" id="L552" title="2 of 4 branches missed.">    					if  ( (bytes[0] != GP_HEADER[0]) || (bytes[1] != GP_HEADER[1]) ) {</span>
+<span class="nc" id="L553">    						errorDetected19 ++;</span>
+<span class="nc bnc" id="L554" title="All 2 branches missed.">    						if (errorDetected19 &lt; maxErrorsToReport19)</span>
+<span class="nc" id="L555">    							Assert.assertTrue(false,</span>
+<span class="nc" id="L556">    									ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_INVALID_MAGIC_NUMBER, </span>
+<span class="nc" id="L557">    											thisTableName, rowID, thisColumnName, String.format(&quot;0x%02x%02x&quot;,  bytes[0], bytes[1])));</span>
+    					}
+
+
+    					// ii. Fail if gc.version_number is not 0
+<span class="fc" id="L562">    					final byte version = (byte)bytes[startOfVersion];</span>
+<span class="pc bpc" id="L563" title="1 of 2 branches missed.">    					if (version != 0) {</span>
+<span class="nc" id="L564">    						errorDetected19 ++;</span>
+<span class="nc bnc" id="L565" title="All 2 branches missed.">    						if (errorDetected19 &lt; maxErrorsToReport19)</span>
+<span class="nc" id="L566">    							Assert.assertTrue(false,</span>
+<span class="nc" id="L567">    									ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_INVALID_VERSION,</span>
+<span class="nc" id="L568">    											thisTableName, rowID, thisColumnName, version));</span>
+    					}
+
+    					// iii. Fail if gc.flags.GeopackageBinary type != 0
+<span class="pc bpc" id="L572" title="1 of 2 branches missed.">    					if (binaryTypeFlag != 0) {</span>
+<span class="nc" id="L573">    						errorDetected19 ++;</span>
+<span class="nc bnc" id="L574" title="All 2 branches missed.">    						if (errorDetected19 &lt; maxErrorsToReport19)</span>
+<span class="nc" id="L575">    							Assert.assertTrue(false,</span>
+<span class="nc" id="L576">    									ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_INVALID_BINARY_CODE,</span>
+<span class="nc" id="L577">    											thisTableName, rowID, thisColumnName, binaryTypeFlag));</span>
+    					}
+
+
+    					// iv. (Fail if cn.flags.E is 5-7)  
+<span class="pc bpc" id="L582" title="2 of 4 branches missed.">    					if ( envelopeCode &gt; 4 || envelopeCode &lt; 0 ) {</span>
+<span class="nc" id="L583">    						errorDetected19 ++;</span>
+<span class="nc bnc" id="L584" title="All 2 branches missed.">    						if (errorDetected19 &lt; maxErrorsToReport19)</span>
+<span class="nc" id="L585">    							Assert.assertTrue(false,</span>
+<span class="nc" id="L586">    									ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_INVALID_ENVELOPE_CODE,</span>
+<span class="nc" id="L587">    											thisTableName, rowID, thisColumnName, envelopeCode));</span>
+    					}  
+
+<span class="nc" id="L590">    				} catch(final Exception th)</span>
+    				{
+<span class="nc" id="L592">    					fail(</span>
+<span class="nc" id="L593">    							ErrorMessage.format(</span>
+    									ErrorMessageKeys.FEATURE_GEOMETRY_BLOB_PROCESSING_TEST_FAILURE, 
+<span class="nc" id="L595">    									String.format(&quot;Failure testing requirement 19i-iv on feature {0}&quot;, thisTableName), th.getMessage()));</span>
+<span class="fc" id="L596">    				}  	</span>
+    				// ** END ************** 19 i-iv ************************ 19 ************************** 19 **************************
+
+
+    				// ** START **************  33 ************************  ************
+    				//{@code /opt/features/vector_features/data/data_value_geometry_srs_id}
+    				// description = &quot;See OGC 12-128r14: Requirement 33&quot;, dataProvider = &quot;feature-geometry-information&quot; 
+    				/* 
+    				 * REQUIREMENT 33
+    				 * a. SELECT DISTINCT st_srid(cn) FROM tn            Note in this code, we process each row and we already performed the SELECT above to get each row
+    				 * b. For each row from step a
+    				 * i. Fail if returnvalue not equal to gc_srs_id
+    				 * 4. Pass if no fails
+    				 */
+
+    				// Note: dependency on the value of currentSRID that we used for a different test is within this one.
+    				// the SRSID extracted from the geometry BLOB will be compared to the srsContents (srs_id) retrieved from gpkg_contents
+
+    				// Get a byte array at the correct offset for the srs_id and set up the byte array size to be the size of an integer
+<span class="fc" id="L615">    				byte[] srspartID = byteArraySubset(bytes, startOfSRIDIndex, Integer.BYTES);   // 4 bytes</span>
+
+    				// Using our helper function, get the integer from the byte array, and signify whether there is byte swapping needed
+    				// We will SAVE this SRID as it is needed for a couple of tests
+<span class="fc" id="L619">    				int currentSRID = getIntegerFromBytesWithPossibleSwap(srspartID, swapHeaderBytes);   // this value is needed for this test and a test in #19        		 </span>
+
+
+    				// Check for possible byte swap error on this SRS ID content vs the gpkg_geometry_columns value (which was a parameter to this test).
+    				// This will tell us if there is a problem with the detection
+    				// of the endianness either within the geometry blob, or of the machine hardware upon which the test is being run.
+    				// Since this is the ONLY place we are going to try to test the endianness, it needs to be done prior to messing
+    				// with the envelope values. Hence, this is why this test is put prior to 19v.
+    				try {
+
+<span class="pc bpc" id="L629" title="1 of 2 branches missed.">    					if (currentSRID != srs_id )</span>
+    					{
+    						// So far, the test failed. Perform an extra test - swap the bytes and see if we get the SRID now -
+    						// to see if the issue can be identified as a byte swap issue. Note, this may not work with large or negative values
+    						// due to sign extension on the integer, but we will try it anyway.
+<span class="nc" id="L634">    						int tempSRID = Integer.reverseBytes(currentSRID);</span>
+
+<span class="nc bnc" id="L636" title="All 2 branches missed.">    						if (tempSRID == srs_id) {</span>
+    							// It appears this may then be a byte swap issue, so report the SR ID problem and the fact it may be a byte swap issue
+    							// meaning the header endianness may be incorrect or this code base is incorrect.
+<span class="nc" id="L639">    							errorDetected33 ++;</span>
+<span class="nc bnc" id="L640" title="All 2 branches missed.">    							if (errorDetected33 &lt; maxErrorsToReport33)</span>
+<span class="nc" id="L641">    								Assert.assertTrue(false,</span>
+<span class="nc" id="L642">    										ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_POSSIBLE_BYTE_SWAP_ERROR_SRS_MATCH,</span>
+<span class="nc" id="L643">    												rowID, thisColumnName, currentSRID, srs_id, thisTableName));</span>
+    						} else {
+    							// Not able to determine if the issue is a byte swap issue, so report it as an SRS ID issue
+<span class="nc" id="L646">    							errorDetected33 ++;</span>
+<span class="nc bnc" id="L647" title="All 2 branches missed.">    							if (errorDetected33 &lt; maxErrorsToReport33)</span>
+<span class="nc" id="L648">    								Assert.assertTrue(false,</span>
+<span class="nc" id="L649">    										ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_SRS_MISMATCH,</span>
+<span class="nc" id="L650">    												rowID, thisColumnName, currentSRID, srs_id, thisTableName));</span>
+    						}
+    					}
+<span class="nc" id="L653">    				} catch(final Exception th)</span>
+    				{
+<span class="nc" id="L655">    					fail(</span>
+<span class="nc" id="L656">    							ErrorMessage.format(</span>
+    									ErrorMessageKeys.FEATURE_GEOMETRY_BLOB_PROCESSING_TEST_FAILURE, 
+<span class="nc" id="L658">    									String.format(&quot;Failure testing requirement 33 part b on feature {0}&quot;, thisTableName), th.getMessage()));</span>
+<span class="fc" id="L659">    				}</span>
+
+
+    				// ** END *** 33 ************************  33 *************************
+
+
+    				// ** START ************** 19v ************************ 19 ************************** 19 **************************
+    				try {
+
+    					// v. *Fail if the geometry is empty but the envelope is not empty (gc.flags.envelope != 0 and envelope values are not NaN)
+<span class="pc bpc" id="L669" title="1 of 4 branches missed.">    					if (envelopeSize &gt; 0 &amp;&amp; envelopeSize &lt; maximumEnvelopeSize) {</span>
+<span class="fc" id="L670">    						final byte bytesEnvelope[] = byteArraySubset(bytes, startOfEnvelopeIndex , envelopeSize);</span>
+    						try {
+    							// Ignoring the return value; we are just looking for the exception processing at this time
+<span class="fc" id="L673">    							mygetEnvelope(envelopeSize, swapHeaderBytes, bytesEnvelope, envelopeVals);</span>
+
+<span class="nc" id="L675">    						} catch(IllegalArgumentException ee)  // this should catch the indication that we a nan values in the envelope </span>
+    						{
+    							//final String errMsg = ee.getMessage();
+<span class="nc" id="L678">    							nanDetected = true;</span>
+<span class="fc" id="L679">    						}</span>
+
+
+<span class="pc bpc" id="L682" title="2 of 4 branches missed.">    						if (!nanDetected &amp;&amp; emptyGeometryFlag != 0) {</span>
+<span class="nc" id="L683">    							errorDetected19 ++;</span>
+<span class="nc bnc" id="L684" title="All 2 branches missed.">    							if (errorDetected19 &lt; maxErrorsToReport19)</span>
+<span class="nc" id="L685">    								Assert.assertTrue(false,</span>
+<span class="nc" id="L686">    										ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_INVALID_DETECTED_EMPTY_GEOMETRY_FLAG_BUT_ENVELOPE_HAS_CONTENT,</span>
+<span class="nc" id="L687">    												rowID, thisColumnName, thisTableName));</span>
+    						}
+    					}  // end if envelopeSize &gt; 0 ...   Currently it is valid to have an envelope that is 0 size. In the future, that may change if there is geometry.
+    					// also we should never get an envelopeSize over the max size (as it comes from the code and a private method here) so we are not checking for that.
+
+
+<span class="nc" id="L693">    				} catch(final Exception th)</span>
+    				{
+<span class="nc" id="L695">    					fail(</span>
+<span class="nc" id="L696">    							ErrorMessage.format(</span>
+    									ErrorMessageKeys.FEATURE_GEOMETRY_BLOB_PROCESSING_TEST_FAILURE, 
+<span class="nc" id="L698">    									String.format(&quot;Failure testing requirement 19v on feature {0}&quot;, thisTableName), th.getMessage()));</span>
+<span class="fc" id="L699">    				}</span>
+    				// ** END ************** 19v ************************ 19 ************************** 19 **************************
+
+
+    				// WKB Header
+    				// byte    byteOrder     0 = Big Endian; 1 = Little Endian
+    				// uint32  wkbGeometryType
+    				// GEOMETRY
+    				
+<span class="fc" id="L708">    				String actualGeometryType = geomUNSUPPORTED;</span>
+    				
+    				// These next tests require that there be geometry
+<span class="pc bpc" id="L711" title="1 of 2 branches missed.">    				if (emptyGeometryFlag == 0) {</span>
+
+<span class="fc" id="L713">    					final int geometryStart = startOfEnvelopeIndex + envelopeSize;                                 // Find the start of the WKB Geometry Blob within the SHAPE Blob</span>
+    					// The geometry WKB has yet another structure with yet another possible big / little endian setting
+<span class="fc" id="L715">    					final byte geometryByteOrderLE = bytes[geometryStart];                                          // The Geometry Blob may have a different byte order than the header or the SQLite</span>
+<span class="pc bpc" id="L716" title="2 of 8 branches missed.">    					final boolean swapGeometryBytes = (geometryByteOrderLE == 1 &amp;&amp; this.NativeOrderIsBE) || (geometryByteOrderLE == 0 &amp;&amp; !this.NativeOrderIsBE);</span>
+
+    					// Get the subset of bytes representing the geometry type, 
+    					// then get the geometry type integer from those bytes, 
+    					// then get the geometry type string from the integer
+<span class="fc" id="L721">    					byte[] geomtypeBytes = byteArraySubset(bytes, geometryStart + startOfGeometryType, Integer.BYTES);</span>
+<span class="fc" id="L722">    					final int currentGeomType = getIntegerFromBytesWithPossibleSwap(geomtypeBytes, swapGeometryBytes);</span>
+<span class="fc" id="L723">    					actualGeometryType = getGeomTypeFromNum(currentGeomType).toUpperCase();</span>
+
+    					// ** START ****** 20 ************************ 20 ************************** 20 **************************
+    					/* 
+    					 * REQUIREMENT 20
+    					 * 1.   b.  For  each row from step a, 
+    					 * if bytes 2-5 of cn.wkb as uint32 in endianness of gc.wkb 
+    					 * 
+    					 * ***** NOTE THIS TEST SHOULD NOT be performed if there is NO geometry
+    					 * 
+    					 * byte 1 of cn from #1 are a geometry type value from Annex G Table 42, 
+    					 * then
+    					 *    i.  Log cn.header values, wkb endianness and geometry type
+    					 *    
+    					 *    TEST IS NOT including full decomposition of WKB, only the geometry type
+    					 *   ii.  *If cn.wkb is not  correctly encoded per ISO 13249-3  clause 5.1.46  then log fail
+    					 *  iii.  Otherwise log pass
+    					 *  6.  Pass  if log contains pass and no fails
+    					 */
+    					try {
+
+    						// Verify that the actual geometry type is something valid, our getGeomTypeFromNum will assign &quot;UNSUPPORTED&quot; if it is invalid
+<span class="pc bpc" id="L745" title="1 of 2 branches missed.">    						if ( actualGeometryType.equals(geomUNSUPPORTED)) {</span>
+    							// So the geometry type is not recognized. Try a byte swap on the value and see if we get any
+    							// supported value now. Report a different error if we get a value.
+<span class="nc bnc" id="L748" title="All 2 branches missed.">    							final int altGeomType = getIntegerFromBytesWithPossibleSwap(geomtypeBytes, !swapGeometryBytes);   // test if the byte swap flag might be wrong</span>
+<span class="nc" id="L749">    							final String testGeomType = getGeomTypeFromNum(altGeomType).toUpperCase();</span>
+<span class="nc bnc" id="L750" title="All 2 branches missed.">    							if (testGeomType.equals(geomUNSUPPORTED)) {</span>
+<span class="nc" id="L751">	    							errorDetected20 ++;</span>
+<span class="nc bnc" id="L752" title="All 2 branches missed.">	    							if (errorDetected20 &lt; maxErrorsToReport20)</span>
+<span class="nc" id="L753">	    								Assert.assertTrue(false,</span>
+<span class="nc" id="L754">	    										ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_TYPE_INVALID,		 </span>
+<span class="nc" id="L755">	    												rowID, thisColumnName, geomType, (int)currentGeomType, thisTableName));</span>
+    							} else {
+    								// Report a possible byte swap problem in the WKB portion of this BLOB
+<span class="nc" id="L758">	    							errorDetected20 ++;</span>
+<span class="nc bnc" id="L759" title="All 2 branches missed.">	    							if (errorDetected20 &lt; maxErrorsToReport20)</span>
+<span class="nc" id="L760">	    								Assert.assertTrue(false,</span>
+<span class="nc" id="L761">	    										ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_TYPE_INVALID_POSSIBLE_BYTE_SWAP,		 </span>
+<span class="nc" id="L762">	    												rowID, thisColumnName, geomType, (int)currentGeomType, thisTableName, (int)altGeomType, testGeomType));</span>
+    							}
+    						}
+
+<span class="nc" id="L766">    					} catch(final Exception th)</span>
+    					{
+<span class="nc" id="L768">    						fail(</span>
+<span class="nc" id="L769">    								ErrorMessage.format(</span>
+    										ErrorMessageKeys.FEATURE_GEOMETRY_BLOB_PROCESSING_TEST_FAILURE, 
+<span class="nc" id="L771">    										String.format(&quot;Failure testing requirement 20 on feature {0}&quot;, thisTableName), th.getMessage()));</span>
+<span class="fc" id="L772">    					}						 </span>
+
+    					// ** END ****** 20 ************************ 20 ************************** 20 ***************************/
+
+
+    					// ** START  ****** 32 ************************ 32 ************************** 32 ***************************/
+    					//@ID (/opt/features/vector_features/data/data_value_geometry_srs_id)
+    					//@Test( description = &quot;See OGC 12-128r14: Requirement 32 all items&quot;, dataProvider = &quot;feature-geometry-information&quot;)
+
+    					/*
+    					 *  REQUIREMENT 32
+    					 * Test Method
+    					 *    3. For each row from step 1
+    					 *    a. *Select the set of geometry types in use for the values in cn (geometry column)   WAS: SELECT DISTINCT ST_GeometryType(cn) FROM tn
+    					 *    b. For each row actual_type_name from step a
+    					 *    i. Determine if each geometry type is assignable to the actual_type_name
+    					 *    ii. Fail if any are not assignable
+    					 *    4. Pass if no fails
+    					 *    
+    					 */
+
+
+    					// Guess what - we have already retrieved both the current WKB geometry type and the geometry specified for this feature type
+    					// so it is just a matter of determining whether the
+    					// geom_type representing the geometry_column_table type vs. the GeometryType in the current WKB record are compatible.
+    					try {
+
+    						// Verify that the actual geometry type is 'assignable' i.e. equal to or a subset of the specified geometry from the geometry table
+    						// The call to IsAssignable is expecting a return of 1 if assignable, 0 if not.
+    						// the variable actualGeometryType is coming from the feature WKB while the geomType is from the gpkg_geometry_columns
+    						// If the value actualGeometryType is equal to or is defined a s a subtype to the geomType, this will return the value of 1
+
+<span class="pc bpc" id="L804" title="1 of 2 branches missed.">    						if ( this.IsAssignable(geomType, actualGeometryType) == 0 ) {</span>
+<span class="nc" id="L805">    							errorDetected32 ++;</span>
+<span class="nc bnc" id="L806" title="All 2 branches missed.">    							if (errorDetected32 &lt; maxErrorsToReport32)</span>
+<span class="nc" id="L807">    								Assert.assertTrue(false,</span>
+<span class="nc" id="L808">    										ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_NOT_ASSIGNABLE_TO_SUPERTYPE,		</span>
+<span class="nc" id="L809">    												rowID, thisColumnName, geomType, actualGeometryType, thisTableName));</span>
+    						}
+
+<span class="nc" id="L812">    					} catch(final Exception th)</span>
+    					{
+<span class="nc" id="L814">    						fail(</span>
+<span class="nc" id="L815">    								ErrorMessage.format(</span>
+    										ErrorMessageKeys.FEATURE_GEOMETRY_BLOB_PROCESSING_TEST_FAILURE, 
+<span class="nc" id="L817">    										String.format(&quot;Failure testing requirement 32 on feature {0}&quot;, thisTableName), th.getMessage()));</span>
+<span class="fc" id="L818">    					}</span>
+
+    					// ** END  ****** 32 ************************ 32 ************************** 32 **************************
+
+
+
+    					// ************** PARTIAL TEST for Requirement 66 here ********** 66************************66 *********************66 ***************
+    					//
+<span class="fc" id="L826">    					int geometryItemCount = 1;</span>
+<span class="fc bfc" id="L827" title="All 2 branches covered.">        				if (actualGeometryType != geomPOINT)</span>
+        				{
+<span class="fc" id="L829">        					byte[] wkbGeometryCount = byteArraySubset(bytes, geometryStart + startOfGeometryType + Integer.BYTES, Integer.BYTES);</span>
+<span class="fc" id="L830">        					geometryItemCount = getIntegerFromBytesWithPossibleSwap(wkbGeometryCount, swapGeometryBytes);</span>
+        				}
+<span class="pc bpc" id="L832" title="1 of 2 branches missed.">        				if (geometryItemCount &lt; 0) {</span>
+<span class="nc" id="L833">							errorDetected66 ++;</span>
+<span class="nc bnc" id="L834" title="All 2 branches missed.">							if (errorDetected66 &lt; maxErrorsToReport66)</span>
+<span class="nc" id="L835">								Assert.assertTrue(false,</span>
+<span class="nc" id="L836">										ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_WKB_ITEM_COUNT_ILLEGAL,		</span>
+<span class="nc" id="L837">												thisTableName, rowID, thisColumnName,  actualGeometryType, geometryItemCount));        					</span>
+        				}
+        				// ** END  ****** PARTIAL 66 ************************ 66 ************************** 66 **************************
+
+
+    					// ** START  ****** 67 ************************ 67 ************************** 67 **************************
+    					/*  
+    					 * REQUIREMENT 67
+    					 *  C. SELECT ST_GeometryType(geometry column value) AS &lt;gtype&gt;;
+    					 * D.  SELECT extension_name FROM gpkg_extensions WERE table_name
+    					 *     = result_set_table_name AND  column_name = result_set_column_name AND extension_name = \'gpkg_geom_' || &lt;gtype&gt;
+    					 * I.  Fail if result set is empty
+    					 * II.  Log pass otherwise
+    					 * 4.  Pass  if logged pass and no fails
+    					 */
+
+<span class="fc bfc" id="L853" title="All 2 branches covered.">    					if (this.hasGPKGExtensionsTable == true)</span>
+    					{
+    						try {
+    							// Tests have shown it is possible to NOT have these in the extensions table at all. Since they are 'extensions' that would
+    							// not be an error!  Therefore, first check to be sure the gpkg_geom_* extensions are present at all in the gpkg_extensions
+    							// table.  If, at some time, it is determine that these are requirements and not just extensions, we can remove this
+    							// first sub-test.
+<span class="fc" id="L860">    							boolean testForGeomExtensions = false;</span>
+<span class="pc" id="L861">    							try(final Statement statementST = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L862">    									final ResultSet resultSetST = statementST.executeQuery(String.format(</span>
+    											&quot;SELECT extension_name FROM gpkg_extensions WHERE (extension_name LIKE \'gpkg_geom_\');&quot;)))	        	                            
+    							{
+<span class="pc bpc" id="L865" title="1 of 2 branches missed.">    								if (resultSetST.next() == true) {  // false if the result is empty</span>
+<span class="nc" id="L866">    									testForGeomExtensions = true;</span>
+    								}
+<span class="pc bpc" id="L868" title="12 of 16 branches missed.">    							}</span>
+
+    							// If we have verified the geometry extensions are present in the extensions table, proceed
+<span class="pc bpc" id="L871" title="1 of 2 branches missed.">    							if (testForGeomExtensions) {</span>
+<span class="nc" id="L872">    								try(final Statement statementST = this.databaseConnection.createStatement();</span>
+<span class="nc" id="L873">    										final ResultSet resultSetST = statementST.executeQuery(String.format(</span>
+    												&quot;SELECT extension_name FROM gpkg_extensions WHERE (table_name = \'%s\' AND column_name = \'%s\' AND extension_name = \'gpkg_geom_%s\');&quot;, 
+    												thisTableName, thisColumnName, actualGeometryType)))		        	                            
+    								{
+<span class="nc bnc" id="L877" title="All 2 branches missed.">    									if (resultSetST.next() == false)  { // returns false if the result set is empty	    				 </span>
+<span class="nc" id="L878">    										errorDetected67 ++;</span>
+<span class="nc bnc" id="L879" title="All 2 branches missed.">    										if (errorDetected67 &lt; maxErrorsToReport67)</span>
+<span class="nc" id="L880">    											Assert.assertTrue(false,</span>
+<span class="nc" id="L881">    													ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_TYPE_NOT_PRESENT_AS_EXTENSION,</span>
+<span class="nc" id="L882">    															rowID, thisColumnName, actualGeometryType, actualGeometryType, thisTableName));</span>
+    									}	    				 
+<span class="nc bnc" id="L884" title="All 16 branches missed.">    								}</span>
+    							}
+<span class="nc" id="L886">    						} catch(final Exception th)</span>
+    						{
+<span class="nc" id="L888">    							fail(</span>
+<span class="nc" id="L889">    									ErrorMessage.format(</span>
+    											ErrorMessageKeys.FEATURE_GEOMETRY_BLOB_PROCESSING_TEST_FAILURE, 
+<span class="nc" id="L891">    											String.format(&quot;Failure testing requirement 67 on feature {0}&quot;, thisTableName), th.getMessage()));</span>
+<span class="fc" id="L892">    						}</span>
+    					}
+
+    					// ** END  ****** 67 ************************ 67 ************************** 67 **************************
+
+    				} // End tests of WKB Geometry requiring non empty geometry flag
+
+
+
+
+
+    				// ** START   ****** NSG 19B ************************ NSG 19B ************************** NSG 19B **************************
+    				//@Test( description = &quot;See NSG Requirement 19b: Requirement NSG 19b features portion&quot;, dataProvider = &quot;feature-geometry-information&quot;)
+
+
+
+
+    				// This next set looks at the gpkg_contents as compared to the values in the feature
+    				// instance geometry BLOB.  This is for NSG requirement 19 B
+    				// NOTE: This test does not test profiles but we're going to keep it (commented out) for now
+    				// because a requirement could be added as part of GPKG 1.3.0.
+    				/*
+    				try {
+    					if (!envelopeVals.isEmpty()) {
+    						try(final Statement statementST = this.databaseConnection.createStatement();
+    								final ResultSet resultSetST = statementST.executeQuery(
+    										String.format(
+    							&quot;SELECT srs_id as srsContents, min_x, min_y, max_x, max_y FROM gpkg_contents WHERE (data_type = \'features\' and table_name = \'%s\' and srs_id IN (%s) );&quot;,
+    							thisTableName, srs_id)))
+    						{
+
+    							while (resultSetST.next()) {
+    								// Get the srs extents and save for comparison
+    								final Map&lt;String, Double&gt; extentsforsrs = new HashMap&lt;&gt;();
+    								extentsforsrs.put(myminx, resultSetST.getDouble(&quot;min_x&quot;));
+    								extentsforsrs.put(mymaxx, resultSetST.getDouble(&quot;max_x&quot;));
+    								extentsforsrs.put(myminy, resultSetST.getDouble(&quot;min_y&quot;));
+    								extentsforsrs.put(mymaxy, resultSetST.getDouble(&quot;max_y&quot;));
+
+
+    								// If they are null, all values will be 0 (getDouble) will put them to 0 if they are null. 
+    								// Perform the test if any values are set and test only if we have anything of value here.
+
+    								if (!checkIfValueWithinToleranceOfTargetValue(extentsforsrs.get(myminx),0.0D, 1.0e-10) ||  
+    										!checkIfValueWithinToleranceOfTargetValue(extentsforsrs.get(myminy),0.0D, 1.0e-10) || 
+    										!checkIfValueWithinToleranceOfTargetValue(extentsforsrs.get(mymaxx),0.0D, 1.0e-10) || 
+    										!checkIfValueWithinToleranceOfTargetValue(extentsforsrs.get(mymaxy),0.0D, 1.0e-10)) {
+    									final String enveloperesult = geometryEnvelopeWithinExtents(envelopeVals, extentsforsrs);
+    									if (enveloperesult != &quot;&quot;) {
+    										errorDetectedNSG19b ++;
+    										if (errorDetectedNSG19b &lt; maxErrorsToReportNSG19b) {
+    											Assert.assertTrue(false,
+    													ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_ENVELOPE_OUTSIDE_BOUNDS_OF_GEOPACKAGE,
+    															rowID, thisColumnName, srs_id, thisTableName, envelopeVals.get(myminx), envelopeVals.get(mymaxx),  
+    															envelopeVals.get(myminy),  envelopeVals.get(mymaxy), enveloperesult ));
+    										}
+
+    									}  // end if geometryEvelopeWithinExtents == false
+    								} // end if check of min max values show they are not 0
+    							}
+    						}
+    					}
+    				} catch(final Exception th)
+    				{
+
+    					fail(
+    							ErrorMessage.format(
+    									ErrorMessageKeys.FEATURE_GEOMETRY_BLOB_PROCESSING_TEST_FAILURE, 
+    									String.format(&quot;Failure testing requirement NSG 19B on feature {0}&quot;, thisTableName), th.getMessage()));
+    				}
+						*/
+    				// ** END   ****** NSG 19B ************************ NSG 19B ************************** NSG 19B **************************
+
+
+
+    				// ** START   ****** 78 ************************ 78 ************************** 78 **************************
+    				//@Test( description = &quot;See OGC 12-128r14: Requirement 78&quot;, dataProvider = &quot;feature-geometry-information&quot;)
+
+
+
+    				// Tests on gpkg_extensions and rtree. We have to flip the stated test around because we are doing this per
+    				// feature instance.
+    				// Stated test #78 from Spec 128r14
+    				//
+    				// Using the rtree_FeatureTableName_GeometryColumnName
+    				// 1.  Open Geometry Test Data Set GeoPackage with GeoPackage SQLite Extension
+    				// 2.  For   each  Geometry Test   Data  Set   &lt;gtype_test&gt; data  table  row  for   each geometry type in  Annex G, for  an assortment of srs_ids, 
+    				//      for  an assortment of coordinate values including empty geometries, without and with z and / or  m values, in both big and little endian encodings:
+    				// a.  SELECT 'Fail'  FROM &lt;gtype_test&gt; WHERE ST_IsEmpty(geom.) != empty  &lt;---- note we are not checking this. This test is not going to happen if the geometry is empty
+    				// b.  SELECT 'Fail'  FROM &lt;gtype_test&gt; WHERE ST_MinX(geom) != minx
+    				// c.  SELECT 'Fail'  FROM &lt;gtype_test&gt; WHERE ST_MaxX(geom) != maxx 
+    				// d.  SELECT 'Fail'  FROM &lt;gtype_test&gt; WHERE ST_MinY(geom) != miny 
+    				// e.  SELECT 'Fail'  FROM &lt;gtype_test&gt; WHERE ST_MaxY(geom) != maxy
+    				// 3.  Pass  if no 'Fail'  selected from step 2
+
+    				// Dependent on the feature instance min and max geometry values and whether we have envelope values
+
+    				try {
+
+    					// If we have no envelope, we cannot perform this test
+<span class="fc bfc" id="L992" title="All 2 branches covered.">    					if (!envelopeVals.isEmpty()) {</span>
+
+<span class="fc" id="L994">    						final String rtreeTable = String.format(&quot;rtree_%s_%s&quot;,thisTableName, thisColumnName);</span>
+
+<span class="pc" id="L996">    						try(final Statement statementST = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L997">    								final ResultSet resultSetST = statementST.executeQuery(String.format(&quot;SELECT minx, maxx, miny, maxy FROM \'%s\' WHERE (rowid = %s);&quot;, rtreeTable, rowID)))		        	                            </span>
+    						{
+<span class="fc" id="L999">    							final Double localtolerance = 1.0e-4;        // 1.0e-5 is not good enough for most geopackages to pass!</span>
+
+<span class="fc bfc" id="L1001" title="All 2 branches covered.">    							while(resultSetST.next() ) {</span>
+<span class="fc" id="L1002">    								final Map&lt;String, Double&gt; rtreeminmaxVals = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L1003">    								rtreeminmaxVals.put(myminx, resultSetST.getDouble(myminx));</span>
+<span class="fc" id="L1004">    								rtreeminmaxVals.put(mymaxx, resultSetST.getDouble(mymaxx));</span>
+<span class="fc" id="L1005">    								rtreeminmaxVals.put(myminy, resultSetST.getDouble(myminy));</span>
+<span class="fc" id="L1006">    								rtreeminmaxVals.put(mymaxy, resultSetST.getDouble(mymaxy));</span>
+
+    								// Verify the geometry envelope falls within the rtree extents for this instance
+    								// final String enveloperesult = geometryEnvelopeWithinExtents(envelopeVals, rtreeminmaxVals);   // this test would test for the envelope within the rtree, not equal to
+<span class="pc bpc" id="L1010" title="1 of 2 branches missed.">    								if (!checkIfValueWithinToleranceOfTargetValue(rtreeminmaxVals.get(myminx), envelopeVals.get(myminx), localtolerance) ||</span>
+<span class="pc bpc" id="L1011" title="1 of 2 branches missed.">    										!checkIfValueWithinToleranceOfTargetValue(rtreeminmaxVals.get(mymaxx), envelopeVals.get(mymaxx), localtolerance) ||</span>
+<span class="pc bpc" id="L1012" title="1 of 2 branches missed.">    										!checkIfValueWithinToleranceOfTargetValue(rtreeminmaxVals.get(myminy), envelopeVals.get(myminy), localtolerance) ||</span>
+<span class="pc bpc" id="L1013" title="1 of 2 branches missed.">    										!checkIfValueWithinToleranceOfTargetValue(rtreeminmaxVals.get(mymaxy), envelopeVals.get(mymaxy), localtolerance) )						 </span>
+    								{
+<span class="nc" id="L1015">    									errorDetected78 ++;</span>
+<span class="nc bnc" id="L1016" title="All 2 branches missed.">    									if (errorDetected78 &lt; maxErrorsToReport78) {</span>
+<span class="nc" id="L1017">    										Assert.assertTrue(false,</span>
+<span class="nc" id="L1018">    												ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_ENVELOPE_OUTSIDE_TOLERANCE_OF_RTREE_TRIGGER_MIN_MAX,</span>
+<span class="nc" id="L1019">    														rowID, thisColumnName, thisTableName, envelopeVals.get(myminx), envelopeVals.get(mymaxx),  envelopeVals.get(myminy),  envelopeVals.get(mymaxy)));</span>
+    									}
+
+    								}
+<span class="fc" id="L1023">    							}</span>
+<span class="pc bpc" id="L1024" title="10 of 16 branches missed.">    						}</span>
+    					}
+<span class="fc" id="L1026">    				} catch(final Exception th)</span>
+    				{
+
+    					//   At this time, do not report an error here. If there is no rtree table, I guess it is not worth reporting an error
+    					//   ets-gpkg12 tests including the features-0.gpkg sample will fail right here.
+    					//		 errorDetected78 ++;
+    					//		 if (errorDetected78 &lt; maxErrorsToReport78) {
+    					//			 Assert.assertTrue(false,
+    					//					ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_ENVELOPE_RTREE_TABLE_MISSING_OR_IN_ERROR,
+    					//							thisTableName, thisColumnName));
+    					//		 }
+<span class="fc" id="L1037">    				}</span>
+
+
+    				// ** END   ****** 78 ************************ 78 ************************** 78 **************************
+
+    			} // End while result set
+<span class="pc bpc" id="L1043" title="12 of 16 branches missed.">    		}</span>
+    	} 
+<span class="nc" id="L1045">    	catch(final Exception th)</span>
+    	{
+<span class="nc" id="L1047">    		fail(</span>
+<span class="nc" id="L1048">    				ErrorMessage.format(</span>
+<span class="nc" id="L1049">    						ErrorMessageKeys.FEATURE_GEOMETRY_BLOB_PROCESSING_TEST_FAILURE, &quot;main loop&quot;, th.getMessage()));</span>
+<span class="fc" id="L1050">    	}   </span>
+<span class="fc" id="L1051">    }</span>
+
+ 
 
 	/**
 	 * Test case
@@ -179,55 +1064,55 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 21&quot;)
 	public void featureGeometryColumnsTableDef() throws SQLException {
-<span class="pc" id="L182">		try (</span>
+<span class="pc" id="L1067">		try (</span>
 				// 1
-<span class="fc" id="L184">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1069">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L186">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkg_geometry_columns');&quot;);</span>
+<span class="fc" id="L1071">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info(\'gpkg_geometry_columns\');&quot;);</span>
 				) {
 
 			// 2
-<span class="fc" id="L190">			int passFlag = 0;</span>
-<span class="fc" id="L191">			final int flagMask = 0b00111111;</span>
+<span class="fc" id="L1075">			int passFlag = 0;</span>
+<span class="fc" id="L1076">			final int flagMask = 0b00111111;</span>
 
-<span class="fc bfc" id="L193" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc bfc" id="L1078" title="All 2 branches covered.">			while (resultSet.next()) {</span>
 				// 3
-<span class="fc" id="L195">				final String name = resultSet.getString(&quot;name&quot;);</span>
-<span class="fc bfc" id="L196" title="All 2 branches covered.">				if (&quot;geometry_type_name&quot;.equals(name)){</span>
-<span class="fc" id="L197">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L198" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L199" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="fc" id="L200">					passFlag |= 1;</span>
-<span class="fc bfc" id="L201" title="All 2 branches covered.">				} else if (&quot;table_name&quot;.equals(name)){</span>
-<span class="fc" id="L202">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L203" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L204" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="fc" id="L205">					passFlag |= (1 &lt;&lt; 1);</span>
-<span class="fc bfc" id="L206" title="All 2 branches covered.">				} else if (&quot;m&quot;.equals(name)){</span>
-<span class="fc" id="L207">					assertTrue(&quot;TINYINT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L208" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L209" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="fc" id="L210">					passFlag |= (1 &lt;&lt; 2);</span>
-<span class="fc bfc" id="L211" title="All 2 branches covered.">				} else if (&quot;z&quot;.equals(name)){</span>
-<span class="fc" id="L212">					assertTrue(&quot;TINYINT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L213" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L214" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="fc" id="L215">					passFlag |= (1 &lt;&lt; 3);</span>
-<span class="fc bfc" id="L216" title="All 2 branches covered.">				} else if (&quot;srs_id&quot;.equals(name)){</span>
-<span class="fc" id="L217">					assertTrue(&quot;INTEGER&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L218" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L219" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="fc" id="L220">					passFlag |= (1 &lt;&lt; 4);</span>
-<span class="pc bpc" id="L221" title="1 of 2 branches missed.">				} else if (&quot;column_name&quot;.equals(name)){</span>
-<span class="fc" id="L222">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L223" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="pc bpc" id="L224" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 2, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
-<span class="fc" id="L225">					passFlag |= (1 &lt;&lt; 5);</span>
+<span class="fc" id="L1080">				final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L1081" title="All 2 branches covered.">				if (&quot;geometry_type_name&quot;.equals(name)){</span>
+<span class="fc" id="L1082">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L1083" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L1084" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="fc" id="L1085">					passFlag |= 1;</span>
+<span class="fc bfc" id="L1086" title="All 2 branches covered.">				} else if (&quot;table_name&quot;.equals(name)){</span>
+<span class="fc" id="L1087">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L1088" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L1089" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="fc" id="L1090">					passFlag |= (1 &lt;&lt; 1);</span>
+<span class="fc bfc" id="L1091" title="All 2 branches covered.">				} else if (&quot;m&quot;.equals(name)){</span>
+<span class="fc" id="L1092">					assertTrue(&quot;TINYINT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L1093" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L1094" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="fc" id="L1095">					passFlag |= (1 &lt;&lt; 2);</span>
+<span class="fc bfc" id="L1096" title="All 2 branches covered.">				} else if (&quot;z&quot;.equals(name)){</span>
+<span class="fc" id="L1097">					assertTrue(&quot;TINYINT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L1098" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L1099" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="fc" id="L1100">					passFlag |= (1 &lt;&lt; 3);</span>
+<span class="fc bfc" id="L1101" title="All 2 branches covered.">				} else if (&quot;srs_id&quot;.equals(name)){</span>
+<span class="fc" id="L1102">					assertTrue(&quot;INTEGER&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L1103" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L1104" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 0, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="fc" id="L1105">					passFlag |= (1 &lt;&lt; 4);</span>
+<span class="pc bpc" id="L1106" title="1 of 2 branches missed.">				} else if (&quot;column_name&quot;.equals(name)){</span>
+<span class="fc" id="L1107">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L1108" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="pc bpc" id="L1109" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) == 2, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);</span>
+<span class="fc" id="L1110">					passFlag |= (1 &lt;&lt; 5);</span>
 				}
-<span class="fc" id="L227">			} </span>
-<span class="pc bpc" id="L228" title="1 of 2 branches missed.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);			</span>
-<span class="pc bpc" id="L229" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L230">	}</span>
+<span class="fc" id="L1112">			} </span>
+<span class="pc bpc" id="L1113" title="1 of 2 branches missed.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID);			</span>
+<span class="pc bpc" id="L1114" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L1115">	}</span>
 
 	/**
 	 * Test case
@@ -241,25 +1126,25 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 22&quot;)
 	public void featureGeometryColumnsDataValues() throws SQLException {
-<span class="pc" id="L244">		try (		</span>
+<span class="pc" id="L1129">		try (		</span>
 				// 1
-<span class="fc" id="L246">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1131">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L248">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type = 'features';&quot;);</span>
+<span class="fc" id="L1133">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type = \'features\';&quot;);</span>
 				) {
 			// 2
-<span class="pc bpc" id="L251" title="1 of 2 branches missed.">			if (resultSet.next()){</span>
-<span class="pc" id="L252">				try (</span>
+<span class="pc bpc" id="L1136" title="1 of 2 branches missed.">			if (resultSet.next()){</span>
+<span class="pc" id="L1137">				try (</span>
 						// 3
-<span class="fc" id="L254">						final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1139">						final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L256">						final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type = 'features' AND table_name NOT IN (SELECT table_name FROM gpkg_geometry_columns);&quot;);</span>
+<span class="fc" id="L1141">						final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type = \'features\' AND table_name NOT IN (SELECT table_name FROM gpkg_geometry_columns);&quot;);</span>
 						) {
-<span class="pc bpc" id="L258" title="1 of 2 branches missed.">					assertTrue(!resultSet2.next(), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_MISMATCH);</span>
-<span class="pc bpc" id="L259" title="12 of 16 branches missed.">				}</span>
+<span class="pc bpc" id="L1143" title="1 of 2 branches missed.">					assertTrue(!resultSet2.next(), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_MISMATCH);</span>
+<span class="pc bpc" id="L1144" title="12 of 16 branches missed.">				}</span>
 			}			
-<span class="pc bpc" id="L261" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L262">	}</span>
+<span class="pc bpc" id="L1146" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L1147">	}</span>
 
 	/**
 	 * Test case
@@ -276,33 +1161,109 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 23, 26&quot;)
 	public void featureGeometryColumnsDataValuesTableName() throws SQLException {
-<span class="pc" id="L279">		try (</span>
+<span class="pc" id="L1164">		try (</span>
 				// 1
-<span class="fc" id="L281">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1166">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L283">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA foreign_key_list('gpkg_geometry_columns');&quot;);</span>
+<span class="fc" id="L1168">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA foreign_key_list(\'gpkg_geometry_columns\');&quot;);</span>
 				) {
-<span class="fc" id="L285">			boolean foundContents = false;</span>
-<span class="fc" id="L286">			boolean foundSpatialRefSys = false;</span>
+<span class="fc" id="L1170">			boolean foundContents = false;</span>
+<span class="fc" id="L1171">			boolean foundSpatialRefSys = false;</span>
 
 			// 2
-<span class="fc bfc" id="L289" title="All 2 branches covered.">			while (resultSet.next()){</span>
+<span class="fc bfc" id="L1174" title="All 2 branches covered.">			while (resultSet.next()){</span>
 				// 3
-<span class="fc" id="L291">				final String table = resultSet.getString(&quot;table&quot;);</span>
-<span class="fc bfc" id="L292" title="All 2 branches covered.">				if (&quot;gpkg_spatial_ref_sys&quot;.equals(table)){</span>
-<span class="pc bpc" id="L293" title="2 of 4 branches missed.">					if (&quot;srs_id&quot;.equals(resultSet.getString(&quot;from&quot;)) &amp;&amp; &quot;srs_id&quot;.equals(resultSet.getString(&quot;to&quot;))){</span>
-<span class="fc" id="L294">						foundSpatialRefSys = true;</span>
+<span class="fc" id="L1176">				final String table = resultSet.getString(&quot;table&quot;);</span>
+<span class="fc bfc" id="L1177" title="All 2 branches covered.">				if (&quot;gpkg_spatial_ref_sys&quot;.equals(table)){</span>
+<span class="pc bpc" id="L1178" title="2 of 4 branches missed.">					if (&quot;srs_id&quot;.equals(resultSet.getString(&quot;from&quot;)) &amp;&amp; &quot;srs_id&quot;.equals(resultSet.getString(&quot;to&quot;))){</span>
+<span class="fc" id="L1179">						foundSpatialRefSys = true;</span>
 					}
-<span class="pc bpc" id="L296" title="1 of 2 branches missed.">				} else if (&quot;gpkg_contents&quot;.equals(table)){</span>
-<span class="pc bpc" id="L297" title="2 of 4 branches missed.">					if (&quot;table_name&quot;.equals(resultSet.getString(&quot;from&quot;)) &amp;&amp; &quot;table_name&quot;.equals(resultSet.getString(&quot;to&quot;))){</span>
-<span class="fc" id="L298">						foundContents = true;</span>
+<span class="pc bpc" id="L1181" title="1 of 2 branches missed.">				} else if (&quot;gpkg_contents&quot;.equals(table)){</span>
+<span class="pc bpc" id="L1182" title="2 of 4 branches missed.">					if (&quot;table_name&quot;.equals(resultSet.getString(&quot;from&quot;)) &amp;&amp; &quot;table_name&quot;.equals(resultSet.getString(&quot;to&quot;))){</span>
+<span class="fc" id="L1183">						foundContents = true;</span>
 					}
 				}
-<span class="fc" id="L301">			}</span>
-<span class="pc bpc" id="L302" title="2 of 4 branches missed.">			assertTrue(foundContents &amp;&amp; foundSpatialRefSys, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_NO_FK);</span>
-<span class="pc bpc" id="L303" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L304">	}</span>
+<span class="fc" id="L1186">			}</span>
+<span class="pc bpc" id="L1187" title="2 of 4 branches missed.">			assertTrue(foundContents &amp;&amp; foundSpatialRefSys, ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_NO_FK);</span>
+<span class="pc bpc" id="L1188" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L1189">	}</span>
 
+
+	
+	   /**
+	    * Test case
+	    * {@code /opt/features/geometry_columns/data/data_values_table_name}
+	    * 
+	    * Verify that the table_name column values in the gpkg_geometry_columns table are valid.
+	    *
+	    * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-23&quot; target=
+	    *            &quot;_blank&quot;&gt;Data Values Table Name - Requirement 23&lt;/a&gt;
+	    * @throws SQLException
+	    *                If an SQL query causes an error
+	    */
+	    @Test( description = &quot;See OGC 12-128r14: Requirement 23&quot;)
+	    public void featureGeometryColumnsDataValuesTableNameNEW() throws SQLException
+	    {
+	        /*
+	         * Test Method
+	         *    Test as per 12-128r14
+	         *    1. PRAGMA foreign_key_list(gpkg_geometry_columns);
+			 *    2. Fail if there is no row designating table_name as a foreign key to table_name in gpkg_contents
+	         */
+<span class="pc bpc" id="L1213" title="1 of 2 branches missed.">	        if(this.hasGeometryColumnsTable)</span>
+	        {
+
+<span class="fc" id="L1216">	        	final Collection&lt;String&gt; reportFKIssues = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L1217">	        	int countResults = 0;</span>
+<span class="pc" id="L1218">		        try ( final Statement statement  = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1219">		                 final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA foreign_key_list(\'gpkg_geometry_columns\');&quot;))</span>
+		            {
+		        		
+		        		
+<span class="fc bfc" id="L1223" title="All 2 branches covered.">			            while(resultSet.next())</span>
+			            {
+<span class="fc" id="L1225">			            	Boolean testFailedForFKItem = true;</span>
+<span class="fc" id="L1226">			            	final String thisTableName = resultSet.getString(&quot;table&quot;);   // maybe not the right column?</span>
+			            	// final String thisColumnFrom = resultSet.getString(&quot;from&quot;);
+<span class="fc" id="L1228">			            	final String thisColumnTo = resultSet.getString(&quot;to&quot;);</span>
+<span class="fc" id="L1229">			            	countResults ++;</span>
+<span class="pc" id="L1230">	                    	try(final Statement preparedStatement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1231">	                                final ResultSet pragmaTableInfo   = preparedStatement.executeQuery(String.format(&quot;PRAGMA table_info(\'%s\');&quot;, thisTableName)))</span>
+	                            {
+	                        		
+<span class="fc bfc" id="L1234" title="All 4 branches covered.">	                                while(pragmaTableInfo.next() &amp;&amp; testFailedForFKItem)</span>
+	                                {
+<span class="fc" id="L1236">	                                	final String columnName = pragmaTableInfo.getString(&quot;name&quot;);</span>
+	                                
+<span class="fc bfc" id="L1238" title="All 2 branches covered.">	                                	if (thisColumnTo.equals(columnName))</span>
+	                                	{
+<span class="fc" id="L1240">	                                		testFailedForFKItem = false;</span>
+	                                	}
+<span class="fc" id="L1242">	                                }</span>
+<span class="pc bpc" id="L1243" title="12 of 16 branches missed.">	                            }</span>
+	                    	// failure if EITHER no table exists that matches the specified FK, the specified FK column in the table does not exist
+<span class="pc bpc" id="L1245" title="1 of 2 branches missed.">	                    	if (testFailedForFKItem) {</span>
+<span class="nc" id="L1246">	                    		reportFKIssues.add(thisTableName);</span>
+	                    	}
+
+<span class="fc" id="L1249">			            	}  // end while resultSet.next()</span>
+<span class="pc bpc" id="L1250" title="12 of 16 branches missed.">			            } // end try to get foreign key list</span>
+
+		        		// Check for the possible initial failure indicating there were no foreign keys specified at all
+<span class="pc bpc" id="L1253" title="1 of 2 branches missed.">		        		if (countResults == 0) {</span>
+<span class="nc" id="L1254">		        			reportFKIssues.add(&quot;No foreign key specified in gpkg_geometry_columns&quot;);</span>
+		        		}
+<span class="fc" id="L1256">		        		final String reportOut = String.join(&quot;, &quot;, reportFKIssues);</span>
+			            
+<span class="pc bpc" id="L1258" title="2 of 4 branches missed.">			            Assert.assertTrue((reportFKIssues == null || reportFKIssues.isEmpty()),</span>
+<span class="fc" id="L1259">			            		ErrorMessage.format(ErrorMessageKeys.FEATURE_FOREIGN_KEY_NOT_SPECIFIED_CORRECTLY,</span>
+			    						reportOut));
+		      } 
+	        	
+<span class="fc" id="L1263">	    }</span>
+		
+		
+		
 	/**
 	 * Test case
 	 * {@code /opt/features/geometry_columns/data/data_values_column_name}
@@ -315,36 +1276,61 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 24&quot;)
 	public void featureGeometryColumnsDataValuesColumnName() throws SQLException {
-<span class="pc" id="L318">		try (</span>
+<span class="pc" id="L1279">		try (</span>
 				// 1
-<span class="fc" id="L320">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1281">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L322">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name, column_name FROM gpkg_geometry_columns;&quot;);</span>
+<span class="fc" id="L1283">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name, column_name FROM gpkg_geometry_columns;&quot;);</span>
 				) {
 			// 2
-<span class="fc bfc" id="L325" title="All 2 branches covered.">			while (resultSet.next()){</span>
-<span class="fc" id="L326">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
-<span class="fc" id="L327">				final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
+<span class="fc bfc" id="L1286" title="All 2 branches covered.">			while (resultSet.next()){</span>
+<span class="fc" id="L1287">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
+<span class="fc" id="L1288">				final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
 
-<span class="pc" id="L329">				try (</span>
-<span class="fc" id="L330">						final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="pc" id="L1290">				try (</span>
+<span class="fc" id="L1291">						final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L332">						final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;PRAGMA table_info('%s');&quot;, tableName));</span>
+<span class="fc" id="L1293">						final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;PRAGMA table_info(\'%s\');&quot;, tableName));</span>
 						) {
-<span class="fc" id="L334">					boolean foundMatch = false;</span>
+<span class="fc" id="L1295">					boolean foundMatch = false;</span>
 
-<span class="pc bpc" id="L336" title="1 of 2 branches missed.">					while (resultSet2.next()) {</span>
-<span class="fc bfc" id="L337" title="All 2 branches covered.">						if (resultSet2.getString(&quot;name&quot;).equals(columnName)){</span>
-<span class="fc" id="L338">							foundMatch = true;</span>
-<span class="fc" id="L339">							break;</span>
+<span class="pc bpc" id="L1297" title="1 of 2 branches missed.">					while (resultSet2.next()) {</span>
+<span class="fc bfc" id="L1298" title="All 2 branches covered.">						if (resultSet2.getString(&quot;name&quot;).equals(columnName)){</span>
+<span class="fc" id="L1299">							foundMatch = true;</span>
+<span class="fc" id="L1300">							break;</span>
 						}
 					}
 
-<span class="fc" id="L343">					assertTrue(foundMatch, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_COL, tableName, columnName));</span>
-<span class="pc bpc" id="L344" title="12 of 16 branches missed.">				}</span>
-<span class="fc" id="L345">			}	</span>
-<span class="pc bpc" id="L346" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L347">	}</span>
+<span class="fc" id="L1304">					assertTrue(foundMatch, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_COL, tableName, columnName));</span>
+<span class="pc bpc" id="L1305" title="12 of 16 branches missed.">				}</span>
+<span class="fc" id="L1306">			}	</span>
+<span class="pc bpc" id="L1307" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L1308">	}</span>
+
+	/**
+	 * Test case
+	 * {@code /opt/features/geometry_columns/data/data_values_srs_id_match}
+	 *
+	 * @see &lt;a href=&quot;_requirement-146&quot; target= &quot;_blank&quot;&gt;Vector
+	 *      Features Geometry Columns Column - Requirement 146&lt;/a&gt;
+	 *
+	 * @throws SQLException
+	 *             If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 146&quot;)
+	public void featureGeometryColumnsDataValuesSrsId() throws SQLException {
+<span class="pc" id="L1322">		try (</span>
+			// 1
+<span class="fc" id="L1324">			final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L1326">			final ResultSet resultSet = statement.executeQuery(&quot;SELECT a.srs_id srs_id, a.table_name tn FROM gpkg_geometry_columns a, gpkg_contents b WHERE a.table_name = b.table_name and a.srs_id != b.srs_id&quot;);</span>
+		) {
+			// 2
+<span class="pc bpc" id="L1329" title="1 of 2 branches missed.">			if (resultSet.next()){</span>
+<span class="nc" id="L1330">				fail(ErrorMessage.format(ErrorMessageKeys.SRS_MISMATCH, &quot;gpkg_geometry_columns&quot;, resultSet.getInt(&quot;srs_id&quot;), resultSet.getString(&quot;tn&quot;)));</span>
+			}
+<span class="pc bpc" id="L1332" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L1333">	}</span>
 
 	/**
 	 * Test case
@@ -358,41 +1344,41 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 25&quot;)
 	public void featureGeometryColumnsDataValuesGeometryType() throws SQLException {
-<span class="pc" id="L361">		try (</span>
+<span class="pc" id="L1347">		try (</span>
 				// 1
-<span class="fc" id="L363">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1349">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L365">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns&quot;);</span>
+<span class="fc" id="L1351">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns&quot;);</span>
 				) {
 			// 2
-<span class="fc bfc" id="L368" title="All 2 branches covered.">			while (resultSet.next()){</span>
+<span class="fc bfc" id="L1354" title="All 2 branches covered.">			while (resultSet.next()){</span>
 				// 3
-<span class="fc" id="L370">				final String geometryTypeName = resultSet.getString(&quot;geometry_type_name&quot;);</span>
-<span class="fc" id="L371">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
-<span class="fc" id="L372">				final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
+<span class="fc" id="L1356">				final String geometryTypeName = resultSet.getString(&quot;geometry_type_name&quot;);</span>
+<span class="fc" id="L1357">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
+<span class="fc" id="L1358">				final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
 
-<span class="fc" id="L374">				boolean pass = false;</span>
+<span class="fc" id="L1360">				boolean pass = false;</span>
 
-<span class="fc bfc" id="L376" title="All 2 branches covered.">				if (getGeopackageVersion().equals(GeoPackageVersion.V120)){</span>
-<span class="fc" id="L377">					pass = ALLOWED_GEOMETRY_TYPES.contains(geometryTypeName);</span>
+<span class="fc bfc" id="L1362" title="All 2 branches covered.">				if (getGeopackageVersion().equals(GeoPackageVersion.V120)){</span>
+<span class="fc" id="L1363">					pass = ALLOWED_GEOMETRY_TYPES.contains(geometryTypeName);</span>
 				} else {
-<span class="fc" id="L379">					final Iterator&lt;String&gt; iterator = ALLOWED_GEOMETRY_TYPES.iterator();</span>
-<span class="pc bpc" id="L380" title="1 of 2 branches missed.">					while(iterator.hasNext()){</span>
-<span class="fc bfc" id="L381" title="All 2 branches covered.">						if (geometryTypeName.equalsIgnoreCase(iterator.next())){</span>
-<span class="fc" id="L382">							pass = true;</span>
-<span class="fc" id="L383">							break;</span>
+<span class="fc" id="L1365">					final Iterator&lt;String&gt; iterator = ALLOWED_GEOMETRY_TYPES.iterator();</span>
+<span class="pc bpc" id="L1366" title="1 of 2 branches missed.">					while(iterator.hasNext()){</span>
+<span class="fc bfc" id="L1367" title="All 2 branches covered.">						if (geometryTypeName.equalsIgnoreCase(iterator.next())){</span>
+<span class="fc" id="L1368">							pass = true;</span>
+<span class="fc" id="L1369">							break;</span>
 						}
 					}
 				}
 
-<span class="fc bfc" id="L388" title="All 2 branches covered.">				if (!pass) {</span>
-<span class="fc" id="L389">					pass = isExtendedType(tableName, columnName);</span>
+<span class="fc bfc" id="L1374" title="All 2 branches covered.">				if (!pass) {</span>
+<span class="fc" id="L1375">					pass = isExtendedType(tableName, columnName);</span>
 				}
 
-<span class="fc" id="L392">				assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName, tableName));</span>
-<span class="fc" id="L393">			}</span>
-<span class="pc bpc" id="L394" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L395">	}</span>
+<span class="fc" id="L1378">				assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName, tableName));</span>
+<span class="fc" id="L1379">			}</span>
+<span class="pc bpc" id="L1380" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L1381">	}</span>
 
 	/**
 	 * Test case
@@ -406,27 +1392,27 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 27&quot;)
 	public void featureGeometryColumnsDataValuesZ() throws SQLException {
-<span class="pc" id="L409">		try (</span>
+<span class="pc" id="L1395">		try (</span>
 				// 1
-<span class="fc" id="L411">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1397">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L413">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT z FROM gpkg_geometry_columns&quot;);</span>
+<span class="fc" id="L1399">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT z FROM gpkg_geometry_columns&quot;);</span>
 				) {
 			// 2
-<span class="pc bpc" id="L416" title="1 of 2 branches missed.">			if (resultSet.next()){</span>
-<span class="pc" id="L417">				try (</span>
+<span class="pc bpc" id="L1402" title="1 of 2 branches missed.">			if (resultSet.next()){</span>
+<span class="pc" id="L1403">				try (</span>
 						// 3
-<span class="fc" id="L419">						final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1405">						final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L421">						final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT z FROM gpkg_geometry_columns WHERE z NOT IN (0,1,2)&quot;);</span>
+<span class="fc" id="L1407">						final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT z FROM gpkg_geometry_columns WHERE z NOT IN (0,1,2)&quot;);</span>
 						) {
-<span class="pc bpc" id="L423" title="1 of 2 branches missed.">					if(resultSet2.next()){</span>
-<span class="nc" id="L424">						assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_Z, resultSet2.getInt(&quot;z&quot;)));</span>
+<span class="pc bpc" id="L1409" title="1 of 2 branches missed.">					if(resultSet2.next()){</span>
+<span class="nc" id="L1410">						assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_Z, resultSet2.getInt(&quot;z&quot;)));</span>
 					}
-<span class="pc bpc" id="L426" title="12 of 16 branches missed.">				}</span>
+<span class="pc bpc" id="L1412" title="12 of 16 branches missed.">				}</span>
 			}
-<span class="pc bpc" id="L428" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L429">	}</span>
+<span class="pc bpc" id="L1414" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L1415">	}</span>
 
 	/**
 	 * Test case
@@ -440,27 +1426,27 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 28&quot;)
 	public void featureGeometryColumnsDataValuesM() throws SQLException {
-<span class="pc" id="L443">		try (</span>
+<span class="pc" id="L1429">		try (</span>
 				// 1
-<span class="fc" id="L445">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1431">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L447">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT m FROM gpkg_geometry_columns&quot;);</span>
+<span class="fc" id="L1433">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT m FROM gpkg_geometry_columns&quot;);</span>
 				) {
 			// 2
-<span class="pc bpc" id="L450" title="1 of 2 branches missed.">			if (resultSet.next()){</span>
-<span class="pc" id="L451">				try (</span>
+<span class="pc bpc" id="L1436" title="1 of 2 branches missed.">			if (resultSet.next()){</span>
+<span class="pc" id="L1437">				try (</span>
 						// 3
-<span class="fc" id="L453">						final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1439">						final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L455">						final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT m FROM gpkg_geometry_columns WHERE m NOT IN (0,1,2)&quot;);</span>
+<span class="fc" id="L1441">						final ResultSet resultSet2 = statement2.executeQuery(&quot;SELECT m FROM gpkg_geometry_columns WHERE m NOT IN (0,1,2)&quot;);</span>
 						) {
-<span class="pc bpc" id="L457" title="1 of 2 branches missed.">					if(resultSet2.next()){</span>
-<span class="nc" id="L458">						assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_M, resultSet2.getInt(&quot;m&quot;)));</span>
+<span class="pc bpc" id="L1443" title="1 of 2 branches missed.">					if(resultSet2.next()){</span>
+<span class="nc" id="L1444">						assertTrue(false, ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_M, resultSet2.getInt(&quot;m&quot;)));</span>
 					}
-<span class="pc bpc" id="L460" title="12 of 16 branches missed.">				}</span>
+<span class="pc bpc" id="L1446" title="12 of 16 branches missed.">				}</span>
 			}
-<span class="pc bpc" id="L462" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L463">	}</span>
+<span class="pc bpc" id="L1448" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L1449">	}</span>
 
 	/**
 	 * Test case
@@ -474,27 +1460,27 @@ import org.testng.annotations.Test;
 	 */
 	@Test(description = &quot;See OGC 12-128r13: Requirement 30&quot;)
 	public void featureTableOneGeometryColumn() throws SQLException {
-<span class="pc" id="L477">		try (		</span>
+<span class="pc" id="L1463">		try (		</span>
 				// 1
-<span class="fc" id="L479">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1465">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L481">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type='features'&quot;);</span>
+<span class="fc" id="L1467">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type=\'features\'&quot;);</span>
 				) {
 			// 2
-<span class="fc bfc" id="L484" title="All 2 branches covered.">			while (resultSet.next()){</span>
+<span class="fc bfc" id="L1470" title="All 2 branches covered.">			while (resultSet.next()){</span>
 				// 3
-<span class="fc" id="L486">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
-<span class="pc" id="L487">				try (</span>
-<span class="fc" id="L488">						final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1472">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
+<span class="pc" id="L1473">				try (</span>
+<span class="fc" id="L1474">						final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L490">						final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;SELECT count(*) FROM gpkg_geometry_columns WHERE table_name = '%s'&quot;, tableName));</span>
+<span class="fc" id="L1476">						final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;SELECT count(*) FROM gpkg_geometry_columns WHERE table_name = \'%s\'&quot;, tableName));</span>
 						) {
-<span class="fc" id="L492">					resultSet2.next();</span>
-<span class="pc bpc" id="L493" title="1 of 2 branches missed.">					assertTrue(resultSet2.getInt(1) == 1, ErrorMessageKeys.FEATURES_ONE_GEOMETRY_COLUMN);</span>
-<span class="pc bpc" id="L494" title="12 of 16 branches missed.">				}</span>
-<span class="fc" id="L495">			}</span>
-<span class="pc bpc" id="L496" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L497">	}</span>
+<span class="fc" id="L1478">					resultSet2.next();</span>
+<span class="pc bpc" id="L1479" title="1 of 2 branches missed.">					assertTrue(resultSet2.getInt(1) == 1, ErrorMessageKeys.FEATURES_ONE_GEOMETRY_COLUMN);</span>
+<span class="pc bpc" id="L1480" title="12 of 16 branches missed.">				}</span>
+<span class="fc" id="L1481">			}</span>
+<span class="pc bpc" id="L1482" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L1483">	}</span>
 
 	/**
 	 * Test case
@@ -509,48 +1495,468 @@ import org.testng.annotations.Test;
 	@Test(description = &quot;See OGC 12-128r13: Requirement 31&quot;)
 	public void featureTableGeometryColumnType() throws SQLException {
 		// We're just going to skip this test on older GeoPackages and hope for the best.
-<span class="fc bfc" id="L512" title="All 2 branches covered.">		if (getGeopackageVersion().equals(GeoPackageVersion.V120)){</span>
-<span class="pc" id="L513">			try (</span>
+<span class="fc bfc" id="L1498" title="All 2 branches covered.">		if (getGeopackageVersion().equals(GeoPackageVersion.V120)){</span>
+<span class="pc" id="L1499">			try (</span>
 					// 1
-<span class="fc" id="L515">					final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1501">					final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L517">					final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = 'features')&quot;);</span>
+<span class="fc" id="L1503">					final ResultSet resultSet = statement.executeQuery(</span>
+					&quot;SELECT table_name, column_name, geometry_type_name FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_contents WHERE data_type = \'features\')&quot;);
 					) {
 				// 2
-<span class="fc bfc" id="L520" title="All 2 branches covered.">				while (resultSet.next()){</span>
+<span class="fc bfc" id="L1507" title="All 2 branches covered.">				while (resultSet.next()){</span>
 					// 2a
-<span class="fc" id="L522">					final String geometryTypeName = resultSet.getString(&quot;geometry_type_name&quot;);</span>
+<span class="fc" id="L1509">					final String geometryTypeName = resultSet.getString(&quot;geometry_type_name&quot;);</span>
 					// This assertion being removed as per https://github.com/opengeospatial/geopackage/issues/347
 					//				assertTrue(allowedGeometryTypes.contains(geometryTypeName), ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
 
 					//2b
-<span class="fc" id="L527">					final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
-<span class="fc" id="L528">					final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
-<span class="pc" id="L529">					try (</span>
-<span class="fc" id="L530">							final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L1514">					final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
+<span class="fc" id="L1515">					final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
+<span class="pc" id="L1516">					try (</span>
+<span class="fc" id="L1517">							final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L532">							final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;PRAGMA table_info('%s')&quot;, tableName));</span>
+<span class="fc" id="L1519">							final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;PRAGMA table_info(\'%s\')&quot;, tableName));</span>
 							) {
-<span class="pc bpc" id="L534" title="1 of 2 branches missed.">						while (resultSet2.next()){</span>
-<span class="fc bfc" id="L535" title="All 2 branches covered.">							if (columnName.equals(resultSet2.getString(&quot;name&quot;))) {</span>
-<span class="fc" id="L536">								assertTrue(geometryTypeName.equals(resultSet2.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_MISMATCH);</span>
-<span class="fc" id="L537">								break;</span>
+<span class="pc bpc" id="L1521" title="1 of 2 branches missed.">						while (resultSet2.next()){</span>
+<span class="fc bfc" id="L1522" title="All 2 branches covered.">							if (columnName.equals(resultSet2.getString(&quot;name&quot;))) {</span>
+<span class="fc" id="L1523">								assertTrue(geometryTypeName.equals(resultSet2.getString(&quot;type&quot;)), ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_MISMATCH);</span>
+<span class="fc" id="L1524">								break;</span>
 							}
 						}
-<span class="pc bpc" id="L540" title="12 of 16 branches missed.">					}</span>
-<span class="fc" id="L541">				}				</span>
-<span class="pc bpc" id="L542" title="12 of 16 branches missed.">			}</span>
+<span class="pc bpc" id="L1527" title="12 of 16 branches missed.">					}</span>
+<span class="fc" id="L1528">				}				</span>
+<span class="pc bpc" id="L1529" title="12 of 16 branches missed.">			}</span>
 		}
-<span class="fc" id="L544">	}</span>
+<span class="fc" id="L1531">	}</span>
 
-	// TODO: Don't know how to test R32/33 as they require a spatial library
 
-<span class="fc" id="L548">	private static final Collection&lt;String&gt; ALLOWED_GEOMETRY_TYPES = </span>
-<span class="fc" id="L549">			Arrays.asList(&quot;GEOMETRY&quot;,&quot;POINT&quot;,&quot;LINESTRING&quot;,&quot;POLYGON&quot;,&quot;MULTIPOINT&quot;,&quot;MULTILINESTRING&quot;,&quot;MULTIPOLYGON&quot;,&quot;GEOMETRYCOLLECTION&quot;);</span>
-	protected static Collection&lt;String&gt; getAllowedGeometryTypes() {
-<span class="fc" id="L551">		return ALLOWED_GEOMETRY_TYPES;</span>
+	
+
+    // *************************SUPPORTING  METHODS *****************    SUPPORTING METHODS ***********************
+    
+    /**
+     * Returns an integer from a byte array and provides for
+     * byte swap if necessary.
+     *
+     * @param bytesIn The integer bytes as an array; must be number of bytes in an integer
+     * @param swapFlag Boolean indicator for whether the bytes are to be swapped or not
+     *
+     * @return Integer value of the bytes
+     * @throws IllegalArgumentException if the byte array length is not equivalent to the number of bytes in an integer
+     */   
+    private int getIntegerFromBytesWithPossibleSwap(byte[] bytesIn, boolean swapFlag) {
+<span class="fc" id="L1549">   	 int returnValue = 0;</span>
+   	// Verify length of byte array is correct, throw and error on failure
+<span class="pc bpc" id="L1551" title="1 of 2 branches missed.">   	 if (bytesIn.length == Integer.BYTES) {</span>
+   		 // Based on endianness of this platform and the swapFlag, and our intends use of BigInteger, which assumes BigEndian data,
+   		 // determine whether the bytes will be swapped or not.  Note: We could do this the old-fashioned way with shifts as an alternative.
+<span class="pc bpc" id="L1554" title="2 of 8 branches missed.">			if ((!swapFlag &amp;&amp; this.NativeOrderIsBE) || (swapFlag &amp;&amp; !this.NativeOrderIsBE)) {   </span>
+<span class="fc" id="L1555">				returnValue = new BigInteger(bytesIn).intValue();</span>
+				} else {
+<span class="fc" id="L1557">					returnValue = Integer.reverseBytes(new BigInteger(bytesIn).intValue());</span>
+				}
+   	 } else {
+<span class="nc" id="L1560">   		 throw new IllegalArgumentException(&quot;Invalid byte array length&quot;);</span>
+   	 }
+<span class="fc" id="L1562">   	 return returnValue;</span>
+    }
+
+    /**
+     * Returns an long integer from a byte array and provides for
+     * byte swap if necessary.
+     *
+     * @param bytesIn The long bytes as an array of bytes; must be number of bytes in an long integer
+     * @param swapFlag Boolean indicator for whether the bytes are to be swapped or not
+     *
+     * @return Long value of the bytes
+     * @throws IllegalArgumentException if the byte array length is not equivalent to the number of bytes in a Long integer
+     */          
+    private long getLongFromBytesWithPossibleSwap(byte[] bytesIn, boolean swapFlag) {
+<span class="fc" id="L1576">   	 long returnValue = 0;</span>
+   	 // Verify length of byte array is correct, throw and error on failure
+<span class="pc bpc" id="L1578" title="1 of 2 branches missed.">   	 if (bytesIn.length == Long.BYTES) {</span>
+   		 // Based on endianness of this platform and the swapFlag, and our intends use of BigInteger, which assumes BigEndian data,
+   		 // determine whether the bytes will be swapped or not.  Note: We could do this the with bit shifts as an alternative; may be faster.
+          	 // alternative method: (long)(bytesIn[ii+0] &lt;&lt; 56 | (bytesIn[ii+1] &amp; 0xFF) &lt;&lt; 48 | (bytesIn[ii+2] &amp; 0xFF) &lt;&lt; 40 | (bytesIn[ii+3] &amp; 0xFF) &lt;&lt; 32 | (bytesIn[ii+4] &amp; 0xFF) &lt;&lt; 24 | (bytesIn[ii+5] &amp; 0xFF) &lt;&lt; 16 | (bytesIn[ii+6] &amp; 0xFF) &lt;&lt; 8 | (bytesIn[ii+7] &amp; 0xFF));
+			 // alternative method: (long)(bytesIn[ii+7] &lt;&lt; 56 | (bytesIn[ii+6] &amp; 0xFF) &lt;&lt; 48 | (bytesIn[ii+5] &amp; 0xFF) &lt;&lt; 40 | (bytesIn[ii+4] &amp; 0xFF) &lt;&lt; 32 | (bytesIn[ii+3] &amp; 0xFF) &lt;&lt; 24 | (bytesIn[ii+2] &amp; 0xFF) &lt;&lt; 16 | (bytesIn[ii+1] &amp; 0xFF) &lt;&lt; 8 | (bytesIn[ii+0] &amp; 0xFF));     
+<span class="pc bpc" id="L1583" title="2 of 8 branches missed.">			if ((!swapFlag &amp;&amp; this.NativeOrderIsBE) || (swapFlag &amp;&amp; !this.NativeOrderIsBE)) {</span>
+<span class="fc" id="L1584">				returnValue = new BigInteger(bytesIn).longValue();</span>
+				} else {
+<span class="fc" id="L1586">					returnValue = Long.reverseBytes(new BigInteger(bytesIn).longValue());</span>
+				}
+   	 } else {
+<span class="nc" id="L1589">   		 throw new IllegalArgumentException(&quot;Invalid byte array length&quot;);</span>
+   	 }
+<span class="fc" id="L1591">   	 return returnValue;</span>
+    }
+
+    /**
+     * Returns an double from a byte array and provides for
+     * byte swap if necessary. Upon detection of NaN
+     *
+     * @param bytesIn The integer bytes as an array; must be number of bytes in an integer
+     * @param swapFlag Boolean indicator for whether the bytes are to be swapped or not
+     *
+     * @return Double value of the bytes
+     * 
+     * @throws IllegalArgumentException if the byte array length is not equivalent to the number of bytes in a Double
+     * @throws IllegalArgumentException if any value is NaN
+     */ 
+    private double getDoubleFromBytesWithPossibleSwap(byte[] bytesIn, boolean swapFlag) {
+<span class="fc" id="L1607">   	 double returnValue = 0;</span>
+   	// Verify length of byte array is correct, throw and error on failure
+<span class="pc bpc" id="L1609" title="1 of 2 branches missed.">   	 if (bytesIn.length == Double.BYTES) {</span>
+   		 // Cannot simply convert the bytes into a double as the floating point processor may change the
+   		 // bits on us during the conversion. First get the bytes into a Long and then use the LongBitsToDouble
+   		 // to move the bits into a double.
+<span class="fc" id="L1613">   		 long tempLong = getLongFromBytesWithPossibleSwap(bytesIn, swapFlag);</span>
+   		 // If the tempLong is NaN, throw an error that the double is not valid
+   		 
+   		 // Need to test for NaN here as conversion to Double may change the bits. Java encodes NaN a infinity
+<span class="pc bpc" id="L1617" title="1 of 2 branches missed.">   		 if (isLongRepresentationNaN(tempLong))</span>
+   		 {
+<span class="nc" id="L1619">   			 throw new IllegalArgumentException(&quot;NaN&quot;);</span>
+   		 } 
+<span class="fc" id="L1621">       	 returnValue = Double.longBitsToDouble(tempLong);</span>
+<span class="fc" id="L1622">   	 } else {</span>
+<span class="nc" id="L1623">   		 throw new IllegalArgumentException(&quot;Invalid byte array length&quot;);</span>
+   	 }
+<span class="fc" id="L1625">   	 return returnValue;</span>
+    }
+    
+    
+
+    /**
+     * Detects a numeric representation as NaN if provided a long integer representation
+     * of a double. This tests for the NaN as specified in 12-128r14 Table 6. bit layout of GeoPackageBinary flags byte  NaN
+     *
+     * @param inValue The long integer representation of the bits of a double
+     *
+     * @return Boolean true if NaN, false if not NaN
+     */ 
+    private boolean isLongRepresentationNaN(long inValue)
+    {
+
+<span class="pc bpc" id="L1641" title="3 of 4 branches missed.">   	 return ((this.NativeOrderIsBE &amp;&amp; (inValue == 0x7ff8000000000000L)) || </span>
+<span class="pc bpc" id="L1642" title="2 of 4 branches missed.">   		(!this.NativeOrderIsBE &amp;&amp; (inValue == 0x000000000000f87fL))) ? true : false;</span>
+    }
+    
+
+    /**
+     * Test for Java representation of Double NaN or Infinity which may be the Java representation
+     * of the NaN as specified in OGC 12-128r14 Table 6.
+     *
+     * @param inValue The double value that is to be tested
+     *
+     * @return Boolean true if NaN, false if not NaN
+     */ 
+    private boolean isDoubleRepresentationNaNorInfinity(Double inValue) 
+    {
+<span class="pc bpc" id="L1656" title="2 of 4 branches missed.">   	 return (Double.isNaN(inValue) || Double.isInfinite(inValue)) ? true : false;</span>
+    }
+    
+    
+
+    /**
+     * Get the geometry type string given the geometry type integer from WKB.
+     * of the NaN as specified in OGC 12-128r14 Table 28.
+     *
+     * @param geomTypeIn The integer geometry type from WKB
+     *
+     * @return String geometry type. If the geometry type is not found, returns &quot;UNSUPPORTED&quot;
+     */ 
+    
+
+    
+    private String getGeomTypeFromNum(int geomTypeIn) {
+<span class="fc" id="L1673">    	String result = &quot;&quot;;</span>
+<span class="pc bpc" id="L1674" title="4 of 16 branches missed.">    	switch(geomTypeIn) {</span>
+    	// Table 28. Geometry Type Codes
+    	case 0: case 1000: case 2000: case 3000:
+<span class="nc" id="L1677">    		result = geomGEOMETRY;</span>
+<span class="nc" id="L1678">    		break;</span>
+    	case 1: case 1001: case 2001: case 3001:
+<span class="fc" id="L1680">    		result =  geomPOINT;</span>
+<span class="fc" id="L1681">    		break;</span>
+    	case 2: case 1002: case 2002: case 3002:
+<span class="fc" id="L1683">    		result =  geomLINESTRING;</span>
+<span class="fc" id="L1684">    		break;</span>
+    	case 3: case 1003: case 2003: case 3003:
+<span class="fc" id="L1686">    		result =  geomPOLYGON;</span>
+<span class="fc" id="L1687">    		break;</span>
+    	case 4: case 1004: case 2004: case 3004:
+<span class="fc" id="L1689">    		result =  geomMULTIPOINT;</span>
+<span class="fc" id="L1690">    		break;</span>
+    	case 5: case 1005: case 2005: case 3005:
+<span class="fc" id="L1692">    		result =  geomMULTILINESTRING;</span>
+<span class="fc" id="L1693">    		break;</span>
+    	case 6: case 1006: case 2006: case 3006:
+<span class="fc" id="L1695">    		result =  geomMULTIPOLYGON;</span>
+<span class="fc" id="L1696">    		break;</span>
+    	case 7: case 1007: case 2007: case 3007:
+<span class="fc" id="L1698">    		result =  geomGEOMETRYCOLLECTION;</span>
+<span class="fc" id="L1699">    		break;</span>
+    	// Table 28. Geometry Type Codes (Extension)
+    	case 8: case 1008: case 2008: case 3008:
+<span class="fc" id="L1702">    		result =  geomCIRCULARSTRING;</span>
+<span class="fc" id="L1703">    		break;</span>
+    	case 9: case 1009: case 2009: case 3009:
+<span class="fc" id="L1705">    		result =  geomCOMPOUNDCURVE;</span>
+<span class="fc" id="L1706">    		break;</span>
+    	case 10: case 1010: case 2010: case 3010:
+<span class="fc" id="L1708">    		result =  geomCURVEPOLYGON;</span>
+<span class="fc" id="L1709">    		break;</span>
+    	case 11: case 1011: case 2011: case 3011:
+<span class="fc" id="L1711">    		result =  geomMULTICURVE;</span>
+<span class="fc" id="L1712">    		break;</span>
+    	case 12: case 1012: case 2012: case 3012:
+<span class="fc" id="L1714">    		result =  geomMULTISURFACE;</span>
+<span class="fc" id="L1715">    		break;</span>
+    	case 13: case 1013: case 2013: case 3013:
+<span class="nc" id="L1717">    		result =  geomCURVE;</span>
+<span class="nc" id="L1718">    		break;</span>
+    	case 14: case 1014: case 2014: case 3014:
+<span class="nc" id="L1720">    		result =  geomSURFACE;</span>
+<span class="nc" id="L1721">    		break;</span>
+    	default:
+<span class="nc" id="L1723">    		result =  geomUNSUPPORTED;    // Specific value is returned to enable tests that detect this rather than look for nothing</span>
+    		break;
+    	}
+<span class="fc" id="L1726">    	return result;</span>
+    }
+
+    
+    
+    /**
+     * Test if the geometry is assignable. A geometry may be more specific within a
+     * feature subtype than the superclass. 
+     *
+     * @param expectedGeometryName The geometry type expected
+     * @param actualGeometryName   the actual geometry that has been specified
+     *
+     * @return Integer 1 if assignable, 0 if not assignable
+     */ 
+    private int IsAssignable(String supertypeGeometry, String subtypeGeometry) {
+<span class="fc" id="L1741">    	int returnValue = 0;</span>
+
+    	// Verify the string input contains values
+<span class="pc bpc" id="L1744" title="2 of 4 branches missed.">    	if (!supertypeGeometry.isEmpty() &amp;&amp; !subtypeGeometry.isEmpty()) {</span>
+    		// Return 1 if the stings are the same or if the supertype and subtype are valid together
+<span class="fc bfc" id="L1746" title="All 2 branches covered.">        	if (supertypeGeometry.equals(subtypeGeometry) || </span>
+<span class="pc bpc" id="L1747" title="1 of 2 branches missed.">        		( GeometrySubtypesAllowed.containsKey(supertypeGeometry) &amp;&amp;</span>
+<span class="pc bpc" id="L1748" title="1 of 2 branches missed.">        		( GeometrySubtypesAllowed.get(supertypeGeometry)).contains(subtypeGeometry)) ) </span>
+        	{
+<span class="fc" id="L1750">        		returnValue = 1;</span>
+        	}
+    	}
+<span class="fc" id="L1753">    	return returnValue;</span>
+    }
+    
+
+    /**
+     * Return a subset byte array from a larger starting byte array
+     *
+     * @param bytesIn         The source byte array
+     * @param startIndex      The starting index from which the subset shall begin
+     * @param numberOfBytes   The number of bytes the subset shall contain
+     *           
+     * @return Byte[] subsetArray subset byte array
+     * 
+     * @throws IllegalArgumentException if the number of bytes is invalid or the start index + number of bytes desired exceeds the length of the source array
+     */ 
+   private byte[] byteArraySubset(byte[] bytesIn, int startIndex, int numberOfBytes )
+   {
+<span class="fc" id="L1770">   	byte[] subsetArray = new byte[numberOfBytes];</span>
+<span class="pc bpc" id="L1771" title="1 of 2 branches missed.">   	if ((startIndex + numberOfBytes) &lt;= bytesIn.length ) {</span>
+	        
+<span class="fc" id="L1773">	        System.arraycopy(bytesIn, startIndex, subsetArray, 0, numberOfBytes);</span>
+	        
+   	} else {
+<span class="nc" id="L1776">   		throw new IllegalArgumentException(</span>
+<span class="nc" id="L1777">   				String.format(</span>
+<span class="nc" id="L1778">   						&quot;Invalid numberOfBytes value: %d or startIndex %d. The startIndex + numberOfBytes exceed the length of the byte array.&quot;, numberOfBytes, startIndex));</span>
+   	}
+<span class="fc" id="L1780">   	return subsetArray;</span>
+   }
+
+   
+
+   /**
+    * Get the set of envelope double values from the byte array
+    *
+    * @param bytesExpected    A count of the number of bytes expected. This value must be a multiple of 8 (the size of a double)
+    * @param swapFlag Boolean indicator for whether the bytes are to be swapped or not
+    * @param bytesIn          The integer bytes as an array; must be number of bytes in an integer
+    * @param envelopeValues   Hash map in which the envelope values will be placed
+    *
+    * @return boolean true if values are returned, false if all values are 0
+    * 
+    * @throws IllegalArgumentException if the byte array length is invalid
+    * @throws IllegalArgumentException if any value is NaN
+    */ 
+   private boolean mygetEnvelope(int bytesExpected, boolean swapFlag, byte[] bytesIn, Map&lt;String, Double&gt; envelopeValues) {
+
+<span class="fc" id="L1800">   	boolean allzerovalues = true;</span>
+<span class="fc" id="L1801">   	int envelopeIndex = 0;</span>
+   	
+<span class="fc" id="L1803">   	Assert.assertTrue(envelopeValues.isEmpty(),</span>
+				 &quot;Attempt to get envelope when there are already values&quot;);
+   	
+
+<span class="pc bpc" id="L1807" title="3 of 6 branches missed.">   	if (bytesExpected &gt; 0  &amp;&amp; (bytesExpected % Double.BYTES == 0)  &amp;&amp; bytesIn.length == bytesExpected) {</span>
+<span class="fc bfc" id="L1808" title="All 2 branches covered.">			for (int ii = 0; ii &lt; bytesExpected; ii += Double.BYTES) {</span>
+<span class="fc" id="L1809">				final byte[] envibtem = byteArraySubset(bytesIn, ii, Double.BYTES);    // 8 bytes</span>
+				try {
+<span class="fc" id="L1811">					final Double tempDouble = this.getDoubleFromBytesWithPossibleSwap(envibtem, swapFlag);</span>
+					
+<span class="pc bpc" id="L1813" title="1 of 2 branches missed.">					if (this.isDoubleRepresentationNaNorInfinity(tempDouble)) {</span>
+<span class="nc" id="L1814">						throw new IllegalArgumentException(String.format(&quot;NaN value detected.&quot;));</span>
+					}
+					// System.out.println(String.format(&quot;Envelope item %d with value %f&quot;, ii, tempDouble));
+   				 //          1 = envelope is [minx, maxx, miny, maxy] 32 bytes envelope
+   				 //          2 = envelope is [minx, maxx, miny, maxy, minz, maxz] 48 bytes envelope
+   				 //          3 = envelope is [minx, maxx, miny, maxy, minz, maxz, minm, maxm]  64 bytes envelope
+<span class="pc bpc" id="L1820" title="3 of 9 branches missed.">					switch(envelopeIndex) {</span>
+					case 0: 
+<span class="fc" id="L1822">						envelopeValues.put(myminx, tempDouble);</span>
+<span class="fc" id="L1823">						break;</span>
+					case 1:
+<span class="fc" id="L1825">						envelopeValues.put(mymaxx, tempDouble);</span>
+<span class="fc" id="L1826">						break;		</span>
+					case 2:
+<span class="fc" id="L1828">						envelopeValues.put(myminy, tempDouble);</span>
+<span class="fc" id="L1829">						break;		</span>
+					case 3:
+<span class="fc" id="L1831">						envelopeValues.put(mymaxy, tempDouble);</span>
+<span class="fc" id="L1832">						break;		</span>
+					case 4:
+<span class="fc" id="L1834">						envelopeValues.put(myminz, tempDouble);</span>
+<span class="fc" id="L1835">						break;		</span>
+					case 5:
+<span class="fc" id="L1837">						envelopeValues.put(mymaxz, tempDouble);</span>
+<span class="fc" id="L1838">						break;		</span>
+					case 6:
+<span class="nc" id="L1840">						envelopeValues.put(myminm, tempDouble);</span>
+<span class="nc" id="L1841">						break;		</span>
+					case 7:
+<span class="nc" id="L1843">						envelopeValues.put(mymaxm, tempDouble);</span>
+						break;		
+					}
+					
+					
+					// Extra check here because if the entire envelope is all zero values, 
+					//  we basically need to clear the envelope out
+					// to save from later excessive processing.  This will set a flag if there
+					// are ANY non-zero envelope values seen that that we do not accidentally clear
+					// it.
+<span class="fc bfc" id="L1853" title="All 2 branches covered.">					if (!checkIfValueWithinToleranceOfTargetValue(tempDouble ,0.0D, 1.0e-10))</span>
+<span class="fc" id="L1854">						allzerovalues = false;</span>
+					
+					
+<span class="nc" id="L1857">				} catch (IllegalArgumentException ee)   // This is supposed to catch a NaN</span>
+				{
+<span class="nc" id="L1859">					throw new IllegalArgumentException(ee.getMessage());</span>
+<span class="fc" id="L1860">				}</span>
+<span class="fc" id="L1861">				envelopeIndex++;</span>
+			}
+   	} else {
+   		// we either got 0 bytes length or the size of the byte array is inconsistent for a set of doubles
+<span class="nc" id="L1865">   		throw new IllegalArgumentException(String.format(&quot;Invalid bytesExpected value: %d. Is 0 or is not divisible by the size of a double or not the size of the byte array parameter.&quot;, bytesExpected));</span>
+   	}
+
+		// If we found the entire envelope to be all zero, clear all the elements out of it
+<span class="pc bpc" id="L1869" title="1 of 2 branches missed.">   	if (allzerovalues == true) </span>
+<span class="nc" id="L1870">   		envelopeValues.clear();</span>
+   	
+<span class="pc bpc" id="L1872" title="1 of 2 branches missed.">   	return !allzerovalues;</span>
+   }
+
+   /**
+    * Compare a envelope A defined by minx, maxx, miny, maxy values 
+    * against an envelope B to determine if A falls inside or is equal to envelope B
+    *
+    * @param envelopein  A hash map of 4 (or more with z and m) values representing an envelope
+    * @param extentin    A hash map of 4 values representing the min and max extents
+    *
+    * @return String     Empty string, if no issue. Otherwise it reports the first issue found
+    * 
+    */ 
+   /* This test is only used as part of the NSG 19B test, but could be reinstated later.
+   private String geometryEnvelopeWithinExtents(Map&lt;String, Double&gt; envelopein, Map&lt;String, Double&gt; extentin)
+   {
+   	String fallswithin = &quot;&quot;;
+   	if (envelopein.get(myminx) &lt; extentin.get(myminx))
+   		fallswithin = &quot;Envelope minx less than extent minx&quot;;
+   	else if (envelopein.get(myminx) &gt; extentin.get(mymaxx))
+   		fallswithin = &quot;Envelope minx greater than extent maxx&quot;;
+   	else if (envelopein.get(mymaxx) &lt; extentin.get(myminx))
+   		fallswithin = &quot;Envelope maxx less than extent minx&quot;;
+   	else if (envelopein.get(mymaxx) &gt; extentin.get(mymaxx))
+   		fallswithin = &quot;Envelope maxx greater than extent maxx&quot;;
+ 
+   	else if (envelopein.get(myminy) &lt; extentin.get(myminy))
+   		fallswithin = &quot;Envelope miny less than extent miny&quot;;
+   	else if (envelopein.get(myminy) &gt; extentin.get(mymaxy))
+   		fallswithin = &quot;Envelope miny greater than extent maxy&quot;;
+   	else if (envelopein.get(mymaxy) &lt; extentin.get(myminy))
+   		fallswithin = &quot;Envelope maxy less than extent miny&quot;;
+   	else if (envelopein.get(mymaxy) &gt; extentin.get(mymaxy))
+   		fallswithin = &quot;Envelope maxy greater than extent maxy&quot;;
+
+   	return fallswithin;
+   }
+	*/
+   /**
+    * Return the expected size of the envelope based on the envelope code
+    *
+    * @param envelopeCode    The byte code for the envelope
+    *           
+    * @return int bytesExpected Number of bytes expected to be present in this envelope
+    */ 	
+	private int mygetEnvelopeByteSize(byte envelopeCode) {
+<span class="fc" id="L1918">		int bytesExpected = 0;</span>
+
+		// Note, Caution! Java sign extends each byte for this test, 
+		// but these all should be okay because we are dealing with a small value
+<span class="pc bpc" id="L1922" title="2 of 5 branches missed.">   	switch (envelopeCode) {</span>
+		case 0:
+<span class="fc" id="L1924">			bytesExpected = 0;</span>
+<span class="fc" id="L1925">   		break;</span>
+		case 1:    // 4 values 32 bytes
+<span class="fc" id="L1927">			bytesExpected = 32;</span>
+<span class="fc" id="L1928">			break;</span>
+		case 2: case 3:    // 48 bytes total (another 16 bytes)
+<span class="fc" id="L1930">			bytesExpected = 48;</span>
+<span class="fc" id="L1931">			break;</span>
+		case 4:    // 64 bytes
+<span class="nc" id="L1933">			bytesExpected = 64;</span>
+<span class="nc" id="L1934">			break;</span>
+		default:	// invalid
+<span class="nc" id="L1936">			bytesExpected = 0;</span>
+			break;
+   	} // end switch
+<span class="fc" id="L1939">		return bytesExpected;</span>
 	}
 
-<span class="fc" id="L554">	private final Collection&lt;String&gt; featureTableNames = new ArrayList&lt;&gt;();</span>
+   /**
+    * Compares two double values to determine if the are close enough to be called equal within
+    * a specified level of tolerance
+    *
+    * @param valueIn     The input value (double)
+    * @param targetValue The target value (double)
+    * @param tolerance   The tolerance value (double)
+    *           
+    * @return true if the value is within tolerance of the target value, false if not
+    */ 	
+	private boolean checkIfValueWithinToleranceOfTargetValue(double valueIn, double targetValue, double tolerance)
+	{
+		
+<span class="fc bfc" id="L1955" title="All 2 branches covered.">		if (Math.abs(valueIn - targetValue) &gt; tolerance)</span>
+<span class="fc" id="L1956">			return false;</span>
+		else
+<span class="fc" id="L1958">			return true;</span>
+	}
+
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

@@ -21,7 +21,7 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
-import org.opengis.cite.gpkg12.tiles.TileTests;
+import org.opengis.cite.gpkg12.TileFixture;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
@@ -36,13 +36,13 @@ import org.testng.annotations.Test;
  * &lt;strong&gt;Sources&lt;/strong&gt;
  * &lt;/p&gt;
  * &lt;ul&gt;
- * &lt;li&gt;&lt;a href=&quot;http://www.geopackage.org/spec/#features&quot; target= &quot;_blank&quot;&gt;
- * GeoPackage Encoding Standard - Annex F.11 Tiled Gridded Coverage Data&lt;/a&gt; (OGC 12-128r15) referencing to OGC GeoPackage Extension for Tiled Gridded Coverage Data (http://docs.opengeospatial.org/is/17-066r1/17-066r1.html) (17-066r1)&lt;/li&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://docs.opengeospatial.org/is/17-066r1/17-066r1.html&quot; target= &quot;_blank&quot;&gt;
+ * GeoPackage Extension for Tiled Gridded Coverage Data&lt;/a&gt; (OGC 17-066r1)&lt;/li&gt;
  * &lt;/ul&gt;
  *
  * @author Jeff Yutzler
  */
-public class TiledGriddedCoverageTests extends TileTests {
+public class TiledGriddedCoverageTests extends TileFixture {
 <span class="fc" id="L46">	public TiledGriddedCoverageTests(){</span>
 		// This allows all of the tiles tests to run on coverage data
 <span class="fc" id="L48">		setDataType(&quot;2d-gridded-coverage&quot;);</span>
@@ -75,10 +75,10 @@ public class TiledGriddedCoverageTests extends TileTests {
 		}
 		/*
 		 * Test case
-		 * {@code /extensions/elevation/table_val/gpkg_contents}
+		 * {@code /extensions/coverage/table_val/gpkg_contents}
 		 *
-		 * @see &lt;a href=&quot;#r120&quot; target= &quot;_blank&quot;&gt;Elevation 
-		 * Extension - Requirement 124&lt;/a&gt;
+		 * @see &lt;a href=&quot;#r5&quot; target= &quot;_blank&quot;&gt;Tiled Gridded 
+		 * Coverage Data Extension - Requirement 5&lt;/a&gt;
 		 */
 
 <span class="nc" id="L84">		try (</span>
@@ -93,7 +93,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_def/gpkg_2d_gridded_coverage_ancillary}
+	 * {@code /extensions/coverage/table_def/gpkg_2d_gridded_coverage_ancillary}
 	 *
 	 * @see &lt;a href=&quot;#r1&quot; target= &quot;_blank&quot;&gt;Requirement 1&lt;/a&gt;
 	 *
@@ -113,7 +113,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 <span class="fc" id="L113">			int passFlag = 0;</span>
 <span class="fc" id="L114">			final int flagMask = 0b01111111;</span>
 
-<span class="fc" id="L116">			checkPrimaryKey(&quot;gpkg_2d_gridded_coverage_ancillary&quot;, &quot;id&quot;);</span>
+<span class="fc" id="L116">			checkPrimaryKey(&quot;gpkg_2d_gridded_coverage_ancillary&quot;, &quot;id&quot;, true);</span>
 
 <span class="fc bfc" id="L118" title="All 2 branches covered.">			while (resultSet.next()) {</span>
 				// 3
@@ -158,7 +158,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_def/gpkg_2d_gridded_tile_ancillary}
+	 * {@code /extensions/coverage/table_def/gpkg_2d_gridded_tile_ancillary}
 	 *
 	 * @see &lt;a href=&quot;#r2&quot; target= &quot;_blank&quot;&gt;Requirement 2&lt;/a&gt;
 	 *
@@ -179,7 +179,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 <span class="fc" id="L179">			final long flagMask = 0b111111111;</span>
 
 <span class="fc bfc" id="L181" title="All 2 branches covered.">			while (resultSet.next()) {</span>
-<span class="fc" id="L182">				checkPrimaryKey(&quot;gpkg_2d_gridded_tile_ancillary&quot;, &quot;id&quot;);</span>
+<span class="fc" id="L182">				checkPrimaryKey(&quot;gpkg_2d_gridded_tile_ancillary&quot;, &quot;id&quot;, true);</span>
 				// 3
 <span class="fc" id="L184">				final String name = resultSet.getString(&quot;name&quot;);</span>
 <span class="fc bfc" id="L185" title="All 2 branches covered.">				if (&quot;id&quot;.equals(name)){</span>
@@ -227,7 +227,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_val/gpkg_spatial_ref_sys/rows}
+	 * {@code /extensions/coverage/table_val/gpkg_spatial_ref_sys/rows}
 	 *
 	 * @see &lt;a href=&quot;#r3&quot; target= &quot;_blank&quot;&gt;Requirement 3&lt;/a&gt;
 	 *
@@ -247,14 +247,14 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /opt/extensions/elevation/srs/required_references}
+	 * {@code /opt/extensions/coverage/srs/required_references}
 	 *
-	 * @see &lt;a href=&quot;#r4&quot; target= &quot;_blank&quot;&gt;Requirement 4,5&lt;/a&gt;
+	 * @see &lt;a href=&quot;#r4&quot; target= &quot;_blank&quot;&gt;Requirement 4&lt;/a&gt;
 	 *
 	 * @throws SQLException
 	 *             If an SQL query causes an error
 	 */
-	@Test(description = &quot;See OGC 17-066r1: Requirement 4, 5&quot;)
+	@Test(description = &quot;See OGC 17-066r1: Requirement 4&quot;)
 	public void requiredSRSReferences() throws SQLException {
 <span class="pc bpc" id="L259" title="1 of 2 branches missed.">		for (final String tableName : this.elevationTableNames) {</span>
 <span class="nc" id="L260">			try (	</span>
@@ -275,7 +275,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_val/gpkg_extensions}
+	 * {@code /extensions/coverage/table_val/gpkg_extensions}
 	 *
 	 * @see &lt;a href=&quot;#r6&quot; target= &quot;_blank&quot;&gt;Requirement 6&lt;/a&gt;
 	 *
@@ -333,7 +333,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_ref/gpkg_contents/gpkg_2d_gridded_coverage_ancillary}
+	 * {@code /extensions/coverage/table_ref/gpkg_contents/gpkg_2d_gridded_coverage_ancillary}
 	 *
 	 * @see &lt;a href=&quot;#r7&quot; target= &quot;_blank&quot;&gt;Requirement 7&lt;/a&gt;
 	 *
@@ -356,7 +356,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_ref/gpkg_2d_gridded_coverage_ancillary/gpkg_tile_matrix_set}
+	 * {@code /extensions/coverage/table_ref/gpkg_2d_gridded_coverage_ancillary/gpkg_tile_matrix_set}
 	 *
 	 * @see &lt;a href=&quot;#r8&quot; target= &quot;_blank&quot;&gt;Requirement 8&lt;/a&gt;
 	 *
@@ -388,7 +388,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_val/gpkg_2d_gridded_coverage_ancillary}
+	 * {@code /extensions/coverage/table_val/gpkg_2d_gridded_coverage_ancillary}
 	 *
 	 * @see &lt;a href=&quot;#r9&quot; target= &quot;_blank&quot;&gt;Requirement 9&lt;/a&gt;
 	 *
@@ -445,7 +445,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_ref/tpudt/gpkg_2d_gridded_tile_ancillary}
+	 * {@code /extensions/coverage/table_ref/tpudt/gpkg_2d_gridded_tile_ancillary}
 	 *
 	 * @see &lt;a href=&quot;#10&quot; target= &quot;_blank&quot;&gt;Requirement 10, 12&lt;/a&gt;
 	 *
@@ -479,7 +479,7 @@ public class TiledGriddedCoverageTests extends TileTests {
 
 	/**
 	 * Test case
-	 * {@code /extensions/elevation/table_val/gpkg_2d_gridded_tile_ancillary}
+	 * {@code /extensions/coverage/table_val/gpkg_2d_gridded_tile_ancillary}
 	 *
 	 * @see &lt;a href=&quot;#11&quot; target= &quot;_blank&quot;&gt;Requirement 11&lt;/a&gt;
 	 *
@@ -547,14 +547,17 @@ public class TiledGriddedCoverageTests extends TileTests {
 	 * For data where the datatype column of the corresponding row in the 
 	 * gpkg_2d_gridded_coverage_ancillary table is integer, 
 	 * the tile_data BLOB in the tile pyramid user data table containing tiled, 
-	 * gridded elevation data SHALL be of MIME type image/png and the data SHALL 
+	 * gridded coverage data SHALL be of MIME type image/png and the data SHALL 
 	 * be 16-bit unsigned integer (single channel - &quot;greyscale&quot;).
 	 * For data where the datatype column of the corresponding row in the 
 	 * gpkg_2d_gridded_coverage_ancillary table is float, 
 	 * the tile_data BLOB in the tile pyramid user data table containing tiled, 
-	 * gridded elevation data SHALL be of MIME type image/tiff and the data SHALL 
-	 * be 32-bit floating point as described by the TIFF Encoding (Requirement 120).
+	 * gridded coverage data SHALL be of MIME type image/tiff and the data SHALL 
+	 * be 32-bit floating point as described by the TIFF Encoding (Requirement 13/14).
 	 * 
+	 * Test case
+	 * {@code /extensions/coverage/table_val/tile-pyramid-user-data-tables}
+	 *
 	 * @see &lt;a href=&quot;#r13&quot; target=&quot;_blank&quot;&gt;MIME Type PNG or TIFF - Requirement 13/14&lt;/a&gt;
 	 *
 	 * @throws SQLException
@@ -566,58 +569,58 @@ public class TiledGriddedCoverageTests extends TileTests {
 	public void imageFormat() throws SQLException, IOException
 	{
 		// 1, 2
-<span class="pc bpc" id="L569" title="1 of 2 branches missed.">		for(final String tableName : this.elevationTableNames)</span>
+<span class="pc bpc" id="L572" title="1 of 2 branches missed.">		for(final String tableName : this.elevationTableNames)</span>
 		{
-<span class="nc" id="L571">			final Collection&lt;Integer&gt; failedTileIds = new LinkedList&lt;&gt;();</span>
-<span class="nc" id="L572">			try (</span>
+<span class="nc" id="L574">			final Collection&lt;Integer&gt; failedTileIds = new LinkedList&lt;&gt;();</span>
+<span class="nc" id="L575">			try (</span>
 					// 2a
-<span class="nc" id="L574">					final Statement statement = this.databaseConnection.createStatement();</span>
-<span class="nc" id="L575">					final ResultSet resultSet = statement.executeQuery(&quot;SELECT t.datatype AS datatype, u.id AS id, u.tile_data AS tile_data FROM gpkg_2d_gridded_coverage_ancillary t, %s u WHERE t.tile_matrix_set_name = '%s';&quot;.replace(&quot;%s&quot;, tableName));</span>
+<span class="nc" id="L577">					final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="nc" id="L578">					final ResultSet resultSet = statement.executeQuery(&quot;SELECT t.datatype AS datatype, u.id AS id, u.tile_data AS tile_data FROM gpkg_2d_gridded_coverage_ancillary t, %s u WHERE t.tile_matrix_set_name = '%s';&quot;.replace(&quot;%s&quot;, tableName));</span>
 					) {		
 				// 2b
-<span class="nc bnc" id="L578" title="All 2 branches missed.">				while(resultSet.next())</span>
+<span class="nc bnc" id="L581" title="All 2 branches missed.">				while(resultSet.next())</span>
 				{
-<span class="nc" id="L580">					final String datatype = resultSet.getString(&quot;datatype&quot;);</span>
-<span class="nc" id="L581">					final int id = resultSet.getInt(&quot;id&quot;);</span>
+<span class="nc" id="L583">					final String datatype = resultSet.getString(&quot;datatype&quot;);</span>
+<span class="nc" id="L584">					final int id = resultSet.getInt(&quot;id&quot;);</span>
 
-<span class="nc" id="L583">					try (final MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(new ByteArrayInputStream(resultSet.getBytes(&quot;tile_data&quot;)))) {</span>
+<span class="nc" id="L586">					try (final MemoryCacheImageInputStream cacheImage = new MemoryCacheImageInputStream(new ByteArrayInputStream(resultSet.getBytes(&quot;tile_data&quot;)))) {</span>
 						// 2bi
-<span class="nc bnc" id="L585" title="All 2 branches missed.">						if (&quot;float&quot;.equals(datatype)) {</span>
-<span class="nc bnc" id="L586" title="All 2 branches missed.">							if (!canReadImage(tiffImageReaders, cacheImage)){</span>
-<span class="nc" id="L587">								failedTileIds.add(id);</span>
+<span class="nc bnc" id="L588" title="All 2 branches missed.">						if (&quot;float&quot;.equals(datatype)) {</span>
+<span class="nc bnc" id="L589" title="All 2 branches missed.">							if (!canReadImage(tiffImageReaders, cacheImage)){</span>
+<span class="nc" id="L590">								failedTileIds.add(id);</span>
 							}
 							// 2bii
-<span class="nc bnc" id="L590" title="All 2 branches missed.">						} else if (&quot;integer&quot;.equals(datatype)){</span>
-<span class="nc bnc" id="L591" title="All 2 branches missed.">							if (!canReadImage(pngImageReaders, cacheImage)){</span>
-<span class="nc" id="L592">								failedTileIds.add(id);</span>
+<span class="nc bnc" id="L593" title="All 2 branches missed.">						} else if (&quot;integer&quot;.equals(datatype)){</span>
+<span class="nc bnc" id="L594" title="All 2 branches missed.">							if (!canReadImage(pngImageReaders, cacheImage)){</span>
+<span class="nc" id="L595">								failedTileIds.add(id);</span>
 							}
 						}                	
-<span class="nc bnc" id="L595" title="All 8 branches missed.">					};</span>
-<span class="nc" id="L596">				}</span>
-<span class="nc bnc" id="L597" title="All 16 branches missed.">			}</span>
+<span class="nc bnc" id="L598" title="All 8 branches missed.">					};</span>
+<span class="nc" id="L599">				}</span>
+<span class="nc bnc" id="L600" title="All 16 branches missed.">			}</span>
 
-<span class="nc" id="L599">			assertTrue(failedTileIds.isEmpty(),</span>
-<span class="nc" id="L600">					ErrorMessage.format(ErrorMessageKeys.INVALID_IMAGE_FORMAT,</span>
+<span class="nc" id="L602">			assertTrue(failedTileIds.isEmpty(),</span>
+<span class="nc" id="L603">					ErrorMessage.format(ErrorMessageKeys.INVALID_IMAGE_FORMAT,</span>
 							tableName,
-<span class="nc" id="L602">							failedTileIds.stream()</span>
-<span class="nc" id="L603">							.map(Object::toString)</span>
-<span class="nc" id="L604">							.collect(Collectors.joining(&quot;, &quot;))));</span>
-<span class="nc" id="L605">		}</span>
-<span class="fc" id="L606">	}</span>
+<span class="nc" id="L605">							failedTileIds.stream()</span>
+<span class="nc" id="L606">							.map(Object::toString)</span>
+<span class="nc" id="L607">							.collect(Collectors.joining(&quot;, &quot;))));</span>
+<span class="nc" id="L608">		}</span>
+<span class="fc" id="L609">	}</span>
 
 	//TODO: I don't know how to test R134 - R139
 
 	protected static final Collection&lt;ImageReader&gt; tiffImageReaders;
 	static
 	{
-<span class="fc" id="L613">		tiffImageReaders = StreamSupport.stream(Spliterators.spliteratorUnknownSize(ImageIO.getImageReadersByMIMEType(&quot;image/tiff&quot;),</span>
+<span class="fc" id="L616">		tiffImageReaders = StreamSupport.stream(Spliterators.spliteratorUnknownSize(ImageIO.getImageReadersByMIMEType(&quot;image/tiff&quot;),</span>
 				Spliterator.ORDERED),
 				false)
-<span class="fc" id="L616">				.collect(Collectors.toCollection(ArrayList::new));</span>
+<span class="fc" id="L619">				.collect(Collectors.toCollection(ArrayList::new));</span>
 
-<span class="fc" id="L618">	}</span>
+<span class="fc" id="L621">	}</span>
 
-<span class="fc" id="L620">	private boolean hasExtension = false;</span>
-<span class="fc" id="L621">	private final Collection&lt;String&gt; elevationTableNames = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L623">	private boolean hasExtension = false;</span>
+<span class="fc" id="L624">	private final Collection&lt;String&gt; elevationTableNames = new ArrayList&lt;&gt;();</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

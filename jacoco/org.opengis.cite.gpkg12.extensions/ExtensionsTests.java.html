@@ -128,7 +128,7 @@ import org.testng.annotations.Test;
 <span class="fc" id="L128">			}</span>
 <span class="pc bpc" id="L129" title="12 of 16 branches missed.">		}</span>
 
-<span class="pc" id="L131">		try (</span>
+<span class="fc" id="L131">		try (</span>
 				// 4
 <span class="fc" id="L133">				final Statement statement2 = this.databaseConnection.createStatement();</span>
 
@@ -138,9 +138,9 @@ import org.testng.annotations.Test;
 				// 4a
 <span class="fc" id="L139">				final String geTable = resultSet2.getString(&quot;ge_table&quot;);</span>
 <span class="fc" id="L140">				final String tableName = resultSet2.getString(&quot;tbl_name&quot;);</span>
-<span class="pc bpc" id="L141" title="3 of 8 branches missed.">				assertTrue(((geTable == null) &amp;&amp; (tableName == null)) || ((tableName != null) &amp;&amp; tableName.equals(geTable)), ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TABLE, &quot;gpkg_extensions&quot;, geTable));</span>
+<span class="pc bpc" id="L141" title="2 of 8 branches missed.">				assertTrue(((geTable == null) &amp;&amp; (tableName == null)) || ((tableName != null) &amp;&amp; tableName.equals(geTable)), ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TABLE, &quot;gpkg_extensions&quot;, geTable));</span>
 <span class="fc" id="L142">			}</span>
-<span class="pc bpc" id="L143" title="12 of 16 branches missed.">		}</span>
+<span class="pc bpc" id="L143" title="8 of 16 branches missed.">		}</span>
 <span class="fc" id="L144">	}   </span>
 
 	/**
@@ -159,7 +159,7 @@ import org.testng.annotations.Test;
 	@Test(description = &quot;See OGC 12-128r13: Requirement 61&quot;)
 	public void extensionsColumnValues() throws SQLException
 	{
-<span class="pc" id="L162">		try (		</span>
+<span class="fc" id="L162">		try (		</span>
 				// 1
 <span class="fc" id="L164">				final Statement statement = this.databaseConnection.createStatement();</span>
 
@@ -172,14 +172,14 @@ import org.testng.annotations.Test;
 <span class="fc" id="L172">				final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
 
 				// 3b
-<span class="pc" id="L175">				try (final Statement statement1 = this.databaseConnection.createStatement()) {</span>
+<span class="fc" id="L175">				try (final Statement statement1 = this.databaseConnection.createStatement()) {</span>
 					// 3bi
 <span class="fc" id="L177">					statement1.executeQuery(String.format(&quot;SELECT COUNT(%s) from %s;&quot;, columnName, tableName));</span>
-<span class="pc bpc" id="L178" title="6 of 8 branches missed.">				} catch (SQLException exc) {</span>
+<span class="pc bpc" id="L178" title="4 of 8 branches missed.">				} catch (SQLException exc) {</span>
 <span class="nc" id="L179">					Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_COLUMN, &quot;gpkg_extensions&quot;, columnName, tableName));</span>
 <span class="fc" id="L180">				}</span>
 <span class="fc" id="L181">			}</span>
-<span class="pc bpc" id="L182" title="12 of 16 branches missed.">		}</span>
+<span class="pc bpc" id="L182" title="8 of 16 branches missed.">		}</span>
 <span class="fc" id="L183">	}  </span>
 
 	/**

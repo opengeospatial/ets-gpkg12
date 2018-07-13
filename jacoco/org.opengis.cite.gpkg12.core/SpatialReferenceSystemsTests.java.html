@@ -1,23 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SpatialReferenceSystemsTests.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.core</a> &gt; <span class="el_source">SpatialReferenceSystemsTests.java</span></div><h1>SpatialReferenceSystemsTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.core;
 
 import static org.testng.Assert.assertTrue;
-import static org.testng.AssertJUnit.fail;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.opengis.cite.gpkg12.ColumnDefinition;
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
-import org.opengis.cite.gpkg12.TableVerifier;
 import org.testng.annotations.Test;
 
 /**
@@ -38,7 +32,7 @@ import org.testng.annotations.Test;
  *
  * @author Luke Lambert
  */
-<span class="fc" id="L41">public class SpatialReferenceSystemsTests extends CommonFixture {</span>
+<span class="fc" id="L35">public class SpatialReferenceSystemsTests extends CommonFixture {</span>
     /**
      * A GeoPackage SHALL include a {@code gpkg_spatial_ref_sys} table per
      * clause 1.1.2.1.1 &lt;a href=
@@ -58,51 +52,51 @@ import org.testng.annotations.Test;
     @Test(description = &quot;See OGC 12-128r12: Requirement 10&quot;)
     public void srsTableDefinition() throws SQLException
     {
-<span class="fc" id="L61">    	final String tableName = &quot;gpkg_spatial_ref_sys&quot;;</span>
-<span class="pc" id="L62">		try (</span>
+<span class="fc" id="L55">    	final String tableName = &quot;gpkg_spatial_ref_sys&quot;;</span>
+<span class="pc" id="L56">		try (</span>
 				// 1
-<span class="fc" id="L64">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L58">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L66">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('&quot; + tableName + &quot;');&quot;);</span>
+<span class="fc" id="L60">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('&quot; + tableName + &quot;');&quot;);</span>
 				) {
 			// 2
-<span class="fc" id="L69">			int passFlag = 0;</span>
-<span class="fc" id="L70">			final int flagMask = 0b00111111;</span>
+<span class="fc" id="L63">			int passFlag = 0;</span>
+<span class="fc" id="L64">			final int flagMask = 0b00111111;</span>
 
-<span class="fc" id="L72">			checkPrimaryKey(tableName, &quot;srs_id&quot;);</span>
+<span class="fc" id="L66">			checkPrimaryKey(tableName, &quot;srs_id&quot;, true);</span>
 
 			// Technically nonnull columns should have a default but this should not cause a test failure.
-<span class="fc bfc" id="L75" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">			while (resultSet.next()) {</span>
 				// 3
-<span class="fc" id="L77">				final String name = resultSet.getString(&quot;name&quot;);</span>
-<span class="fc bfc" id="L78" title="All 2 branches covered.">				if (&quot;srs_id&quot;.equals(name)){</span>
+<span class="fc" id="L71">				final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">				if (&quot;srs_id&quot;.equals(name)){</span>
 					// handled with checkPrimaryKey...
-<span class="fc" id="L80">					passFlag |= 1;</span>
-<span class="fc bfc" id="L81" title="All 2 branches covered.">				} else if (&quot;srs_name&quot;.equals(name)){</span>
-<span class="fc" id="L82">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;srs_name&quot;, tableName, &quot;type&quot;, &quot;TEXT&quot;, resultSet.getString(&quot;type&quot;)));</span>
-<span class="pc bpc" id="L83" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;srs_name&quot;, tableName, &quot;notnull&quot;, &quot;1&quot;, resultSet.getInt(&quot;notnull&quot;)));</span>
-<span class="fc" id="L84">					passFlag |= (1 &lt;&lt; 1);</span>
-<span class="fc bfc" id="L85" title="All 2 branches covered.">				} else if (&quot;organization&quot;.equals(name)){</span>
-<span class="fc" id="L86">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;organization&quot;, tableName, &quot;type&quot;, &quot;TEXT&quot;, resultSet.getString(&quot;type&quot;)));</span>
-<span class="pc bpc" id="L87" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;organization&quot;, tableName, &quot;notnull&quot;, &quot;1&quot;, resultSet.getInt(&quot;notnull&quot;)));</span>
-<span class="fc" id="L88">					passFlag |= (1 &lt;&lt; 2);</span>
-<span class="fc bfc" id="L89" title="All 2 branches covered.">				} else if (&quot;organization_coordsys_id&quot;.equals(name)){</span>
-<span class="fc" id="L90">					assertTrue(&quot;INTEGER&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;organization_coordsys_id&quot;, tableName, &quot;type&quot;, &quot;INTEGER&quot;, resultSet.getString(&quot;type&quot;)));</span>
-<span class="pc bpc" id="L91" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;organization_coordsys_id&quot;, tableName, &quot;notnull&quot;, &quot;1&quot;, resultSet.getInt(&quot;notnull&quot;)));</span>
-<span class="fc" id="L92">					passFlag |= (1 &lt;&lt; 3);</span>
-<span class="fc bfc" id="L93" title="All 2 branches covered.">				} else if (&quot;definition&quot;.equals(name)){</span>
-<span class="fc" id="L94">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)),  ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;definition&quot;, tableName, &quot;type&quot;, &quot;TEXT&quot;, resultSet.getString(&quot;type&quot;)));</span>
-<span class="pc bpc" id="L95" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1,  ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;definition&quot;, tableName, &quot;notnull&quot;, &quot;1&quot;, resultSet.getString(&quot;notnull&quot;)));</span>
-<span class="fc" id="L96">					passFlag |= (1 &lt;&lt; 4);</span>
-<span class="fc bfc" id="L97" title="All 2 branches covered.">				} else if (&quot;description&quot;.equals(name)){</span>
-<span class="fc" id="L98">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)),  ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;description&quot;, tableName, &quot;type&quot;, &quot;TEXT&quot;, resultSet.getString(&quot;type&quot;)));</span>
-<span class="pc bpc" id="L99" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0,  ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;description&quot;, tableName, &quot;notnull&quot;, &quot;0&quot;, resultSet.getString(&quot;notnull&quot;)));</span>
-<span class="fc" id="L100">					passFlag |= (1 &lt;&lt; 5);</span>
+<span class="fc" id="L74">					passFlag |= 1;</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">				} else if (&quot;srs_name&quot;.equals(name)){</span>
+<span class="fc" id="L76">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;srs_name&quot;, tableName, &quot;type&quot;, &quot;TEXT&quot;, resultSet.getString(&quot;type&quot;)));</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;srs_name&quot;, tableName, &quot;notnull&quot;, &quot;1&quot;, resultSet.getInt(&quot;notnull&quot;)));</span>
+<span class="fc" id="L78">					passFlag |= (1 &lt;&lt; 1);</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">				} else if (&quot;organization&quot;.equals(name)){</span>
+<span class="fc" id="L80">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;organization&quot;, tableName, &quot;type&quot;, &quot;TEXT&quot;, resultSet.getString(&quot;type&quot;)));</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;organization&quot;, tableName, &quot;notnull&quot;, &quot;1&quot;, resultSet.getInt(&quot;notnull&quot;)));</span>
+<span class="fc" id="L82">					passFlag |= (1 &lt;&lt; 2);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">				} else if (&quot;organization_coordsys_id&quot;.equals(name)){</span>
+<span class="fc" id="L84">					assertTrue(&quot;INTEGER&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;organization_coordsys_id&quot;, tableName, &quot;type&quot;, &quot;INTEGER&quot;, resultSet.getString(&quot;type&quot;)));</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;organization_coordsys_id&quot;, tableName, &quot;notnull&quot;, &quot;1&quot;, resultSet.getInt(&quot;notnull&quot;)));</span>
+<span class="fc" id="L86">					passFlag |= (1 &lt;&lt; 3);</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">				} else if (&quot;definition&quot;.equals(name)){</span>
+<span class="fc" id="L88">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)),  ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;definition&quot;, tableName, &quot;type&quot;, &quot;TEXT&quot;, resultSet.getString(&quot;type&quot;)));</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1,  ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;definition&quot;, tableName, &quot;notnull&quot;, &quot;1&quot;, resultSet.getString(&quot;notnull&quot;)));</span>
+<span class="fc" id="L90">					passFlag |= (1 &lt;&lt; 4);</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">				} else if (&quot;description&quot;.equals(name)){</span>
+<span class="fc" id="L92">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)),  ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;description&quot;, tableName, &quot;type&quot;, &quot;TEXT&quot;, resultSet.getString(&quot;type&quot;)));</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0,  ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;description&quot;, tableName, &quot;notnull&quot;, &quot;0&quot;, resultSet.getString(&quot;notnull&quot;)));</span>
+<span class="fc" id="L94">					passFlag |= (1 &lt;&lt; 5);</span>
 				}
-<span class="fc" id="L102">			} </span>
-<span class="pc bpc" id="L103" title="1 of 2 branches missed.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.MISSING_COLUMN, tableName));</span>
-<span class="pc bpc" id="L104" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L105">    }</span>
+<span class="fc" id="L96">			} </span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.MISSING_COLUMN, tableName));</span>
+<span class="pc bpc" id="L98" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L99">    }</span>
 
     /**
      * The {@code gpkg_spatial_ref_sys} table in a GeoPackage SHALL contain a
@@ -127,24 +121,24 @@ import org.testng.annotations.Test;
      */
     @Test(description = &quot;See OGC 12-128r12: Requirement 11&quot;)
     public void requiredSrsEntries() throws SQLException {
+<span class="pc" id="L124">        try (final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L125">                final ResultSet srsDefaultValue = statement.executeQuery(</span>
+                        &quot;SELECT srs_id FROM gpkg_spatial_ref_sys WHERE organization_coordsys_id = 4326 AND (organization = 'EPSG' OR organization = 'epsg');&quot;)) {
+<span class="fc" id="L127">            assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_GEOGRAPHIC_SRS));</span>
+<span class="pc bpc" id="L128" title="12 of 16 branches missed.">        }</span>
+
 <span class="pc" id="L130">        try (final Statement statement = this.databaseConnection.createStatement();</span>
 <span class="fc" id="L131">                final ResultSet srsDefaultValue = statement.executeQuery(</span>
-                        &quot;SELECT srs_id FROM gpkg_spatial_ref_sys WHERE organization_coordsys_id = 4326 AND (organization = 'EPSG' OR organization = 'epsg');&quot;)) {
-<span class="fc" id="L133">            assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_GEOGRAPHIC_SRS));</span>
+                        &quot;SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = -1 AND organization = 'NONE' AND organization_coordsys_id = -1 AND definition = 'undefined';&quot;)) {
+<span class="fc" id="L133">            assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_UNDEFINED_CARTESIAN_SRS));</span>
 <span class="pc bpc" id="L134" title="12 of 16 branches missed.">        }</span>
 
 <span class="pc" id="L136">        try (final Statement statement = this.databaseConnection.createStatement();</span>
 <span class="fc" id="L137">                final ResultSet srsDefaultValue = statement.executeQuery(</span>
-                        &quot;SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = -1 AND organization = 'NONE' AND organization_coordsys_id = -1 AND definition = 'undefined';&quot;)) {
-<span class="fc" id="L139">            assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_UNDEFINED_CARTESIAN_SRS));</span>
-<span class="pc bpc" id="L140" title="12 of 16 branches missed.">        }</span>
-
-<span class="pc" id="L142">        try (final Statement statement = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L143">                final ResultSet srsDefaultValue = statement.executeQuery(</span>
                         &quot;SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = 0 AND organization = 'NONE' AND organization_coordsys_id =  0 AND definition = 'undefined';&quot;)) {
-<span class="fc" id="L145">            assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_UNDEFINED_GEOGRAPHIC_SRS));</span>
-<span class="pc bpc" id="L146" title="12 of 16 branches missed.">        }</span>
-<span class="fc" id="L147">    }</span>
+<span class="fc" id="L139">            assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_UNDEFINED_GEOGRAPHIC_SRS));</span>
+<span class="pc bpc" id="L140" title="12 of 16 branches missed.">        }</span>
+<span class="fc" id="L141">    }</span>
 
     /**
      * The {@code gpkg_spatial_ref_sys} table in a GeoPackage SHALL contain
@@ -159,27 +153,27 @@ import org.testng.annotations.Test;
      */
     @Test(description = &quot;See OGC 12-128r12: Requirement 12&quot;)
     public void checkContentSrs() throws SQLException {
-<span class="fc" id="L162">    	checkContentSrs(&quot;'tiles','features'&quot;);</span>
-<span class="fc" id="L163">    }</span>
+<span class="fc" id="L156">    	checkContentSrs(&quot;'tiles','features'&quot;);</span>
+<span class="fc" id="L157">    }</span>
     
     // Tests for extensions can call this instead of checkContentSrs()
     protected void checkContentSrs(String types) throws SQLException {
     	// 1
-<span class="fc" id="L168">        final String query = &quot;SELECT DISTINCT gc.srs_id, srs.srs_id FROM gpkg_contents AS gc LEFT OUTER JOIN gpkg_spatial_ref_sys AS srs ON srs.srs_id = gc.srs_id WHERE gc.data_type IN(&quot; + types + &quot;)&quot;;</span>
-<span class="pc" id="L169">        try (final Statement statement = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L170">                final ResultSet srsDefined = statement.executeQuery(query)) {</span>
-<span class="fc" id="L171">            final Collection&lt;String&gt; invalidSrsIds = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L162">        final String query = &quot;SELECT DISTINCT gc.srs_id, srs.srs_id FROM gpkg_contents AS gc LEFT OUTER JOIN gpkg_spatial_ref_sys AS srs ON srs.srs_id = gc.srs_id WHERE gc.data_type IN(&quot; + types + &quot;)&quot;;</span>
+<span class="pc" id="L163">        try (final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L164">                final ResultSet srsDefined = statement.executeQuery(query)) {</span>
+<span class="fc" id="L165">            final Collection&lt;String&gt; invalidSrsIds = new LinkedList&lt;&gt;();</span>
 
-<span class="fc bfc" id="L173" title="All 2 branches covered.">            while (srsDefined.next()) {</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">            while (srsDefined.next()) {</span>
             	// 2
-<span class="pc bpc" id="L175" title="1 of 2 branches missed.">            	if (srsDefined.getString(2) == null){</span>
-<span class="nc" id="L176">                    invalidSrsIds.add(srsDefined.getString(1));</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">            	if (srsDefined.getString(2) == null){</span>
+<span class="nc" id="L170">                    invalidSrsIds.add(srsDefined.getString(1));</span>
             	}
             }
 
-<span class="fc" id="L180">            assertTrue(invalidSrsIds.isEmpty(), ErrorMessage.format(ErrorMessageKeys.UNDEFINED_SRS,</span>
-<span class="fc" id="L181">                    invalidSrsIds.stream().map(Object::toString).collect(Collectors.joining(&quot;, &quot;))));</span>
-<span class="pc bpc" id="L182" title="12 of 16 branches missed.">        }</span>
-<span class="fc" id="L183">    }</span>
+<span class="fc" id="L174">            assertTrue(invalidSrsIds.isEmpty(), ErrorMessage.format(ErrorMessageKeys.UNDEFINED_SRS,</span>
+<span class="fc" id="L175">                    invalidSrsIds.stream().map(Object::toString).collect(Collectors.joining(&quot;, &quot;))));</span>
+<span class="pc bpc" id="L176" title="12 of 16 branches missed.">        }</span>
+<span class="fc" id="L177">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

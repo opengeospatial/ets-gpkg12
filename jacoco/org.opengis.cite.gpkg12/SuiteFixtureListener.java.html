@@ -52,17 +52,18 @@ import org.testng.ISuiteListener;
 <span class="pc bpc" id="L52" title="1 of 4 branches missed.">        if ((null == iutParam) || iutParam.isEmpty()) {</span>
 <span class="fc" id="L53">            throw new IllegalArgumentException(&quot;Required test run parameter not found: &quot; + TestRunArg.IUT.toString());</span>
         }
-<span class="fc" id="L55">        URI iutRef = URI.create(iutParam.trim());</span>
-<span class="fc" id="L56">        File gpkgFile = null;</span>
+
+<span class="fc" id="L56">        URI iutRef = URI.create(iutParam.replace(&quot; &quot;, &quot;%20&quot;));</span>
+<span class="fc" id="L57">        File gpkgFile = null;</span>
         try {
-<span class="fc" id="L58">            gpkgFile = URIUtils.dereferenceURI(iutRef);</span>
-<span class="nc" id="L59">        } catch (IOException iox) {</span>
-<span class="nc" id="L60">            throw new RuntimeException(&quot;Failed to dereference resource located at &quot; + iutRef, iox);</span>
-<span class="fc" id="L61">        }</span>
-<span class="fc" id="L62">        TestSuiteLogger.log(Level.FINE, String.format(&quot;Wrote test subject to file: %s (%d bytes)&quot;,</span>
-<span class="fc" id="L63">                gpkgFile.getAbsolutePath(), gpkgFile.length()));</span>
-<span class="fc" id="L64">        suite.setAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName(), gpkgFile);</span>
-<span class="fc" id="L65">    }</span>
+<span class="fc" id="L59">            gpkgFile = URIUtils.dereferenceURI(iutRef);</span>
+<span class="nc" id="L60">        } catch (IOException iox) {</span>
+<span class="nc" id="L61">            throw new RuntimeException(&quot;Failed to dereference resource located at &quot; + iutRef, iox);</span>
+<span class="fc" id="L62">        }</span>
+<span class="fc" id="L63">        TestSuiteLogger.log(Level.FINE, String.format(&quot;Wrote test subject to file: %s (%d bytes)&quot;,</span>
+<span class="fc" id="L64">                gpkgFile.getAbsolutePath(), gpkgFile.length()));</span>
+<span class="fc" id="L65">        suite.setAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName(), gpkgFile);</span>
+<span class="fc" id="L66">    }</span>
 
     /**
      * Deletes temporary files created during the test run if TestSuiteLogger is
@@ -73,13 +74,13 @@ import org.testng.ISuiteListener;
      *            The test suite.
      */
     void deleteTempFiles(ISuite suite) {
-<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        if (TestSuiteLogger.isLoggable(Level.CONFIG)) {</span>
-<span class="nc" id="L77">            return;</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        if (TestSuiteLogger.isLoggable(Level.CONFIG)) {</span>
+<span class="nc" id="L78">            return;</span>
         }
 //        File testSubjFile = (File) suite.getAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName());
 //        if (testSubjFile.exists()) {
 //            testSubjFile.delete();
 //        }
-<span class="fc" id="L83">    }</span>
+<span class="fc" id="L84">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>
