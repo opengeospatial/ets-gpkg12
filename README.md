@@ -11,6 +11,8 @@ may contain various types of content, including:
 * tile matrix sets of imagery and raster maps at various scales
 * metadata
 
+This ETS also supports GeoPackage 1.1 and 1.0. 
+
 Visit the [project documentation website](http://opengeospatial.github.io/ets-gpkg12/)
 for more information, including the API documentation.
 
