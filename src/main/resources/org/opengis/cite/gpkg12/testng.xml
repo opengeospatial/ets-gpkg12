@@ -11,11 +11,12 @@
   </listeners>
 
   <test name="Core">
-    <packages>
-      <package name="org.opengis.cite.gpkg12.core" />
-    </packages>
     <classes>
       <class name="org.opengis.cite.gpkg12.SuitePreconditions" />
+      <class name="org.opengis.cite.gpkg12.core.VersionTests" />
+      <class name="org.opengis.cite.gpkg12.core.DataContentsTests" />
+      <class name="org.opengis.cite.gpkg12.core.SpatialReferenceSystemsTests" />
+      <class name="org.opengis.cite.gpkg12.core.SQLiteContainerTests" />
     </classes>
   </test>
   <test name="Features">
