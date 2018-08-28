@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 
+import org.apache.commons.io.FilenameUtils;
 import org.opengis.cite.gpkg12.util.TestSuiteLogger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -33,6 +34,7 @@ public class TestNGController implements TestSuiteController {
     private TestRunExecutor executor;
     private Properties etsProperties = new Properties();
 
+    
     /**
      * A convenience method for running the test suite using a command-line
      * interface. The default values of the test run arguments are as follows:
@@ -77,7 +79,8 @@ public class TestNGController implements TestSuiteController {
      * property as the root output directory.
      */
     public TestNGController() {
-        this(new File(System.getProperty("user.home")).toURI().toString());
+    	// FORTIFY CWE Correction Applied
+        this(new File( FilenameUtils.normalize(System.getProperty("user.home"))).toURI().toString());
     }
 
     /**

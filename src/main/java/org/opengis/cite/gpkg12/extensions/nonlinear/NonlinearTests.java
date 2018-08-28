@@ -151,13 +151,13 @@ public class NonlinearTests extends FeaturesFixture {
 
 				// 3a
 				if(extendedGeometryTypes.contains(geometryTypeName)) {
-					final String tableName = resultSet1.getString("table_name");
-					final String columnName = resultSet1.getString("column_name");
+					final String tableName = ValidateSQLiteTableColumnStringInput(resultSet1.getString("table_name"));
+					final String columnName = ValidateSQLiteTableColumnStringInput(resultSet1.getString("column_name"));
 
 					try (
 							// 3ai
 							final Statement statement2 = this.databaseConnection.createStatement();
-
+							// FORTIFY CWE Corrected
 							final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT extension_name FROM gpkg_extensions WHERE table_name = '%s' AND column_name = '%s'", tableName, columnName));
 							) {
 						boolean pass = false;

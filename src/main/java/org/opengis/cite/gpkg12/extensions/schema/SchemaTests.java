@@ -181,12 +181,13 @@ public class SchemaTests extends CommonFixture
     			) {
     		// 2
     		while (resultSet1.next()) {
-    			final String columnName = resultSet1.getString("column_name");
-    			final String tableName = resultSet1.getString("table_name");
+    			final String columnName = ValidateSQLiteTableColumnStringInput(resultSet1.getString("column_name"));
+    			final String tableName = ValidateSQLiteTableColumnStringInput(resultSet1.getString("table_name"));
 
     			// 3
     			try (final Statement statement2 = this.databaseConnection.createStatement()){
     				// 3bi
+    				// FORTIFY CWE Corrected
     				statement2.executeQuery(String.format("SELECT COUNT(%s) from %s;", columnName, tableName));
     			} catch (SQLException exc) {
     				Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_COLUMN, "gpkg_extensions", columnName, tableName));
@@ -312,17 +313,17 @@ public class SchemaTests extends CommonFixture
     	try (
     	    	// 1
     			final Statement statement1 = this.databaseConnection.createStatement();
-
+    			
     			final ResultSet resultSet1 = statement1.executeQuery("SELECT DISTINCT constraint_name FROM gpkg_data_column_constraints WHERE constraint_type IN ('range', 'glob')");
     			) {
     		// 2
     		while (resultSet1.next()) {
     			// 3
-    			final String constraintName = resultSet1.getString("constraint_name");
+    			final String constraintName = ValidateStringInput(resultSet1.getString("constraint_name"));
 
     			try (
     					final Statement statement2 = this.databaseConnection.createStatement();
-
+    					// FORTIFY CWE Corrected
     					final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_data_column_constraints WHERE constraint_name = '%s'", constraintName));
     					) {
     				Assert.assertTrue(resultSet2.getInt(1) <= 1, 
