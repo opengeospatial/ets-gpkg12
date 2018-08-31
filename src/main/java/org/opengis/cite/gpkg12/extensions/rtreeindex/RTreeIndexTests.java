@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
@@ -191,8 +192,9 @@ public class RTreeIndexTests extends CommonFixture {
 						String trigger3old = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_update3\"?\\s+AFTER\\s+UPDATE\\s+OF\\s+\"?<c>\"?\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s+OLD.\"?\\w*\"?\\s*!=\\s*NEW.\"?\\w*\"?\\s+AND\\s+\\(\\s*NEW.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(\\s*NEW.\"?<c>\"?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\"?rtree_<t>_<c>\"?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\"?\\w*\"?;\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s*\\(\\s*NEW.\"?\\w*\"?,\\s*ST_MinX\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(\\s*NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(\\s*NEW.\"?<c>\"?\\)\\s*\\);\\s*END";
 						trigger3old = trigger3old.replaceAll("<t>", tableName).replaceAll("<c>", columnName);
 						// The old version of the trigger is still grandfathered in on older version versions
-						GeoPackageVersion gpv = getGeopackageVersion();
-						if(((gpv == GeoPackageVersion.V102) || (gpv == GeoPackageVersion.V110) || (gpv == GeoPackageVersion.V120)) && 
+						if(((geopackageVersion == GeoPackageVersion.V102) ||
+								(geopackageVersion == GeoPackageVersion.V110) ||
+								(geopackageVersion == GeoPackageVersion.V120)) &&
 								!Pattern.compile(trigger3old, Pattern.CASE_INSENSITIVE).matcher(sql3c3).matches()){
 							Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, "update trigger 3", tableName, trigger3, sql3c3));
 						}

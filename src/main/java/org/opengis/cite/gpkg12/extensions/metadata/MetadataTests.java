@@ -22,6 +22,7 @@ import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.ForeignKeyDefinition;
 import org.opengis.cite.gpkg12.TableVerifier;
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
@@ -95,7 +96,7 @@ public class MetadataTests extends CommonFixture
 	@BeforeClass
 	public void activeExtension(ITestContext testContext) throws SQLException {
 		// Starting with GPKG 1.1, this is a proper extension.
-		if (getGeopackageVersion() == GeoPackageVersion.V102) {
+		if (geopackageVersion == GeoPackageVersion.V102) {
 			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_metadata"), 
 					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Metadata Option"));
 		} else {
@@ -258,7 +259,7 @@ public class MetadataTests extends CommonFixture
 	public void metadataExtensionTableValues() throws SQLException
 	{
 		// This requirement was not introduced until GPKG 1.2
-		if ((getGeopackageVersion() == GeoPackageVersion.V102) || (getGeopackageVersion() == GeoPackageVersion.V110)) {
+		if ((geopackageVersion == GeoPackageVersion.V102) || (geopackageVersion == GeoPackageVersion.V110)) {
 			return;
 		}
 

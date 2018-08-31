@@ -11,6 +11,7 @@ import java.util.List;
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
@@ -36,7 +37,7 @@ public class SchemaTests extends CommonFixture
     @BeforeClass
     public void activeExtension(ITestContext testContext) throws SQLException {
     	// Starting with GPKG 1.1, this is a proper extension.
-    	if (getGeopackageVersion() == GeoPackageVersion.V102) {
+    	if (geopackageVersion == GeoPackageVersion.V102) {
 			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_data_columns"), 
 					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Schema Option"));
     		minIsInclusive = "minIsInclusive";

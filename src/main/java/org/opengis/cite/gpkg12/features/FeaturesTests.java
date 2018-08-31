@@ -23,6 +23,7 @@ import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.FeaturesFixture;
 import org.opengis.cite.gpkg12.TableVerifier;
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.SkipException;
@@ -1361,7 +1362,7 @@ public class FeaturesTests extends FeaturesFixture {
 
 				boolean pass = false;
 
-				if (getGeopackageVersion().equals(GeoPackageVersion.V120)){
+				if (geopackageVersion.equals(GeoPackageVersion.V120)){
 					pass = ALLOWED_GEOMETRY_TYPES.contains(geometryTypeName);
 				} else {
 					final Iterator<String> iterator = ALLOWED_GEOMETRY_TYPES.iterator();
@@ -1497,7 +1498,7 @@ public class FeaturesTests extends FeaturesFixture {
 	@Test(description = "See OGC 12-128r13: Requirement 31")
 	public void featureTableGeometryColumnType() throws SQLException {
 		// We're just going to skip this test on older GeoPackages and hope for the best.
-		if (getGeopackageVersion().equals(GeoPackageVersion.V120)){
+		if (geopackageVersion.equals(GeoPackageVersion.V120)){
 			try (
 					// 1
 					final Statement statement = this.databaseConnection.createStatement();
@@ -1734,8 +1735,8 @@ public class FeaturesTests extends FeaturesFixture {
      * Test if the geometry is assignable. A geometry may be more specific within a
      * feature subtype than the superclass. 
      *
-     * @param expectedGeometryName The geometry type expected
-     * @param actualGeometryName   the actual geometry that has been specified
+     * @param supertypeGeometry The geometry type expected
+     * @param subtypeGeometry   the actual geometry that has been specified
      *
      * @return Integer 1 if assignable, 0 if not assignable
      */ 

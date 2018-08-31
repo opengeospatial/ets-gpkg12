@@ -2,6 +2,7 @@ package org.opengis.cite.gpkg12;
 
 import java.io.File;
 
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.w3c.dom.Document;
 
 import com.sun.jersey.api.client.Client;
@@ -24,11 +25,17 @@ public enum SuiteAttribute {
     /**
      * A File containing the test subject or a description of it.
      */
-    TEST_SUBJ_FILE("testSubjectFile", File.class);
+    TEST_SUBJ_FILE("testSubjectFile", File.class),
+    /**
+     * A File containing the test subject or a description of it.
+     */
+    GPKG_VERSION("geopackageVersion", GeoPackageVersion.class);
+
+
     private final Class attrType;
     private final String attrName;
 
-    private SuiteAttribute(String attrName, Class attrType) {
+    SuiteAttribute(String attrName, Class attrType) {
         this.attrName = attrName;
         this.attrType = attrType;
     }

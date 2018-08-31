@@ -1,5 +1,6 @@
 package org.opengis.cite.gpkg12.core;
 
+import static org.opengis.cite.gpkg12.util.GeoPackageUtils.getAppId;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.AssertJUnit.fail;
@@ -21,6 +22,7 @@ import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.GPKG12;
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.testng.annotations.Test;
 
 /**
@@ -89,14 +91,16 @@ public class SQLiteContainerTests extends CommonFixture {
 	 *      target= "_blank">Assigned application IDs</a>
 	 */
 	@Test(description = "See OGC 12-128r12: Requirement 2")
-	public void applicationID() throws IOException, SQLException {
-		// This does steps 1-4
-        final GeoPackageVersion version = getGeopackageVersion();
-    	// 5
-        assertTrue(version != null, ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID, new String(getAppId(), StandardCharsets.US_ASCII)));
+    public void applicationID()
+			throws SQLException, IOException {
+        // This does steps 1-4
+        final GeoPackageVersion version = geopackageVersion;
+        // 5
+        assertTrue( version != null, ErrorMessage.format( ErrorMessageKeys.UNKNOWN_APP_ID,
+                                                          new String( getAppId( this.gpkgFile ), StandardCharsets.US_ASCII ) ) );
 
-		assertTrue(Arrays.asList(getAllowedVersions()).contains(version),
-				ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID));
+        assertTrue( Arrays.asList( GeoPackageVersion.values() ).contains( version ),
+                    ErrorMessage.format( ErrorMessageKeys.UNKNOWN_APP_ID ) );
 		if (version.equals(GeoPackageVersion.V120)){
 			try (
 					final Statement statement = this.databaseConnection.createStatement();
