@@ -3,6 +3,7 @@ package org.opengis.cite.gpkg12;
 import static org.testng.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -14,7 +15,6 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteDataSource;
@@ -23,6 +23,7 @@ import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 
 /**
  * A supporting base class that sets up a common test fixture. These
@@ -30,8 +31,30 @@ import org.testng.annotations.BeforeTest;
  * subclass.
  */
 public class CommonFixture {
+	protected enum GeoPackageVersion {
+		V102(102), V110(110), V120(120);
+		private int value;
+		private GeoPackageVersion(int value){
+			this.value = value;
+		}
+		
+		protected boolean equals(GeoPackageVersion right) {
+			return this.value == right.value;
+		}
+	}
 	
+	private GeoPackageVersion[] allowedVersions = {GeoPackageVersion.V102, GeoPackageVersion.V110, GeoPackageVersion.V120};
 	private final String ICS = "Core,Tiles,Features,Attributes,Extension Mechanism,Non-Linear Geometry Types,RTree Spatial Indexes,Tiles Encoding WebP,Metadata,Schema,WKT for Coordinate Reference Systems,Tiled Gridded Coverage Data";
+	
+	protected GeoPackageVersion[] getAllowedVersions() {
+		return allowedVersions;
+	}
+
+	private GeoPackageVersion geopackageVersion;
+
+    protected GeoPackageVersion getGeopackageVersion() {
+		return geopackageVersion;
+	}
 
 	/** Root test suite package (absolute path). */
     public static final String ROOT_PKG_PATH = "/org/opengis/cite/gpkg12/";
@@ -41,9 +64,7 @@ public class CommonFixture {
     protected DataSource dataSource;
 
     protected Connection databaseConnection;
-
-    protected GeoPackageVersion geopackageVersion;
-
+    
     /**
      * Initializes the common test fixture. The fixture includes the following
      * components:
@@ -67,7 +88,6 @@ public class CommonFixture {
             throw new IllegalArgumentException(
                     String.format("Suite attribute value is not a File: %s", SuiteAttribute.TEST_SUBJ_FILE.getName()));
         }
-        this.geopackageVersion = (GeoPackageVersion) testContext.getSuite().getAttribute( SuiteAttribute.GPKG_VERSION.getName() );
         this.gpkgFile = File.class.cast(testFile);
         this.gpkgFile.setWritable(false);
         final SQLiteConfig dbConfig = new SQLiteConfig();
@@ -78,8 +98,9 @@ public class CommonFixture {
         sqliteSource.setUrl("jdbc:sqlite:" + this.gpkgFile.getPath());
         this.dataSource = sqliteSource;
         this.databaseConnection = this.dataSource.getConnection();
+        setupVersion();
     }
-
+    
     @AfterClass
     public void close() throws SQLException {
         if (this.databaseConnection != null && !this.databaseConnection.isClosed()) {
