@@ -14,7 +14,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.opengis.cite.gpkg12.SuiteAttribute;
-import org.opengis.cite.gpkg12.core.SQLiteContainerTests;
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.testng.ISuite;
 import org.testng.ITestContext;
 
@@ -34,10 +34,7 @@ public class VerifySQLiteContainerTests {
 
     @Test
     public void validHeaderString() throws IOException, SQLException, URISyntaxException {
-        URL gpkgUrl = ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg");
-        File dataFile = new File(gpkgUrl.toURI());
-        dataFile.setWritable(false);
-        when(suite.getAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName())).thenReturn(dataFile);
+        mockSuite();
         SQLiteContainerTests iut = new SQLiteContainerTests();
         iut.initCommonFixture(testContext);
         iut.fileHeaderString();
@@ -45,12 +42,18 @@ public class VerifySQLiteContainerTests {
 
     @Test
     public void validApplicationId() throws IOException, SQLException, URISyntaxException {
-        URL gpkgUrl = ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg");
-        File dataFile = new File(gpkgUrl.toURI());
-        dataFile.setWritable(false);
-        when(suite.getAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName())).thenReturn(dataFile);
+        mockSuite();
         SQLiteContainerTests iut = new SQLiteContainerTests();
         iut.initCommonFixture(testContext);
         iut.applicationID();
     }
+
+    private void mockSuite() throws URISyntaxException {
+        URL gpkgUrl = ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg");
+        File dataFile = new File(gpkgUrl.toURI());
+        dataFile.setWritable(false);
+        when(suite.getAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName())).thenReturn(dataFile);
+        when(suite.getAttribute(SuiteAttribute.GPKG_VERSION.getName())).thenReturn(GeoPackageVersion.V102);
+    }
+
 }

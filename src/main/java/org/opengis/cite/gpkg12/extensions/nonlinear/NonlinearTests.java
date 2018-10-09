@@ -11,6 +11,7 @@ import java.util.Collection;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.FeaturesFixture;
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
@@ -93,7 +94,7 @@ public class NonlinearTests extends FeaturesFixture {
 
 				boolean pass = false;
 
-				if (getGeopackageVersion().equals(GeoPackageVersion.V120)){
+				if (geopackageVersion.equals(GeoPackageVersion.V120)){
 					pass |= getAllowedGeometryTypes().contains(geometryTypeName) || extendedGeometryTypes.contains(geometryTypeName);
 				} else {
 					for (final String geometryType: extendedGeometryTypes){

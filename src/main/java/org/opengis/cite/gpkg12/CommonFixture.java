@@ -3,7 +3,6 @@ package org.opengis.cite.gpkg12;
 import static org.testng.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -15,6 +14,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteDataSource;
@@ -23,7 +23,6 @@ import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
 
 /**
  * A supporting base class that sets up a common test fixture. These
@@ -31,30 +30,8 @@ import org.testng.annotations.Test;
  * subclass.
  */
 public class CommonFixture {
-	protected enum GeoPackageVersion {
-		V102(102), V110(110), V120(120);
-		private int value;
-		private GeoPackageVersion(int value){
-			this.value = value;
-		}
-		
-		protected boolean equals(GeoPackageVersion right) {
-			return this.value == right.value;
-		}
-	}
 	
-	private GeoPackageVersion[] allowedVersions = {GeoPackageVersion.V102, GeoPackageVersion.V110, GeoPackageVersion.V120};
 	private final String ICS = "Core,Tiles,Features,Attributes,Extension Mechanism,Non-Linear Geometry Types,RTree Spatial Indexes,Tiles Encoding WebP,Metadata,Schema,WKT for Coordinate Reference Systems,Tiled Gridded Coverage Data";
-	
-	protected GeoPackageVersion[] getAllowedVersions() {
-		return allowedVersions;
-	}
-
-	private GeoPackageVersion geopackageVersion;
-
-    protected GeoPackageVersion getGeopackageVersion() {
-		return geopackageVersion;
-	}
 
 	/** Root test suite package (absolute path). */
     public static final String ROOT_PKG_PATH = "/org/opengis/cite/gpkg12/";
@@ -64,7 +41,9 @@ public class CommonFixture {
     protected DataSource dataSource;
 
     protected Connection databaseConnection;
-    
+
+    protected GeoPackageVersion geopackageVersion;
+
     /**
      * Initializes the common test fixture. The fixture includes the following
      * components:
@@ -88,6 +67,7 @@ public class CommonFixture {
             throw new IllegalArgumentException(
                     String.format("Suite attribute value is not a File: %s", SuiteAttribute.TEST_SUBJ_FILE.getName()));
         }
+        this.geopackageVersion = (GeoPackageVersion) testContext.getSuite().getAttribute( SuiteAttribute.GPKG_VERSION.getName() );
         this.gpkgFile = File.class.cast(testFile);
         this.gpkgFile.setWritable(false);
         final SQLiteConfig dbConfig = new SQLiteConfig();
@@ -98,7 +78,6 @@ public class CommonFixture {
         sqliteSource.setUrl("jdbc:sqlite:" + this.gpkgFile.getPath());
         this.dataSource = sqliteSource;
         this.databaseConnection = this.dataSource.getConnection();
-        setupVersion();
     }
 
     @AfterClass
@@ -121,64 +100,6 @@ public class CommonFixture {
       Assert.assertTrue(set.contains(testName), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, testName));
     }
     
-    /**
-     * A GeoPackage SHALL contain a value of 0x47504B47 ("GPKG" in ASCII) in 
-     * the "application_id" field of the SQLite database header to indicate 
-     * that it is a GeoPackage. A GeoPackage SHALL contain an appropriate 
-     * value in "user_version" field of the SQLite database header to 
-     * indicate its version. The value SHALL be in integer with a major 
-     * version, two-digit minor version, and two-digit bug-fix. For 
-     * GeoPackage Version 1.2 this value is 0x000027D8 (the hexadecimal value 
-     * for 10200). 
-     *
-     * @throws IOException
-     *             If an I/O error occurs while trying to read the data file.
-     * @throws SQLException
-     *             on any SQL error
-     *
-     * @see <a href="http://www.geopackage.org/spec/#_requirement-2" target=
-     *      "_blank">File Format - Requirement 2</a>
-     * @see <a href=
-     *      "http://www.sqlite.org/src/artifact?ci=trunk&filename=magic.txt"
-     *      target= "_blank">Assigned application IDs</a>
-     */
-    @Test(description = "See OGC 12-128r12: Requirement 2")
-    private void setupVersion() throws SQLException, IOException{
-        // 1
-        final byte[] appID = getAppId();
-        // 2
-    	if (Arrays.equals(appID, GPKG12.APP_GP10)){
-    		geopackageVersion = GeoPackageVersion.V102;
-    		// 3
-    	} else if (Arrays.equals(appID, GPKG12.APP_GP11)){
-    		geopackageVersion = GeoPackageVersion.V110;
-    		// 4
-    	} else if (Arrays.equals(appID, GPKG12.APP_GPKG)){
-    		geopackageVersion = GeoPackageVersion.V120;
-    	} 
-    }   
-    
-    /**
-     * 
-     * @return the bytes that make up the header
-     * @throws IOException
-     */
-    protected final byte[] getHeaderBytes() throws IOException{
-        final byte[] headerBytes = new byte[GPKG12.DB_HEADER_LENGTH];
-        try (FileInputStream fileInputStream = new FileInputStream(this.gpkgFile)) {
-            fileInputStream.read(headerBytes);
-        }
-        return headerBytes;
-    }
-    
-    /**
-     * 
-     * @return the bytes that make up the application ID
-     * @throws IOException
-     */
-    protected final byte[] getAppId() throws IOException{
-    	return Arrays.copyOfRange(getHeaderBytes(), GPKG12.APP_ID_OFFSET, GPKG12.APP_ID_OFFSET + 4);
-    }
     
     /**
      * This function returns the name of a single primary key column for the given table
