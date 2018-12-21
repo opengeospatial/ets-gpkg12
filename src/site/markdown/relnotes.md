@@ -1,5 +1,9 @@
 # Release Notes GeoPackage (gpkg) 1.2
 
+## 1.0 (2018-12-21)
+* Fix [#75](https://github.com/opengeospatial/ets-gpkg12/issues/75): Test setupVersion is executed multiple times
+* Fix [#81](https://github.com/opengeospatial/ets-gpkg12/issues/81): Introduce Dockerfile and Maven Docker plugin
+
 ## 0.7 (2018-07-13)
 * Fix [#76](https://github.com/opengeospatial/ets-gpkg12/issues/76): Several tests are executed multiple times
 * Fix [#64](https://github.com/opengeospatial/ets-gpkg12/issues/64): Failure due to space in filename
