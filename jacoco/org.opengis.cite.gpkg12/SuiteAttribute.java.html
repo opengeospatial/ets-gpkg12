@@ -2,6 +2,7 @@
 
 import java.io.File;
 
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.w3c.dom.Document;
 
 import com.sun.jersey.api.client.Client;
@@ -10,42 +11,48 @@ import com.sun.jersey.api.client.Client;
  * An enumerated type defining ISuite attributes that may be set to constitute a
  * shared test fixture.
  */
-<span class="pc" id="L13">@SuppressWarnings(&quot;rawtypes&quot;)</span>
+<span class="pc" id="L14">@SuppressWarnings(&quot;rawtypes&quot;)</span>
 public enum SuiteAttribute {
 
     /**
      * A client component for interacting with HTTP endpoints.
      */
-<span class="fc" id="L19">    CLIENT(&quot;httpClient&quot;, Client.class),</span>
+<span class="fc" id="L20">    CLIENT(&quot;httpClient&quot;, Client.class),</span>
     /**
      * A DOM Document that represents the test subject or metadata about it.
      */
-<span class="fc" id="L23">    TEST_SUBJECT(&quot;testSubject&quot;, Document.class),</span>
+<span class="fc" id="L24">    TEST_SUBJECT(&quot;testSubject&quot;, Document.class),</span>
     /**
      * A File containing the test subject or a description of it.
      */
-<span class="fc" id="L27">    TEST_SUBJ_FILE(&quot;testSubjectFile&quot;, File.class);</span>
+<span class="fc" id="L28">    TEST_SUBJ_FILE(&quot;testSubjectFile&quot;, File.class),</span>
+    /**
+     * A File containing the test subject or a description of it.
+     */
+<span class="fc" id="L32">    GPKG_VERSION(&quot;geopackageVersion&quot;, GeoPackageVersion.class);</span>
+
+
     private final Class attrType;
     private final String attrName;
 
-<span class="fc" id="L31">    private SuiteAttribute(String attrName, Class attrType) {</span>
-<span class="fc" id="L32">        this.attrName = attrName;</span>
-<span class="fc" id="L33">        this.attrType = attrType;</span>
-<span class="fc" id="L34">    }</span>
+<span class="fc" id="L38">    SuiteAttribute(String attrName, Class attrType) {</span>
+<span class="fc" id="L39">        this.attrName = attrName;</span>
+<span class="fc" id="L40">        this.attrType = attrType;</span>
+<span class="fc" id="L41">    }</span>
 
     public Class getType() {
-<span class="fc" id="L37">        return attrType;</span>
+<span class="fc" id="L44">        return attrType;</span>
     }
 
     public String getName() {
-<span class="fc" id="L41">        return attrName;</span>
+<span class="fc" id="L48">        return attrName;</span>
     }
 
     @Override
     public String toString() {
-<span class="nc" id="L46">        StringBuilder sb = new StringBuilder(attrName);</span>
-<span class="nc" id="L47">        sb.append('(').append(attrType.getName()).append(')');</span>
-<span class="nc" id="L48">        return sb.toString();</span>
+<span class="nc" id="L53">        StringBuilder sb = new StringBuilder(attrName);</span>
+<span class="nc" id="L54">        sb.append('(').append(attrType.getName()).append(')');</span>
+<span class="nc" id="L55">        return sb.toString();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.5.201505241946</span></div></body></html>

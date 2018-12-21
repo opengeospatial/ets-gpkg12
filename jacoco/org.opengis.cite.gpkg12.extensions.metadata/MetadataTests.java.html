@@ -22,6 +22,7 @@ import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.ForeignKeyDefinition;
 import org.opengis.cite.gpkg12.TableVerifier;
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
@@ -42,7 +43,7 @@ import org.testng.annotations.Test;
  *
  * @author Luke Lambert, Jeff Yutzler
  */
-<span class="fc" id="L45">public class MetadataTests extends CommonFixture</span>
+<span class="fc" id="L46">public class MetadataTests extends CommonFixture</span>
 {
 	/**
 	 * Sets up variables used across methods
@@ -52,39 +53,39 @@ import org.testng.annotations.Test;
 	@BeforeClass
 	public void setUp() throws SQLException
 	{
-<span class="fc" id="L55">		this.metadataValues = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L56">		this.metadataValues = new LinkedList&lt;&gt;();</span>
 
-<span class="pc" id="L57">		try(final Statement statement = this.databaseConnection.createStatement())</span>
+<span class="pc" id="L58">		try(final Statement statement = this.databaseConnection.createStatement())</span>
 		{
-<span class="pc" id="L59">			try(final ResultSet resultSet = statement.executeQuery(&quot;SELECT md_scope, id FROM gpkg_metadata;&quot;))</span>
+<span class="pc" id="L60">			try(final ResultSet resultSet = statement.executeQuery(&quot;SELECT md_scope, id FROM gpkg_metadata;&quot;))</span>
 			{
-<span class="fc bfc" id="L61" title="All 2 branches covered.">				while(resultSet.next())</span>
+<span class="fc bfc" id="L62" title="All 2 branches covered.">				while(resultSet.next())</span>
 				{
-<span class="fc" id="L63">					this.metadataValues.add(new MetadataTests.Metadata(resultSet.getInt(&quot;id&quot;),</span>
-<span class="fc" id="L64">							resultSet.getString(&quot;md_scope&quot;)));</span>
+<span class="fc" id="L64">					this.metadataValues.add(new MetadataTests.Metadata(resultSet.getInt(&quot;id&quot;),</span>
+<span class="fc" id="L65">							resultSet.getString(&quot;md_scope&quot;)));</span>
 				}
-<span class="pc bpc" id="L66" title="6 of 8 branches missed.">			}</span>
-<span class="pc bpc" id="L67" title="6 of 8 branches missed.">		}</span>
+<span class="pc bpc" id="L67" title="6 of 8 branches missed.">			}</span>
+<span class="pc bpc" id="L68" title="6 of 8 branches missed.">		}</span>
 
-<span class="fc" id="L69">		this.metadataReferenceValues = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L70">		this.metadataReferenceValues = new LinkedList&lt;&gt;();</span>
 
-<span class="pc" id="L71">		try(final Statement statement = this.databaseConnection.createStatement())</span>
+<span class="pc" id="L72">		try(final Statement statement = this.databaseConnection.createStatement())</span>
 		{
-<span class="pc" id="L73">			try(final ResultSet resultSet = statement.executeQuery(&quot;SELECT reference_scope, table_name, column_name, row_id_value, timestamp, md_file_id, md_parent_id FROM gpkg_metadata_reference;&quot;))</span>
+<span class="pc" id="L74">			try(final ResultSet resultSet = statement.executeQuery(&quot;SELECT reference_scope, table_name, column_name, row_id_value, timestamp, md_file_id, md_parent_id FROM gpkg_metadata_reference;&quot;))</span>
 			{
-<span class="fc bfc" id="L75" title="All 2 branches covered.">				while(resultSet.next())</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">				while(resultSet.next())</span>
 				{
-<span class="fc" id="L77">					this.metadataReferenceValues.add(new MetadataTests.MetadataReference(resultSet.getString(&quot;reference_scope&quot;),</span>
-<span class="fc" id="L78">							resultSet.getString(&quot;table_name&quot;),</span>
-<span class="fc" id="L79">							resultSet.getString(&quot;column_name&quot;),</span>
-<span class="fc" id="L80">							resultSet.getString(&quot;timestamp&quot;),</span>
-<span class="fc" id="L81">							resultSet.getInt   (&quot;md_file_id&quot;),      // Cannot be null</span>
-<span class="fc" id="L82">							nullSafeGet(resultSet, &quot;row_id_value&quot;), // getInt() returns 0 if the value in the database was null</span>
-<span class="fc" id="L83">							nullSafeGet(resultSet, &quot;md_parent_id&quot;)));</span>
+<span class="fc" id="L78">					this.metadataReferenceValues.add(new MetadataTests.MetadataReference(resultSet.getString(&quot;reference_scope&quot;),</span>
+<span class="fc" id="L79">							resultSet.getString(&quot;table_name&quot;),</span>
+<span class="fc" id="L80">							resultSet.getString(&quot;column_name&quot;),</span>
+<span class="fc" id="L81">							resultSet.getString(&quot;timestamp&quot;),</span>
+<span class="fc" id="L82">							resultSet.getInt   (&quot;md_file_id&quot;),      // Cannot be null</span>
+<span class="fc" id="L83">							nullSafeGet(resultSet, &quot;row_id_value&quot;), // getInt() returns 0 if the value in the database was null</span>
+<span class="fc" id="L84">							nullSafeGet(resultSet, &quot;md_parent_id&quot;)));</span>
 				}
-<span class="pc bpc" id="L85" title="6 of 8 branches missed.">			}</span>
-<span class="pc bpc" id="L86" title="6 of 8 branches missed.">		}</span>
-<span class="fc" id="L87">	}</span>
+<span class="pc bpc" id="L86" title="6 of 8 branches missed.">			}</span>
+<span class="pc bpc" id="L87" title="6 of 8 branches missed.">		}</span>
+<span class="fc" id="L88">	}</span>
 
 	/**
 	 * Determines if the extension is active by looking for relevant tables and/or rows
@@ -95,27 +96,27 @@ import org.testng.annotations.Test;
 	@BeforeClass
 	public void activeExtension(ITestContext testContext) throws SQLException {
 		// Starting with GPKG 1.1, this is a proper extension.
-<span class="fc bfc" id="L98" title="All 2 branches covered.">		if (getGeopackageVersion() == GeoPackageVersion.V102) {</span>
-<span class="fc" id="L99">			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_metadata&quot;), </span>
-<span class="fc" id="L100">					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Metadata Option&quot;));</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">		if (geopackageVersion == GeoPackageVersion.V102) {</span>
+<span class="fc" id="L100">			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_metadata&quot;), </span>
+<span class="fc" id="L101">					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Metadata Option&quot;));</span>
 		} else {
-<span class="fc" id="L102">			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;), </span>
-<span class="fc" id="L103">					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Metadata Extension&quot;));</span>
+<span class="fc" id="L103">			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;), </span>
+<span class="fc" id="L104">					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Metadata Extension&quot;));</span>
 	    	
-<span class="fc" id="L105">			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;), </span>
-<span class="fc" id="L106">					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, &quot;gpkg_extensions&quot;));</span>
+<span class="fc" id="L106">			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;), </span>
+<span class="fc" id="L107">					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, &quot;gpkg_extensions&quot;));</span>
 
-<span class="fc" id="L108">			try (</span>
-<span class="fc" id="L109">					final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L109">			try (</span>
+<span class="fc" id="L110">					final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L111">					final ResultSet resultSet = statement.executeQuery(&quot;SELECT count(*) from gpkg_extensions WHERE extension_name = 'gpkg_metadata';&quot;);</span>
+<span class="fc" id="L112">					final ResultSet resultSet = statement.executeQuery(&quot;SELECT count(*) from gpkg_extensions WHERE extension_name = 'gpkg_metadata';&quot;);</span>
 					) {
-<span class="fc" id="L113">				resultSet.next();</span>
+<span class="fc" id="L114">				resultSet.next();</span>
 
-<span class="fc bfc" id="L115" title="All 2 branches covered.">				Assert.assertTrue(resultSet.getInt(1) &gt; 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Metadata Extension&quot;));</span>
-<span class="pc bpc" id="L116" title="8 of 16 branches missed.">			}</span>
+<span class="fc bfc" id="L116" title="All 2 branches covered.">				Assert.assertTrue(resultSet.getInt(1) &gt; 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Metadata Extension&quot;));</span>
+<span class="pc bpc" id="L117" title="8 of 16 branches missed.">			}</span>
 		}		
-<span class="fc" id="L118">	}</span>
+<span class="fc" id="L119">	}</span>
 
 	/**
 	 * A GeoPackage MAY contain a table named gpkg_metadata. If present it
@@ -136,47 +137,47 @@ import org.testng.annotations.Test;
 	@Test(description = &quot;See OGC 12-128r13: Requirement 93&quot;)
 	public void metadataTableDefinition() throws SQLException
 	{
-<span class="fc" id="L139">		try (</span>
+<span class="fc" id="L140">		try (</span>
 				// 1
-<span class="fc" id="L141">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L142">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L143">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkg_metadata');&quot;);</span>
+<span class="fc" id="L144">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkg_metadata');&quot;);</span>
 				) {
 			// 2
-<span class="fc" id="L146">			int passFlag = 0;</span>
-<span class="fc" id="L147">			final int flagMask = 0b00011111;</span>
+<span class="fc" id="L147">			int passFlag = 0;</span>
+<span class="fc" id="L148">			final int flagMask = 0b00011111;</span>
 
-<span class="fc bfc" id="L149" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">			while (resultSet.next()) {</span>
 				// 3
-<span class="fc" id="L151">				final String name = resultSet.getString(&quot;name&quot;);</span>
-<span class="fc bfc" id="L152" title="All 2 branches covered.">				if (&quot;id&quot;.equals(name)){</span>
-<span class="fc" id="L153">					assertTrue(&quot;INTEGER&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;id type&quot;));</span>
-<span class="pc bpc" id="L154" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;id notnull&quot;));</span>
-<span class="pc bpc" id="L155" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) &gt; 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;id pk&quot;));</span>
-<span class="fc" id="L156">					passFlag |= 1;</span>
-<span class="fc bfc" id="L157" title="All 2 branches covered.">				} else if (&quot;md_scope&quot;.equals(name)){</span>
-<span class="fc" id="L158">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;md_scope type&quot;));</span>
-<span class="pc bpc" id="L159" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;md_scope notnull&quot;));</span>
-<span class="fc" id="L160">					final String def = resultSet.getString(&quot;dflt_value&quot;);</span>
-<span class="pc bpc" id="L161" title="2 of 4 branches missed.">					assertTrue((def != null) &amp;&amp; def.contains(&quot;dataset&quot;), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;md_scope default&quot;));</span>
-<span class="fc" id="L162">					passFlag |= (1 &lt;&lt; 1);</span>
-<span class="fc bfc" id="L163" title="All 2 branches covered.">				} else if (&quot;md_standard_uri&quot;.equals(name)){</span>
-<span class="fc" id="L164">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;md_standard_uri type&quot;));</span>
-<span class="pc bpc" id="L165" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;md_standard_uri notnull&quot;));</span>
-<span class="fc" id="L166">					passFlag |= (1 &lt;&lt; 2);</span>
-<span class="fc bfc" id="L167" title="All 2 branches covered.">				} else if (&quot;mime_type&quot;.equals(name)){</span>
-<span class="fc" id="L168">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;mime_type type&quot;));</span>
-<span class="pc bpc" id="L169" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;mime_type notnull&quot;));</span>
-<span class="fc" id="L170">					passFlag |= (1 &lt;&lt; 3);</span>
-<span class="fc bfc" id="L171" title="All 2 branches covered.">				} else if (&quot;metadata&quot;.equals(name)){</span>
-<span class="fc" id="L172">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;metadata type&quot;));</span>
-<span class="pc bpc" id="L173" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;metadata notnull&quot;));</span>
-<span class="fc" id="L174">					passFlag |= (1 &lt;&lt; 4);</span>
+<span class="fc" id="L152">				final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">				if (&quot;id&quot;.equals(name)){</span>
+<span class="fc" id="L154">					assertTrue(&quot;INTEGER&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;id type&quot;));</span>
+<span class="pc bpc" id="L155" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;id notnull&quot;));</span>
+<span class="pc bpc" id="L156" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) &gt; 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;id pk&quot;));</span>
+<span class="fc" id="L157">					passFlag |= 1;</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">				} else if (&quot;md_scope&quot;.equals(name)){</span>
+<span class="fc" id="L159">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;md_scope type&quot;));</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;md_scope notnull&quot;));</span>
+<span class="fc" id="L161">					final String def = resultSet.getString(&quot;dflt_value&quot;);</span>
+<span class="pc bpc" id="L162" title="2 of 4 branches missed.">					assertTrue((def != null) &amp;&amp; def.contains(&quot;dataset&quot;), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;md_scope default&quot;));</span>
+<span class="fc" id="L163">					passFlag |= (1 &lt;&lt; 1);</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">				} else if (&quot;md_standard_uri&quot;.equals(name)){</span>
+<span class="fc" id="L165">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;md_standard_uri type&quot;));</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;md_standard_uri notnull&quot;));</span>
+<span class="fc" id="L167">					passFlag |= (1 &lt;&lt; 2);</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">				} else if (&quot;mime_type&quot;.equals(name)){</span>
+<span class="fc" id="L169">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;mime_type type&quot;));</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;mime_type notnull&quot;));</span>
+<span class="fc" id="L171">					passFlag |= (1 &lt;&lt; 3);</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">				} else if (&quot;metadata&quot;.equals(name)){</span>
+<span class="fc" id="L173">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;metadata type&quot;));</span>
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;metadata notnull&quot;));</span>
+<span class="fc" id="L175">					passFlag |= (1 &lt;&lt; 4);</span>
 				}
-<span class="fc" id="L176">			} </span>
-<span class="fc bfc" id="L177" title="All 2 branches covered.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;missing column(s)&quot;));</span>
-<span class="pc bpc" id="L178" title="8 of 16 branches missed.">		}</span>
-<span class="fc" id="L179">	}</span>
+<span class="fc" id="L177">			} </span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata&quot;, &quot;missing column(s)&quot;));</span>
+<span class="pc bpc" id="L179" title="8 of 16 branches missed.">		}</span>
+<span class="fc" id="L180">	}</span>
 
 	/**
 	 * Each {@code md_scope} column value in a {@code gpkg_metadata} table or
@@ -190,15 +191,15 @@ import org.testng.annotations.Test;
 	@Test(description = &quot;See OGC 12-128r13: Requirement 94&quot;)
 	public void metadataScopeValues()
 	{
-<span class="fc" id="L193">		final List&lt;String&gt; invalidScopeValues = this.metadataValues.stream()</span>
-<span class="fc" id="L194">				.filter(MetadataTests.Metadata::hasInvalidScope)</span>
-<span class="fc" id="L195">				.map(MetadataTests.Metadata::getMdScope)</span>
-<span class="fc" id="L196">				.collect(Collectors.toList());</span>
+<span class="fc" id="L194">		final List&lt;String&gt; invalidScopeValues = this.metadataValues.stream()</span>
+<span class="fc" id="L195">				.filter(MetadataTests.Metadata::hasInvalidScope)</span>
+<span class="fc" id="L196">				.map(MetadataTests.Metadata::getMdScope)</span>
+<span class="fc" id="L197">				.collect(Collectors.toList());</span>
 
-<span class="fc" id="L198">		assertTrue(invalidScopeValues.isEmpty(),</span>
-<span class="fc" id="L199">				ErrorMessage.format(ErrorMessageKeys.INVALID_METADATA_SCOPE,</span>
-<span class="fc" id="L200">						String.join(&quot;, &quot;, invalidScopeValues)));</span>
-<span class="fc" id="L201">	}</span>
+<span class="fc" id="L199">		assertTrue(invalidScopeValues.isEmpty(),</span>
+<span class="fc" id="L200">				ErrorMessage.format(ErrorMessageKeys.INVALID_METADATA_SCOPE,</span>
+<span class="fc" id="L201">						String.join(&quot;, &quot;, invalidScopeValues)));</span>
+<span class="fc" id="L202">	}</span>
 
 	/**
 	 * A GeoPackage that contains a {@code gpkg_metadata} table SHALL contain a
@@ -217,30 +218,30 @@ import org.testng.annotations.Test;
 	@Test(description = &quot;See OGC 12-128r13: Requirement 95&quot;)
 	public void metadataReferencesTableDefinition()
 	{
-<span class="fc" id="L220">		final Map&lt;String, ColumnDefinition&gt; metadataReferenceTableColumns = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L221">		final Map&lt;String, ColumnDefinition&gt; metadataReferenceTableColumns = new HashMap&lt;&gt;();</span>
 
-<span class="fc" id="L222">		metadataReferenceTableColumns.put(&quot;reference_scope&quot;, new ColumnDefinition(&quot;TEXT&quot;,     true,  false, false, null));</span>
-<span class="fc" id="L223">		metadataReferenceTableColumns.put(&quot;table_name&quot;,      new ColumnDefinition(&quot;TEXT&quot;,     false, false, false, null));</span>
-<span class="fc" id="L224">		metadataReferenceTableColumns.put(&quot;column_name&quot;,     new ColumnDefinition(&quot;TEXT&quot;,     false, false, false, null));</span>
-<span class="fc" id="L225">		metadataReferenceTableColumns.put(&quot;row_id_value&quot;,    new ColumnDefinition(&quot;INTEGER&quot;,  false, false, false, null));</span>
-<span class="fc" id="L226">		metadataReferenceTableColumns.put(&quot;timestamp&quot;,       new ColumnDefinition(&quot;DATETIME&quot;, true,  false, false, &quot;strftime('%Y-%m-%dT%H:%M:%fZ', 'now')&quot;));</span>
-<span class="fc" id="L227">		metadataReferenceTableColumns.put(&quot;md_file_id&quot;,      new ColumnDefinition(&quot;INTEGER&quot;,  true,  false, false, null));</span>
-<span class="fc" id="L228">		metadataReferenceTableColumns.put(&quot;md_parent_id&quot;,    new ColumnDefinition(&quot;INTEGER&quot;,  false, false, false, null));</span>
+<span class="fc" id="L223">		metadataReferenceTableColumns.put(&quot;reference_scope&quot;, new ColumnDefinition(&quot;TEXT&quot;,     true,  false, false, null));</span>
+<span class="fc" id="L224">		metadataReferenceTableColumns.put(&quot;table_name&quot;,      new ColumnDefinition(&quot;TEXT&quot;,     false, false, false, null));</span>
+<span class="fc" id="L225">		metadataReferenceTableColumns.put(&quot;column_name&quot;,     new ColumnDefinition(&quot;TEXT&quot;,     false, false, false, null));</span>
+<span class="fc" id="L226">		metadataReferenceTableColumns.put(&quot;row_id_value&quot;,    new ColumnDefinition(&quot;INTEGER&quot;,  false, false, false, null));</span>
+<span class="fc" id="L227">		metadataReferenceTableColumns.put(&quot;timestamp&quot;,       new ColumnDefinition(&quot;DATETIME&quot;, true,  false, false, &quot;strftime('%Y-%m-%dT%H:%M:%fZ', 'now')&quot;));</span>
+<span class="fc" id="L228">		metadataReferenceTableColumns.put(&quot;md_file_id&quot;,      new ColumnDefinition(&quot;INTEGER&quot;,  true,  false, false, null));</span>
+<span class="fc" id="L229">		metadataReferenceTableColumns.put(&quot;md_parent_id&quot;,    new ColumnDefinition(&quot;INTEGER&quot;,  false, false, false, null));</span>
 
 		try
 		{
-<span class="fc" id="L232">			TableVerifier.verifyTable(this.databaseConnection,</span>
+<span class="fc" id="L233">			TableVerifier.verifyTable(this.databaseConnection,</span>
 					&quot;gpkg_metadata_reference&quot;,
 					metadataReferenceTableColumns,
-<span class="fc" id="L235">					new HashSet&lt;&gt;(Arrays.asList(new ForeignKeyDefinition(&quot;gpkg_metadata&quot;, &quot;md_parent_id&quot;, &quot;id&quot;),</span>
+<span class="fc" id="L236">					new HashSet&lt;&gt;(Arrays.asList(new ForeignKeyDefinition(&quot;gpkg_metadata&quot;, &quot;md_parent_id&quot;, &quot;id&quot;),</span>
 							new ForeignKeyDefinition(&quot;gpkg_metadata&quot;, &quot;md_file_id&quot;,   &quot;id&quot;))),
-<span class="fc" id="L237">					Collections.emptyList());</span>
+<span class="fc" id="L238">					Collections.emptyList());</span>
 		}
-<span class="nc" id="L239">		catch(final Throwable th)</span>
+<span class="nc" id="L240">		catch(final Throwable th)</span>
 		{
-<span class="nc" id="L241">			fail(ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata_reference&quot;, th.getMessage()));</span>
-<span class="fc" id="L242">		}</span>
-<span class="fc" id="L243">	}</span>
+<span class="nc" id="L242">			fail(ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_metadata_reference&quot;, th.getMessage()));</span>
+<span class="fc" id="L243">		}</span>
+<span class="fc" id="L244">	}</span>
 
 	/**
 	 * GeoPackages with a row in the `gpkg_extensions` table with an 
@@ -258,25 +259,25 @@ import org.testng.annotations.Test;
 	public void metadataExtensionTableValues() throws SQLException
 	{
 		// This requirement was not introduced until GPKG 1.2
-<span class="fc bfc" id="L261" title="All 4 branches covered.">		if ((getGeopackageVersion() == GeoPackageVersion.V102) || (getGeopackageVersion() == GeoPackageVersion.V110)) {</span>
-<span class="fc" id="L262">			return;</span>
+<span class="fc bfc" id="L262" title="All 4 branches covered.">		if ((geopackageVersion == GeoPackageVersion.V102) || (geopackageVersion == GeoPackageVersion.V110)) {</span>
+<span class="fc" id="L263">			return;</span>
 		}
 
-<span class="pc" id="L265">		try (</span>
+<span class="pc" id="L266">		try (</span>
 				// 1
-<span class="fc" id="L267">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L268">				final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L269">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT scope FROM gpkg_extensions WHERE extension_name = 'gpkg_metadata'&quot;);</span>
+<span class="fc" id="L270">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT scope FROM gpkg_extensions WHERE extension_name = 'gpkg_metadata'&quot;);</span>
 				) {
 			// 2
-<span class="fc bfc" id="L272" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc bfc" id="L273" title="All 2 branches covered.">			while (resultSet.next()) {</span>
 				// 3
-<span class="fc" id="L274">				final String scope = resultSet.getString(&quot;scope&quot;);</span>
+<span class="fc" id="L275">				final String scope = resultSet.getString(&quot;scope&quot;);</span>
 
-<span class="fc" id="L276">				assertTrue(&quot;read-write&quot;.equals(scope), ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_SCOPE, scope));</span>
-<span class="fc" id="L277">			}			</span>
-<span class="pc bpc" id="L278" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L279">	}</span>
+<span class="fc" id="L277">				assertTrue(&quot;read-write&quot;.equals(scope), ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_SCOPE, scope));</span>
+<span class="fc" id="L278">			}			</span>
+<span class="pc bpc" id="L279" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L280">	}</span>
 
 	/**
 	 * Every {@code gpkg_metadata_reference} table reference scope column value
@@ -290,16 +291,16 @@ import org.testng.annotations.Test;
 	@Test(description = &quot;See OGC 12-128r13: Requirement 96&quot;)
 	public void metadataReferencesScopeValues()
 	{
-<span class="fc" id="L293">		final Collection&lt;String&gt; invalidScopeValues = this.metadataReferenceValues</span>
-<span class="fc" id="L294">				.stream()</span>
-<span class="fc" id="L295">				.filter(MetadataTests.MetadataReference::hasInvalidScope)</span>
-<span class="fc" id="L296">				.map(MetadataTests.MetadataReference::getReferenceScope)</span>
-<span class="fc" id="L297">				.collect(Collectors.toList());</span>
+<span class="fc" id="L294">		final Collection&lt;String&gt; invalidScopeValues = this.metadataReferenceValues</span>
+<span class="fc" id="L295">				.stream()</span>
+<span class="fc" id="L296">				.filter(MetadataTests.MetadataReference::hasInvalidScope)</span>
+<span class="fc" id="L297">				.map(MetadataTests.MetadataReference::getReferenceScope)</span>
+<span class="fc" id="L298">				.collect(Collectors.toList());</span>
 
-<span class="fc" id="L299">		assertTrue(invalidScopeValues.isEmpty(),</span>
-<span class="fc" id="L300">				ErrorMessage.format(ErrorMessageKeys.INVALID_METADATA_REFERENCE_SCOPE,</span>
-<span class="fc" id="L301">						String.join(&quot;, &quot;, invalidScopeValues)));</span>
-<span class="fc" id="L302">	}</span>
+<span class="fc" id="L300">		assertTrue(invalidScopeValues.isEmpty(),</span>
+<span class="fc" id="L301">				ErrorMessage.format(ErrorMessageKeys.INVALID_METADATA_REFERENCE_SCOPE,</span>
+<span class="fc" id="L302">						String.join(&quot;, &quot;, invalidScopeValues)));</span>
+<span class="fc" id="L303">	}</span>
 
 	/**
 	 * Every {@code gpkg_metadata_reference} table row with a {@code
@@ -319,49 +320,49 @@ import org.testng.annotations.Test;
 	public void metadataReferenceScopeAgreement() throws SQLException
 	{
 		// Check reference_scope column that has 'geopackage'
-<span class="fc" id="L322">		final List&lt;MetadataTests.MetadataReference&gt; invalidGeoPackageValue = this.metadataReferenceValues</span>
-<span class="fc" id="L323">				.stream()</span>
-<span class="fc" id="L324">				.filter(columnValue -&gt; columnValue.getReferenceScope().equalsIgnoreCase(&quot;geopackage&quot;))</span>
-<span class="pc bpc" id="L325" title="1 of 2 branches missed.">				.filter(columnValue -&gt; columnValue.getColumnName() != null)</span>
-<span class="fc" id="L326">				.collect(Collectors.toList());</span>
+<span class="fc" id="L323">		final List&lt;MetadataTests.MetadataReference&gt; invalidGeoPackageValue = this.metadataReferenceValues</span>
+<span class="fc" id="L324">				.stream()</span>
+<span class="fc" id="L325">				.filter(columnValue -&gt; columnValue.getReferenceScope().equalsIgnoreCase(&quot;geopackage&quot;))</span>
+<span class="pc bpc" id="L326" title="1 of 2 branches missed.">				.filter(columnValue -&gt; columnValue.getColumnName() != null)</span>
+<span class="fc" id="L327">				.collect(Collectors.toList());</span>
 
-<span class="fc" id="L328">		assertTrue(invalidGeoPackageValue.isEmpty(),</span>
-<span class="fc" id="L329">				ErrorMessage.format(ErrorMessageKeys.BAD_METADATA_REFERENCE_SCOPE_COLUMN_NAME_AGREEMENT,</span>
-<span class="fc" id="L330">						invalidGeoPackageValue.stream()</span>
-<span class="fc" id="L331">						.map(Object::toString)</span>
-<span class="fc" id="L332">						.collect(Collectors.joining(&quot;\n&quot;))));</span>
+<span class="fc" id="L329">		assertTrue(invalidGeoPackageValue.isEmpty(),</span>
+<span class="fc" id="L330">				ErrorMessage.format(ErrorMessageKeys.BAD_METADATA_REFERENCE_SCOPE_COLUMN_NAME_AGREEMENT,</span>
+<span class="fc" id="L331">						invalidGeoPackageValue.stream()</span>
+<span class="fc" id="L332">						.map(Object::toString)</span>
+<span class="fc" id="L333">						.collect(Collectors.joining(&quot;\n&quot;))));</span>
 
-<span class="fc" id="L334">		final Collection&lt;String&gt; contentsTableNames = new LinkedList&lt;&gt;();</span>
+<span class="fc" id="L335">		final Collection&lt;String&gt; contentsTableNames = new LinkedList&lt;&gt;();</span>
 
 		// Get table_name values from the gpkg_contents table
-<span class="pc" id="L337">		try(final Statement statement = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L338">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_contents;&quot;))</span>
+<span class="pc" id="L338">		try(final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L339">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT table_name FROM gpkg_contents;&quot;))</span>
 		{
-<span class="fc bfc" id="L340" title="All 2 branches covered.">			while(resultSet.next())</span>
+<span class="fc bfc" id="L341" title="All 2 branches covered.">			while(resultSet.next())</span>
 			{
-<span class="fc" id="L342">				contentsTableNames.add(resultSet.getString(&quot;table_name&quot;));</span>
+<span class="fc" id="L343">				contentsTableNames.add(resultSet.getString(&quot;table_name&quot;));</span>
 			}
-<span class="pc bpc" id="L344" title="12 of 16 branches missed.">		}</span>
+<span class="pc bpc" id="L345" title="12 of 16 branches missed.">		}</span>
 
 		//check other records that does not have 'geopackage' as a value
-<span class="fc" id="L347">		final List&lt;MetadataTests.MetadataReference&gt; badMetadataReferences = this.metadataReferenceValues</span>
-<span class="fc" id="L348">				.stream()</span>
-<span class="fc bfc" id="L349" title="All 2 branches covered.">				.filter(metadataReference -&gt; !metadataReference.getReferenceScope().equalsIgnoreCase(&quot;geopackage&quot;))</span>
-<span class="pc bpc" id="L350" title="1 of 2 branches missed.">				.filter(metadataReference -&gt; !contentsTableNames.contains(metadataReference.getTableName()))</span>
-<span class="fc" id="L351">				.collect(Collectors.toList());</span>
+<span class="fc" id="L348">		final List&lt;MetadataTests.MetadataReference&gt; badMetadataReferences = this.metadataReferenceValues</span>
+<span class="fc" id="L349">				.stream()</span>
+<span class="fc bfc" id="L350" title="All 2 branches covered.">				.filter(metadataReference -&gt; !metadataReference.getReferenceScope().equalsIgnoreCase(&quot;geopackage&quot;))</span>
+<span class="pc bpc" id="L351" title="1 of 2 branches missed.">				.filter(metadataReference -&gt; !contentsTableNames.contains(metadataReference.getTableName()))</span>
+<span class="fc" id="L352">				.collect(Collectors.toList());</span>
 
-<span class="fc" id="L353">		assertTrue(badMetadataReferences.isEmpty(),</span>
-<span class="fc" id="L354">				ErrorMessage.format(ErrorMessageKeys.INVALID_METADATA_REFERENCE_TABLE,</span>
-<span class="fc" id="L355">						badMetadataReferences.stream()</span>
-<span class="fc" id="L356">						.map(Object::toString)</span>
-<span class="fc" id="L357">						.collect(Collectors.joining(&quot;\n&quot;))));</span>
-<span class="fc" id="L358">	}</span>
+<span class="fc" id="L354">		assertTrue(badMetadataReferences.isEmpty(),</span>
+<span class="fc" id="L355">				ErrorMessage.format(ErrorMessageKeys.INVALID_METADATA_REFERENCE_TABLE,</span>
+<span class="fc" id="L356">						badMetadataReferences.stream()</span>
+<span class="fc" id="L357">						.map(Object::toString)</span>
+<span class="fc" id="L358">						.collect(Collectors.joining(&quot;\n&quot;))));</span>
+<span class="fc" id="L359">	}</span>
 
 	private static Integer nullSafeGet(final ResultSet resultSet, final String columnLabel) throws SQLException
 	{
-<span class="fc" id="L362">		final Integer value = resultSet.getInt(columnLabel);</span>
+<span class="fc" id="L363">		final Integer value = resultSet.getInt(columnLabel);</span>
 
-<span class="pc bpc" id="L364" title="1 of 2 branches missed.">		return resultSet.wasNull() ? null</span>
+<span class="pc bpc" id="L365" title="1 of 2 branches missed.">		return resultSet.wasNull() ? null</span>
 				: value;
 	}
 
@@ -369,23 +370,23 @@ import org.testng.annotations.Test;
 	{
 		Metadata(final int id,
 				final String mdScope)
-<span class="fc" id="L372">		{</span>
-<span class="fc" id="L373">			this.mdScope = mdScope;</span>
-<span class="fc" id="L374">		}</span>
+<span class="fc" id="L373">		{</span>
+<span class="fc" id="L374">			this.mdScope = mdScope;</span>
+<span class="fc" id="L375">		}</span>
 
 		public String getMdScope()
 		{
-<span class="nc" id="L378">			return this.mdScope;</span>
+<span class="nc" id="L379">			return this.mdScope;</span>
 		}
 
 		public boolean hasInvalidScope()
 		{
-<span class="pc bpc" id="L383" title="1 of 2 branches missed.">			return !validScopes.contains(this.mdScope.toLowerCase());</span>
+<span class="pc bpc" id="L384" title="1 of 2 branches missed.">			return !validScopes.contains(this.mdScope.toLowerCase());</span>
 		}
 
 		private final String mdScope;
 
-<span class="fc" id="L388">		private static final Collection&lt;String&gt; validScopes = Arrays.asList(&quot;undefined&quot;,</span>
+<span class="fc" id="L389">		private static final Collection&lt;String&gt; validScopes = Arrays.asList(&quot;undefined&quot;,</span>
 				&quot;fieldsession&quot;,
 				&quot;collectionsession&quot;,
 				&quot;series&quot;,
@@ -415,51 +416,51 @@ import org.testng.annotations.Test;
 				final int     mdFileId,
 				final Integer rowIdValue,
 				final Integer mdParentId)
-<span class="fc" id="L418">		{</span>
-<span class="fc" id="L419">			this.referenceScope = referenceScope;</span>
-<span class="fc" id="L420">			this.tableName      = tableName;</span>
-<span class="fc" id="L421">			this.columnName     = columnName;</span>
-<span class="fc" id="L422">			this.rowIdValue     = rowIdValue;</span>
-<span class="fc" id="L423">			this.timestamp      = timestamp;</span>
-<span class="fc" id="L424">			this.mdFileId       = mdFileId;</span>
-<span class="fc" id="L425">		}</span>
+<span class="fc" id="L419">		{</span>
+<span class="fc" id="L420">			this.referenceScope = referenceScope;</span>
+<span class="fc" id="L421">			this.tableName      = tableName;</span>
+<span class="fc" id="L422">			this.columnName     = columnName;</span>
+<span class="fc" id="L423">			this.rowIdValue     = rowIdValue;</span>
+<span class="fc" id="L424">			this.timestamp      = timestamp;</span>
+<span class="fc" id="L425">			this.mdFileId       = mdFileId;</span>
+<span class="fc" id="L426">		}</span>
 
 		@Override
 		public String toString()
 		{
-<span class="nc" id="L430">			return String.format(&quot;scope: %s, table name: %s, column name: %s, timestamp: %s, metadata file identifier: %d, row identifier value: %d, metadata parent identifier: %d&quot;,</span>
+<span class="nc" id="L431">			return String.format(&quot;scope: %s, table name: %s, column name: %s, timestamp: %s, metadata file identifier: %d, row identifier value: %d, metadata parent identifier: %d&quot;,</span>
 					this.referenceScope,
 					this.tableName,
 					this.columnName,
 					this.timestamp,
-<span class="nc" id="L435">					this.mdFileId,</span>
+<span class="nc" id="L436">					this.mdFileId,</span>
 					this.rowIdValue,
-<span class="nc" id="L437">					this.mdFileId);</span>
+<span class="nc" id="L438">					this.mdFileId);</span>
 		}
 
 		public String getReferenceScope()
 		{
-<span class="fc" id="L442">			return this.referenceScope;</span>
+<span class="fc" id="L443">			return this.referenceScope;</span>
 		}
 
 		public String getTableName()
 		{
-<span class="fc" id="L447">			return this.tableName;</span>
+<span class="fc" id="L448">			return this.tableName;</span>
 		}
 
 		public String getColumnName()
 		{
-<span class="fc" id="L452">			return this.columnName;</span>
+<span class="fc" id="L453">			return this.columnName;</span>
 		}
 
 		public boolean hasInvalidScope()
 		{
-<span class="pc bpc" id="L457" title="1 of 2 branches missed.">			return !validScopes.contains(this.referenceScope.toLowerCase());</span>
+<span class="pc bpc" id="L458" title="1 of 2 branches missed.">			return !validScopes.contains(this.referenceScope.toLowerCase());</span>
 		}
 
 		private final String  referenceScope;
 
-<span class="fc" id="L462">		private static final Collection&lt;String&gt; validScopes = Arrays.asList(&quot;geopackage&quot;,</span>
+<span class="fc" id="L463">		private static final Collection&lt;String&gt; validScopes = Arrays.asList(&quot;geopackage&quot;,</span>
 				&quot;table&quot;,
 				&quot;column&quot;,
 				&quot;row&quot;,

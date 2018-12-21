@@ -3,7 +3,6 @@
 import static org.testng.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -15,6 +14,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteDataSource;
@@ -23,38 +23,15 @@ import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
 
 /**
  * A supporting base class that sets up a common test fixture. These
  * configuration methods are invoked before any that may be defined in a
  * subclass.
  */
-<span class="fc" id="L33">public class CommonFixture {</span>
-<span class="pc" id="L34">	protected enum GeoPackageVersion {</span>
-<span class="fc" id="L35">		V102(102), V110(110), V120(120);</span>
-		private int value;
-<span class="fc" id="L37">		private GeoPackageVersion(int value){</span>
-<span class="fc" id="L38">			this.value = value;</span>
-<span class="fc" id="L39">		}</span>
-		
-		protected boolean equals(GeoPackageVersion right) {
-<span class="nc bnc" id="L42" title="All 2 branches missed.">			return this.value == right.value;</span>
-		}
-	}
+<span class="fc" id="L32">public class CommonFixture {</span>
 	
-<span class="fc" id="L46">	private GeoPackageVersion[] allowedVersions = {GeoPackageVersion.V102, GeoPackageVersion.V110, GeoPackageVersion.V120};</span>
-<span class="fc" id="L47">	private final String ICS = &quot;Core,Tiles,Features,Attributes,Extension Mechanism,Non-Linear Geometry Types,RTree Spatial Indexes,Tiles Encoding WebP,Metadata,Schema,WKT for Coordinate Reference Systems,Tiled Gridded Coverage Data&quot;;</span>
-	
-	protected GeoPackageVersion[] getAllowedVersions() {
-<span class="fc" id="L50">		return allowedVersions;</span>
-	}
-
-	private GeoPackageVersion geopackageVersion;
-
-    protected GeoPackageVersion getGeopackageVersion() {
-<span class="fc" id="L56">		return geopackageVersion;</span>
-	}
+<span class="fc" id="L34">	private final String ICS = &quot;Core,Tiles,Features,Attributes,Extension Mechanism,Non-Linear Geometry Types,RTree Spatial Indexes,Tiles Encoding WebP,Metadata,Schema,WKT for Coordinate Reference Systems,Tiled Gridded Coverage Data&quot;;</span>
 
 	/** Root test suite package (absolute path). */
     public static final String ROOT_PKG_PATH = &quot;/org/opengis/cite/gpkg12/&quot;;
@@ -64,7 +41,9 @@ import org.testng.annotations.Test;
     protected DataSource dataSource;
 
     protected Connection databaseConnection;
-    
+
+    protected GeoPackageVersion geopackageVersion;
+
     /**
      * Initializes the common test fixture. The fixture includes the following
      * components:
@@ -83,102 +62,44 @@ import org.testng.annotations.Test;
      */
     @BeforeClass
     public void initCommonFixture(final ITestContext testContext) throws SQLException, IOException {
-<span class="fc" id="L86">        final Object testFile = testContext.getSuite().getAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName());</span>
-<span class="pc bpc" id="L87" title="2 of 4 branches missed.">        if (testFile == null || !File.class.isInstance(testFile)) {</span>
-<span class="nc" id="L88">            throw new IllegalArgumentException(</span>
-<span class="nc" id="L89">                    String.format(&quot;Suite attribute value is not a File: %s&quot;, SuiteAttribute.TEST_SUBJ_FILE.getName()));</span>
+<span class="fc" id="L65">        final Object testFile = testContext.getSuite().getAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName());</span>
+<span class="pc bpc" id="L66" title="2 of 4 branches missed.">        if (testFile == null || !File.class.isInstance(testFile)) {</span>
+<span class="nc" id="L67">            throw new IllegalArgumentException(</span>
+<span class="nc" id="L68">                    String.format(&quot;Suite attribute value is not a File: %s&quot;, SuiteAttribute.TEST_SUBJ_FILE.getName()));</span>
         }
-<span class="fc" id="L91">        this.gpkgFile = File.class.cast(testFile);</span>
-<span class="fc" id="L92">        this.gpkgFile.setWritable(false);</span>
-<span class="fc" id="L93">        final SQLiteConfig dbConfig = new SQLiteConfig();</span>
-<span class="fc" id="L94">        dbConfig.setSynchronous(SQLiteConfig.SynchronousMode.OFF);</span>
-<span class="fc" id="L95">        dbConfig.setJournalMode(SQLiteConfig.JournalMode.MEMORY);</span>
-<span class="fc" id="L96">        dbConfig.enforceForeignKeys(true);</span>
-<span class="fc" id="L97">        final SQLiteDataSource sqliteSource = new SQLiteDataSource(dbConfig);</span>
-<span class="fc" id="L98">        sqliteSource.setUrl(&quot;jdbc:sqlite:&quot; + this.gpkgFile.getPath());</span>
-<span class="fc" id="L99">        this.dataSource = sqliteSource;</span>
-<span class="fc" id="L100">        this.databaseConnection = this.dataSource.getConnection();</span>
-<span class="fc" id="L101">        setupVersion();</span>
-<span class="fc" id="L102">    }</span>
+<span class="fc" id="L70">        this.geopackageVersion = (GeoPackageVersion) testContext.getSuite().getAttribute( SuiteAttribute.GPKG_VERSION.getName() );</span>
+<span class="fc" id="L71">        this.gpkgFile = File.class.cast(testFile);</span>
+<span class="fc" id="L72">        this.gpkgFile.setWritable(false);</span>
+<span class="fc" id="L73">        final SQLiteConfig dbConfig = new SQLiteConfig();</span>
+<span class="fc" id="L74">        dbConfig.setSynchronous(SQLiteConfig.SynchronousMode.OFF);</span>
+<span class="fc" id="L75">        dbConfig.setJournalMode(SQLiteConfig.JournalMode.MEMORY);</span>
+<span class="fc" id="L76">        dbConfig.enforceForeignKeys(true);</span>
+<span class="fc" id="L77">        final SQLiteDataSource sqliteSource = new SQLiteDataSource(dbConfig);</span>
+<span class="fc" id="L78">        sqliteSource.setUrl(&quot;jdbc:sqlite:&quot; + this.gpkgFile.getPath());</span>
+<span class="fc" id="L79">        this.dataSource = sqliteSource;</span>
+<span class="fc" id="L80">        this.databaseConnection = this.dataSource.getConnection();</span>
+<span class="fc" id="L81">    }</span>
 
     @AfterClass
     public void close() throws SQLException {
-<span class="pc bpc" id="L106" title="2 of 4 branches missed.">        if (this.databaseConnection != null &amp;&amp; !this.databaseConnection.isClosed()) {</span>
-<span class="fc" id="L107">            this.databaseConnection.close();</span>
+<span class="pc bpc" id="L85" title="2 of 4 branches missed.">        if (this.databaseConnection != null &amp;&amp; !this.databaseConnection.isClosed()) {</span>
+<span class="fc" id="L86">            this.databaseConnection.close();</span>
         }
-<span class="fc" id="L109">    }</span>
+<span class="fc" id="L88">    }</span>
     
     @BeforeTest
     public void validateClassEnabled(ITestContext testContext) throws IOException {
-<span class="fc" id="L113">      Map&lt;String, String&gt; params = testContext.getSuite().getXmlSuite().getParameters();</span>
-<span class="fc" id="L114">      String pstr = params.get(TestRunArg.ICS.toString());</span>
-<span class="fc" id="L115">      final String testName = testContext.getName();</span>
-<span class="fc" id="L116">      setTestName(testName);</span>
-<span class="pc bpc" id="L117" title="2 of 4 branches missed.">      if(pstr == null || pstr.isEmpty()){</span>
-<span class="nc" id="L118">    	  pstr = this.ICS;</span>
+<span class="fc" id="L92">      Map&lt;String, String&gt; params = testContext.getSuite().getXmlSuite().getParameters();</span>
+<span class="fc" id="L93">      String pstr = params.get(TestRunArg.ICS.toString());</span>
+<span class="fc" id="L94">      final String testName = testContext.getName();</span>
+<span class="fc" id="L95">      setTestName(testName);</span>
+<span class="pc bpc" id="L96" title="2 of 4 branches missed.">      if(pstr == null || pstr.isEmpty()){</span>
+<span class="nc" id="L97">    	  pstr = this.ICS;</span>
       }
-<span class="fc" id="L120">      HashSet&lt;String&gt; set = new HashSet&lt;String&gt;(Arrays.asList(pstr.split(&quot;,&quot;)));</span>
-<span class="fc" id="L121">      Assert.assertTrue(set.contains(testName), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, testName));</span>
-<span class="fc" id="L122">    }</span>
+<span class="fc" id="L99">      HashSet&lt;String&gt; set = new HashSet&lt;String&gt;(Arrays.asList(pstr.split(&quot;,&quot;)));</span>
+<span class="fc" id="L100">      Assert.assertTrue(set.contains(testName), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, testName));</span>
+<span class="fc" id="L101">    }</span>
     
-    /**
-     * A GeoPackage SHALL contain a value of 0x47504B47 (&quot;GPKG&quot; in ASCII) in 
-     * the &quot;application_id&quot; field of the SQLite database header to indicate 
-     * that it is a GeoPackage. A GeoPackage SHALL contain an appropriate 
-     * value in &quot;user_version&quot; field of the SQLite database header to 
-     * indicate its version. The value SHALL be in integer with a major 
-     * version, two-digit minor version, and two-digit bug-fix. For 
-     * GeoPackage Version 1.2 this value is 0x000027D8 (the hexadecimal value 
-     * for 10200). 
-     *
-     * @throws IOException
-     *             If an I/O error occurs while trying to read the data file.
-     * @throws SQLException
-     *             on any SQL error
-     *
-     * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-2&quot; target=
-     *      &quot;_blank&quot;&gt;File Format - Requirement 2&lt;/a&gt;
-     * @see &lt;a href=
-     *      &quot;http://www.sqlite.org/src/artifact?ci=trunk&amp;filename=magic.txt&quot;
-     *      target= &quot;_blank&quot;&gt;Assigned application IDs&lt;/a&gt;
-     */
-    @Test(description = &quot;See OGC 12-128r12: Requirement 2&quot;)
-    private void setupVersion() throws SQLException, IOException{
-        // 1
-<span class="fc" id="L148">        final byte[] appID = getAppId();</span>
-        // 2
-<span class="fc bfc" id="L150" title="All 2 branches covered.">    	if (Arrays.equals(appID, GPKG12.APP_GP10)){</span>
-<span class="fc" id="L151">    		geopackageVersion = GeoPackageVersion.V102;</span>
-    		// 3
-<span class="fc bfc" id="L153" title="All 2 branches covered.">    	} else if (Arrays.equals(appID, GPKG12.APP_GP11)){</span>
-<span class="fc" id="L154">    		geopackageVersion = GeoPackageVersion.V110;</span>
-    		// 4
-<span class="pc bpc" id="L156" title="1 of 2 branches missed.">    	} else if (Arrays.equals(appID, GPKG12.APP_GPKG)){</span>
-<span class="fc" id="L157">    		geopackageVersion = GeoPackageVersion.V120;</span>
-    	} 
-<span class="fc" id="L159">    }   </span>
-    
-    /**
-     * 
-     * @return the bytes that make up the header
-     * @throws IOException
-     */
-    protected final byte[] getHeaderBytes() throws IOException{
-<span class="fc" id="L167">        final byte[] headerBytes = new byte[GPKG12.DB_HEADER_LENGTH];</span>
-<span class="pc" id="L168">        try (FileInputStream fileInputStream = new FileInputStream(this.gpkgFile)) {</span>
-<span class="fc" id="L169">            fileInputStream.read(headerBytes);</span>
-<span class="pc bpc" id="L170" title="6 of 8 branches missed.">        }</span>
-<span class="fc" id="L171">        return headerBytes;</span>
-    }
-    
-    /**
-     * 
-     * @return the bytes that make up the application ID
-     * @throws IOException
-     */
-    protected final byte[] getAppId() throws IOException{
-<span class="fc" id="L180">    	return Arrays.copyOfRange(getHeaderBytes(), GPKG12.APP_ID_OFFSET, GPKG12.APP_ID_OFFSET + 4);</span>
-    }
     
     /**
      * This function returns the name of a single primary key column for the given table
@@ -191,54 +112,54 @@ import org.testng.annotations.Test;
      * @throws SQLException on any error
      */
     protected String getPrimaryKeyColumn(String tableName, boolean enforcePk) throws SQLException {
-<span class="fc" id="L194">    	String result = null;</span>
+<span class="fc" id="L115">    	String result = null;</span>
     	
-<span class="fc" id="L196">    	try (</span>
-<span class="fc" id="L197">    			final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L117">    	try (</span>
+<span class="fc" id="L118">    			final Statement statement = this.databaseConnection.createStatement();</span>
     			// 1
-<span class="fc" id="L199">    			final ResultSet resultSet = statement.executeQuery(String.format(&quot;PRAGMA table_info('%s');&quot;, tableName));</span>
+<span class="fc" id="L120">    			final ResultSet resultSet = statement.executeQuery(String.format(&quot;PRAGMA table_info('%s');&quot;, tableName));</span>
     			) {
     		// 2
-<span class="fc" id="L202">    		assertTrue(resultSet.next(),</span>
-<span class="fc" id="L203">    				ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));</span>
+<span class="fc" id="L123">    		assertTrue(resultSet.next(),</span>
+<span class="fc" id="L124">    				ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));</span>
     		
-<span class="fc" id="L205">    		boolean pass = false;</span>
-<span class="fc" id="L206">    		boolean first = true;</span>
-<span class="fc" id="L207">    		String firstName = &quot;&quot;;</span>
-<span class="fc" id="L208">    		String firstType = &quot;&quot;;</span>
+<span class="fc" id="L126">    		boolean pass = false;</span>
+<span class="fc" id="L127">    		boolean first = true;</span>
+<span class="fc" id="L128">    		String firstName = &quot;&quot;;</span>
+<span class="fc" id="L129">    		String firstType = &quot;&quot;;</span>
     		// 3
     		do {
-<span class="fc" id="L211">    			final int pk = resultSet.getInt(&quot;pk&quot;);</span>
-<span class="fc" id="L212">    			final String name = resultSet.getString(&quot;name&quot;);</span>
-<span class="fc" id="L213">    			final String type = resultSet.getString(&quot;type&quot;);</span>
-<span class="fc bfc" id="L214" title="All 2 branches covered.">    			if (first) {</span>
-<span class="fc" id="L215">    				firstName = name;</span>
-<span class="fc" id="L216">    				firstType = type;</span>
-<span class="fc" id="L217">    				first = false;</span>
+<span class="fc" id="L132">    			final int pk = resultSet.getInt(&quot;pk&quot;);</span>
+<span class="fc" id="L133">    			final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc" id="L134">    			final String type = resultSet.getString(&quot;type&quot;);</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">    			if (first) {</span>
+<span class="fc" id="L136">    				firstName = name;</span>
+<span class="fc" id="L137">    				firstType = type;</span>
+<span class="fc" id="L138">    				first = false;</span>
     			}
-<span class="fc bfc" id="L219" title="All 2 branches covered.">    			if (pk &gt; 0) {</span>
-<span class="pc bpc" id="L220" title="1 of 2 branches missed.">    				assertTrue(pk == 1, </span>
-<span class="fc" id="L221">    						ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, </span>
-<span class="fc" id="L222">    								String.format(&quot;%s has an invalid primary key value of %d&quot;, name, pk)));</span>
-<span class="fc" id="L223">    				assertTrue(&quot;INTEGER&quot;.equalsIgnoreCase(type), </span>
-<span class="fc" id="L224">    						ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));</span>
-<span class="fc" id="L225">    				result = name;</span>
-<span class="fc" id="L226">    				pass = true;</span>
+<span class="fc bfc" id="L140" title="All 2 branches covered.">    			if (pk &gt; 0) {</span>
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">    				assertTrue(pk == 1, </span>
+<span class="fc" id="L142">    						ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, </span>
+<span class="fc" id="L143">    								String.format(&quot;%s has an invalid primary key value of %d&quot;, name, pk)));</span>
+<span class="fc" id="L144">    				assertTrue(&quot;INTEGER&quot;.equalsIgnoreCase(type), </span>
+<span class="fc" id="L145">    						ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));</span>
+<span class="fc" id="L146">    				result = name;</span>
+<span class="fc" id="L147">    				pass = true;</span>
     			}
-<span class="fc bfc" id="L228" title="All 2 branches covered.">    		} while (resultSet.next());</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">    		} while (resultSet.next());</span>
     		
     		// TODO: The dirty truth is that we can't definitively identify the primary key of a view so we need to guess
-<span class="pc bpc" id="L231" title="1 of 4 branches missed.">    		if(!(enforcePk || pass)) {</span>
-<span class="fc bfc" id="L232" title="All 2 branches covered.">				if (&quot;INTEGER&quot;.equalsIgnoreCase(firstType)) {</span>
-<span class="fc" id="L233">    				result = firstName;</span>
-<span class="fc" id="L234">    				pass = true;</span>
+<span class="pc bpc" id="L152" title="1 of 4 branches missed.">    		if(!(enforcePk || pass)) {</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">				if (&quot;INTEGER&quot;.equalsIgnoreCase(firstType)) {</span>
+<span class="fc" id="L154">    				result = firstName;</span>
+<span class="fc" id="L155">    				pass = true;</span>
 				}
     		}
 
-<span class="pc bpc" id="L238" title="1 of 4 branches missed.">    		assertTrue(pass &amp;&amp; (result != null), ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));    		</span>
-<span class="pc bpc" id="L239" title="8 of 16 branches missed.">    	}</span>
+<span class="pc bpc" id="L159" title="1 of 4 branches missed.">    		assertTrue(pass &amp;&amp; (result != null), ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));    		</span>
+<span class="pc bpc" id="L160" title="8 of 16 branches missed.">    	}</span>
 		
-<span class="fc" id="L241">		return result;</span>
+<span class="fc" id="L162">		return result;</span>
     }
 
     /**
@@ -250,20 +171,20 @@ import org.testng.annotations.Test;
      * @throws SQLException on any error
      */
     protected boolean isExtendedType(String tableName, String columnName) throws SQLException {
-<span class="fc" id="L253">    	boolean result = false;</span>
+<span class="fc" id="L174">    	boolean result = false;</span>
     	
     	// This accounts for the exception in Requirement 65
-<span class="fc bfc" id="L256" title="All 2 branches covered.">    	if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;)) {</span>
-<span class="pc" id="L257">    		try (</span>
-<span class="fc" id="L258">    				final Statement statement  = this.databaseConnection.createStatement();</span>
-<span class="fc" id="L259">    				final ResultSet resultSet = statement.executeQuery(String.format(&quot;SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = '%s' AND column_name = '%s' AND extension_name LIKE 'gpkg_geom_%%'&quot;,  tableName, columnName));</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">    	if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;)) {</span>
+<span class="pc" id="L178">    		try (</span>
+<span class="fc" id="L179">    				final Statement statement  = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L180">    				final ResultSet resultSet = statement.executeQuery(String.format(&quot;SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = '%s' AND column_name = '%s' AND extension_name LIKE 'gpkg_geom_%%'&quot;,  tableName, columnName));</span>
     				) {    			
-<span class="fc" id="L261">    			resultSet.next();</span>
-<span class="fc bfc" id="L262" title="All 2 branches covered.">    			result |= (resultSet.getInt(1) &gt; 0);</span>
-<span class="pc bpc" id="L263" title="12 of 16 branches missed.">    		}</span>
+<span class="fc" id="L182">    			resultSet.next();</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">    			result |= (resultSet.getInt(1) &gt; 0);</span>
+<span class="pc bpc" id="L184" title="12 of 16 branches missed.">    		}</span>
     	}
 
-<span class="fc" id="L266">    	return result;</span>
+<span class="fc" id="L187">    	return result;</span>
     }
     
     /**
@@ -277,67 +198,67 @@ import org.testng.annotations.Test;
      */
     protected void checkPrimaryKey(String tableName, String pkName, boolean enforcePk) throws SQLException {
     	// 0 sanity checks
-<span class="pc bpc" id="L280" title="1 of 2 branches missed.">		if (pkName == null) {</span>
-<span class="nc" id="L281">			throw new IllegalArgumentException(&quot;pkName must not be null.&quot;);</span>
+<span class="pc bpc" id="L201" title="1 of 2 branches missed.">		if (pkName == null) {</span>
+<span class="nc" id="L202">			throw new IllegalArgumentException(&quot;pkName must not be null.&quot;);</span>
 		}
-<span class="pc bpc" id="L283" title="1 of 2 branches missed.">		if (tableName == null) {</span>
-<span class="nc" id="L284">			throw new IllegalArgumentException(&quot;tableName must not be null.&quot;);</span>
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">		if (tableName == null) {</span>
+<span class="nc" id="L205">			throw new IllegalArgumentException(&quot;tableName must not be null.&quot;);</span>
 		}
 		
-<span class="fc" id="L287">		boolean pass = false;</span>
-<span class="fc bfc" id="L288" title="All 2 branches covered.">		if (enforcePk) {</span>
-<span class="pc" id="L289">			try (</span>
-<span class="fc" id="L290">				final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L208">		boolean pass = false;</span>
+<span class="fc bfc" id="L209" title="All 2 branches covered.">		if (enforcePk) {</span>
+<span class="pc" id="L210">			try (</span>
+<span class="fc" id="L211">				final Statement statement = this.databaseConnection.createStatement();</span>
 				// 1
-<span class="fc" id="L292">				final ResultSet resultSet = statement.executeQuery(String.format(&quot;PRAGMA table_info('%s');&quot;, tableName));</span>
+<span class="fc" id="L213">				final ResultSet resultSet = statement.executeQuery(String.format(&quot;PRAGMA table_info('%s');&quot;, tableName));</span>
 			) {
 	
 				// 2
-<span class="fc" id="L296">				assertTrue(resultSet.next(),</span>
-<span class="fc" id="L297">						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));</span>
+<span class="fc" id="L217">				assertTrue(resultSet.next(),</span>
+<span class="fc" id="L218">						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));</span>
 	
-<span class="fc" id="L299">				pass = false;</span>
+<span class="fc" id="L220">				pass = false;</span>
 				// 3
 				do {
-<span class="fc" id="L302">					final int pk = resultSet.getInt(&quot;pk&quot;);</span>
-<span class="fc" id="L303">					final String name = resultSet.getString(&quot;name&quot;);</span>
-<span class="fc" id="L304">					final String type = resultSet.getString(&quot;type&quot;);</span>
-<span class="fc bfc" id="L305" title="All 2 branches covered.">					if (pk &gt; 0) {</span>
-<span class="pc bpc" id="L306" title="1 of 2 branches missed.">						assertTrue(pk == 1, </span>
-<span class="fc" id="L307">								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, </span>
-<span class="fc" id="L308">										String.format(&quot;%s is a primary key of %d&quot;, name, pk)));</span>
-<span class="fc" id="L309">						assertTrue(&quot;INTEGER&quot;.equals(type), </span>
-<span class="fc" id="L310">								ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));</span>
-<span class="fc" id="L311">						assertTrue(pkName.equals(name),</span>
-<span class="fc" id="L312">								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName,</span>
+<span class="fc" id="L223">					final int pk = resultSet.getInt(&quot;pk&quot;);</span>
+<span class="fc" id="L224">					final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc" id="L225">					final String type = resultSet.getString(&quot;type&quot;);</span>
+<span class="fc bfc" id="L226" title="All 2 branches covered.">					if (pk &gt; 0) {</span>
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">						assertTrue(pk == 1, </span>
+<span class="fc" id="L228">								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, </span>
+<span class="fc" id="L229">										String.format(&quot;%s is a primary key of %d&quot;, name, pk)));</span>
+<span class="fc" id="L230">						assertTrue(&quot;INTEGER&quot;.equals(type), </span>
+<span class="fc" id="L231">								ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));</span>
+<span class="fc" id="L232">						assertTrue(pkName.equals(name),</span>
+<span class="fc" id="L233">								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName,</span>
 										&quot;pk &quot; + name));
-<span class="fc" id="L314">						pass = true;</span>
+<span class="fc" id="L235">						pass = true;</span>
 					}
-<span class="fc bfc" id="L316" title="All 2 branches covered.">				} while (resultSet.next());</span>
+<span class="fc bfc" id="L237" title="All 2 branches covered.">				} while (resultSet.next());</span>
 	
-<span class="fc" id="L318">				assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));</span>
-<span class="pc bpc" id="L319" title="12 of 16 branches missed.">			}</span>
+<span class="fc" id="L239">				assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));</span>
+<span class="pc bpc" id="L240" title="12 of 16 branches missed.">			}</span>
 		}
 
 
-<span class="pc" id="L323">		try (</span>
+<span class="pc" id="L244">		try (</span>
 				// 4
-<span class="fc" id="L325">				final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L246">				final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L327">				final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;SELECT COUNT(distinct %s) - COUNT(*) from '%s'&quot;, pkName, tableName));</span>
+<span class="fc" id="L248">				final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;SELECT COUNT(distinct %s) - COUNT(*) from '%s'&quot;, pkName, tableName));</span>
 				) {
 			// 5
-<span class="pc bpc" id="L330" title="1 of 2 branches missed.">			assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.TABLE_PK_NOT_UNIQUE, tableName));</span>
-<span class="pc bpc" id="L331" title="12 of 16 branches missed.">		}</span>
-<span class="fc" id="L332">    }</span>
+<span class="pc bpc" id="L251" title="1 of 2 branches missed.">			assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.TABLE_PK_NOT_UNIQUE, tableName));</span>
+<span class="pc bpc" id="L252" title="12 of 16 branches missed.">		}</span>
+<span class="fc" id="L253">    }</span>
 
     public String getTestName() {
-<span class="fc" id="L335">		return testName;</span>
+<span class="fc" id="L256">		return testName;</span>
 	}
 
 	public void setTestName(String testName) {
-<span class="fc" id="L339">		this.testName = testName;</span>
-<span class="fc" id="L340">	}</span>
+<span class="fc" id="L260">		this.testName = testName;</span>
+<span class="fc" id="L261">	}</span>
 
 	private String testName;
 }

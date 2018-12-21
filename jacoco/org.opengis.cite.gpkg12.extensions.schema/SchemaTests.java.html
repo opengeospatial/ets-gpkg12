@@ -11,6 +11,7 @@ import java.util.List;
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
@@ -31,33 +32,33 @@ import org.testng.annotations.Test;
  *
  * @author Jeff Yutzler
  */
-<span class="fc" id="L34">public class SchemaTests extends CommonFixture</span>
+<span class="fc" id="L35">public class SchemaTests extends CommonFixture</span>
 {
     @BeforeClass
     public void activeExtension(ITestContext testContext) throws SQLException {
     	// Starting with GPKG 1.1, this is a proper extension.
-<span class="fc bfc" id="L39" title="All 2 branches covered.">    	if (getGeopackageVersion() == GeoPackageVersion.V102) {</span>
-<span class="fc" id="L40">			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_data_columns&quot;), </span>
-<span class="fc" id="L41">					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Schema Option&quot;));</span>
-<span class="fc" id="L42">    		minIsInclusive = &quot;minIsInclusive&quot;;</span>
-<span class="fc" id="L43">    		maxIsInclusive = &quot;maxIsInclusive&quot;;</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">    	if (geopackageVersion == GeoPackageVersion.V102) {</span>
+<span class="fc" id="L41">			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_data_columns&quot;), </span>
+<span class="fc" id="L42">					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Schema Option&quot;));</span>
+<span class="fc" id="L43">    		minIsInclusive = &quot;minIsInclusive&quot;;</span>
+<span class="fc" id="L44">    		maxIsInclusive = &quot;maxIsInclusive&quot;;</span>
     	} else {
-<span class="fc" id="L45">    		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;), </span>
-<span class="fc" id="L46">    				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Schema Extension&quot;));</span>
+<span class="fc" id="L46">    		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;), </span>
+<span class="fc" id="L47">    				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Schema Extension&quot;));</span>
 			
-<span class="fc" id="L48">			try (</span>
-<span class="fc" id="L49">					final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L49">			try (</span>
+<span class="fc" id="L50">					final Statement statement = this.databaseConnection.createStatement();</span>
 					
-<span class="fc" id="L51">					final ResultSet resultSet = statement.executeQuery(&quot;SELECT count(*) from gpkg_extensions WHERE extension_name = 'gpkg_schema';&quot;);</span>
+<span class="fc" id="L52">					final ResultSet resultSet = statement.executeQuery(&quot;SELECT count(*) from gpkg_extensions WHERE extension_name = 'gpkg_schema';&quot;);</span>
 					) {
-<span class="fc" id="L53">				resultSet.next();</span>
+<span class="fc" id="L54">				resultSet.next();</span>
 				
-<span class="fc bfc" id="L55" title="All 2 branches covered.">				Assert.assertTrue(resultSet.getInt(1) &gt; 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Schema Extension&quot;));				</span>
-<span class="pc bpc" id="L56" title="8 of 16 branches missed.">			}</span>
-<span class="fc" id="L57">    		minIsInclusive = &quot;min_is_inclusive&quot;;</span>
-<span class="fc" id="L58">    		maxIsInclusive = &quot;max_is_inclusive&quot;;</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">				Assert.assertTrue(resultSet.getInt(1) &gt; 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, &quot;Schema Extension&quot;));				</span>
+<span class="pc bpc" id="L57" title="8 of 16 branches missed.">			}</span>
+<span class="fc" id="L58">    		minIsInclusive = &quot;min_is_inclusive&quot;;</span>
+<span class="fc" id="L59">    		maxIsInclusive = &quot;max_is_inclusive&quot;;</span>
     	}
-<span class="fc" id="L60">    }</span>
+<span class="fc" id="L61">    }</span>
 
     /**
      * A GeoPackage MAY contain a table or updateable view named 
@@ -74,58 +75,58 @@ import org.testng.annotations.Test;
     @Test(description = &quot;See OGC 12-128r13: Requirement 103&quot;)
     public void dataColumnsTableDefinition() throws SQLException
     {
-<span class="pc" id="L77">    	try (</span>
+<span class="pc" id="L78">    	try (</span>
     			// 1
-<span class="fc" id="L79">    			final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L80">    			final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L81">    			final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkg_data_columns');&quot;);</span>
+<span class="fc" id="L82">    			final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkg_data_columns');&quot;);</span>
     			) {
     		// 2
-<span class="fc" id="L84">    		int passFlag = 0;</span>
-<span class="fc" id="L85">    		final int flagMask = 0b01111111;</span>
+<span class="fc" id="L85">    		int passFlag = 0;</span>
+<span class="fc" id="L86">    		final int flagMask = 0b01111111;</span>
     		
-<span class="fc bfc" id="L87" title="All 2 branches covered.">    		while (resultSet.next()) {</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">    		while (resultSet.next()) {</span>
     			// 3
-<span class="fc" id="L89">    			final String name = resultSet.getString(&quot;name&quot;);</span>
-<span class="fc bfc" id="L90" title="All 2 branches covered.">    			if (&quot;table_name&quot;.equals(name)){</span>
-<span class="fc" id="L91">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;table_name type&quot;));</span>
-<span class="pc bpc" id="L92" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;table_name notnull&quot;));</span>
-<span class="pc bpc" id="L93" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;pk&quot;) &gt; 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;table_name pk&quot;));</span>
-<span class="fc" id="L94">    				passFlag |= 1;</span>
-<span class="fc bfc" id="L95" title="All 2 branches covered.">    			} else if (&quot;column_name&quot;.equals(name)){</span>
-<span class="fc" id="L96">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;column_name type&quot;));</span>
-<span class="pc bpc" id="L97" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;column_name notnull&quot;));</span>
-<span class="pc bpc" id="L98" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;pk&quot;) &gt; 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;column_name pk&quot;));</span>
-<span class="fc" id="L99">    				passFlag |= (1 &lt;&lt; 1);</span>
-<span class="fc bfc" id="L100" title="All 2 branches covered.">    			} else if (&quot;name&quot;.equals(name)){</span>
-<span class="fc" id="L101">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;name type&quot;));</span>
+<span class="fc" id="L90">    			final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L91" title="All 2 branches covered.">    			if (&quot;table_name&quot;.equals(name)){</span>
+<span class="fc" id="L92">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;table_name type&quot;));</span>
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;table_name notnull&quot;));</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;pk&quot;) &gt; 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;table_name pk&quot;));</span>
+<span class="fc" id="L95">    				passFlag |= 1;</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">    			} else if (&quot;column_name&quot;.equals(name)){</span>
+<span class="fc" id="L97">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;column_name type&quot;));</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;column_name notnull&quot;));</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;pk&quot;) &gt; 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;column_name pk&quot;));</span>
+<span class="fc" id="L100">    				passFlag |= (1 &lt;&lt; 1);</span>
+<span class="fc bfc" id="L101" title="All 2 branches covered.">    			} else if (&quot;name&quot;.equals(name)){</span>
+<span class="fc" id="L102">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;name type&quot;));</span>
 
     				// Huh? How can a unique value be allowed to be null?
-<span class="pc bpc" id="L104" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;name notnull&quot;));</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;name notnull&quot;));</span>
     				
     				// unique constraint??
-<span class="fc" id="L107">    				passFlag |= (1 &lt;&lt; 2);</span>
-<span class="fc bfc" id="L108" title="All 2 branches covered.">    			} else if (&quot;title&quot;.equals(name)){</span>
-<span class="fc" id="L109">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;title type&quot;));</span>
-<span class="pc bpc" id="L110" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;title notnull&quot;));</span>
-<span class="fc" id="L111">    				passFlag |= (1 &lt;&lt; 3);</span>
-<span class="fc bfc" id="L112" title="All 2 branches covered.">    			} else if (&quot;description&quot;.equals(name)){</span>
-<span class="fc" id="L113">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;description type&quot;));</span>
-<span class="pc bpc" id="L114" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;description notnull&quot;));</span>
-<span class="fc" id="L115">    				passFlag |= (1 &lt;&lt; 4);</span>
-<span class="fc bfc" id="L116" title="All 2 branches covered.">    			} else if (&quot;mime_type&quot;.equals(name)){</span>
-<span class="fc" id="L117">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;mime_type type&quot;));</span>
-<span class="pc bpc" id="L118" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;mime_type notnull&quot;));</span>
-<span class="fc" id="L119">    				passFlag |= (1 &lt;&lt; 5);</span>
-<span class="pc bpc" id="L120" title="1 of 2 branches missed.">    			} else if (&quot;constraint_name&quot;.equals(name)){</span>
-<span class="fc" id="L121">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;constraint_name type&quot;));</span>
-<span class="pc bpc" id="L122" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;constraint_name notnull&quot;));</span>
-<span class="fc" id="L123">    				passFlag |= (1 &lt;&lt; 6);</span>
+<span class="fc" id="L108">    				passFlag |= (1 &lt;&lt; 2);</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">    			} else if (&quot;title&quot;.equals(name)){</span>
+<span class="fc" id="L110">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;title type&quot;));</span>
+<span class="pc bpc" id="L111" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;title notnull&quot;));</span>
+<span class="fc" id="L112">    				passFlag |= (1 &lt;&lt; 3);</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">    			} else if (&quot;description&quot;.equals(name)){</span>
+<span class="fc" id="L114">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;description type&quot;));</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;description notnull&quot;));</span>
+<span class="fc" id="L116">    				passFlag |= (1 &lt;&lt; 4);</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">    			} else if (&quot;mime_type&quot;.equals(name)){</span>
+<span class="fc" id="L118">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;mime_type type&quot;));</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;mime_type notnull&quot;));</span>
+<span class="fc" id="L120">    				passFlag |= (1 &lt;&lt; 5);</span>
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">    			} else if (&quot;constraint_name&quot;.equals(name)){</span>
+<span class="fc" id="L122">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;constraint_name type&quot;));</span>
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;constraint_name notnull&quot;));</span>
+<span class="fc" id="L124">    				passFlag |= (1 &lt;&lt; 6);</span>
     			}
-<span class="fc" id="L125">    		} </span>
-<span class="pc bpc" id="L126" title="1 of 2 branches missed.">    		assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;missing column(s)&quot;));</span>
-<span class="pc bpc" id="L127" title="12 of 16 branches missed.">    	}</span>
-<span class="fc" id="L128">    }</span>
+<span class="fc" id="L126">    		} </span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">    		assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;missing column(s)&quot;));</span>
+<span class="pc bpc" id="L128" title="12 of 16 branches missed.">    	}</span>
+<span class="fc" id="L129">    }</span>
 
 
     /**
@@ -141,23 +142,23 @@ import org.testng.annotations.Test;
     @Test(description = &quot;See OGC 12-128r13: Requirement 104&quot;)
     public void dataColumnsTableName() throws SQLException
     {
-<span class="pc" id="L144">    	try (</span>
+<span class="pc" id="L145">    	try (</span>
     	    	// 1
-<span class="fc" id="L146">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L147">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L148">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT DISTINCT gdc.table_name AS gdc_table, gc.table_name AS gc_table FROM gpkg_data_columns AS gdc LEFT OUTER JOIN gpkg_contents AS gc ON gdc.table_name = gc.table_name;&quot;);</span>
+<span class="fc" id="L149">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT DISTINCT gdc.table_name AS gdc_table, gc.table_name AS gc_table FROM gpkg_data_columns AS gdc LEFT OUTER JOIN gpkg_contents AS gc ON gdc.table_name = gc.table_name;&quot;);</span>
     			) {
     		// 2
-<span class="fc bfc" id="L151" title="All 2 branches covered.">    		while (resultSet1.next()) {</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">    		while (resultSet1.next()) {</span>
     			// 3
-<span class="fc" id="L153">    			final String gcTable = resultSet1.getString(&quot;gc_table&quot;);</span>
-<span class="fc" id="L154">    			final String gdcTable = resultSet1.getString(&quot;gdc_table&quot;);</span>
+<span class="fc" id="L154">    			final String gcTable = resultSet1.getString(&quot;gc_table&quot;);</span>
+<span class="fc" id="L155">    			final String gdcTable = resultSet1.getString(&quot;gdc_table&quot;);</span>
 
     			// 3a
-<span class="pc bpc" id="L157" title="1 of 2 branches missed.">    			assertTrue(gcTable != null, ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TABLE, &quot;gpkg_data_columns&quot;, gdcTable));</span>
-<span class="fc" id="L158">    		}</span>
-<span class="pc bpc" id="L159" title="12 of 16 branches missed.">    	}</span>
-<span class="fc" id="L160">    }</span>
+<span class="pc bpc" id="L158" title="1 of 2 branches missed.">    			assertTrue(gcTable != null, ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TABLE, &quot;gpkg_data_columns&quot;, gdcTable));</span>
+<span class="fc" id="L159">    		}</span>
+<span class="pc bpc" id="L160" title="12 of 16 branches missed.">    	}</span>
+<span class="fc" id="L161">    }</span>
     
     /**
      * The `column_name` column value in a `gpkg_data_columns` table row 
@@ -173,27 +174,27 @@ import org.testng.annotations.Test;
     @Test(description = &quot;See OGC 12-128r13: Requirement 105&quot;)
     public void dataColumnsColumnName() throws SQLException
     {
-<span class="fc" id="L176">    	try (</span>
+<span class="fc" id="L177">    	try (</span>
     	    	// 1
-<span class="fc" id="L178">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L179">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L180">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT table_name, column_name FROM gpkg_data_columns;&quot;);</span>
+<span class="fc" id="L181">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT table_name, column_name FROM gpkg_data_columns;&quot;);</span>
     			) {
     		// 2
-<span class="fc bfc" id="L183" title="All 2 branches covered.">    		while (resultSet1.next()) {</span>
-<span class="fc" id="L184">    			final String columnName = resultSet1.getString(&quot;column_name&quot;);</span>
-<span class="fc" id="L185">    			final String tableName = resultSet1.getString(&quot;table_name&quot;);</span>
+<span class="fc bfc" id="L184" title="All 2 branches covered.">    		while (resultSet1.next()) {</span>
+<span class="fc" id="L185">    			final String columnName = resultSet1.getString(&quot;column_name&quot;);</span>
+<span class="fc" id="L186">    			final String tableName = resultSet1.getString(&quot;table_name&quot;);</span>
 
     			// 3
-<span class="fc" id="L188">    			try (final Statement statement2 = this.databaseConnection.createStatement()){</span>
+<span class="fc" id="L189">    			try (final Statement statement2 = this.databaseConnection.createStatement()){</span>
     				// 3bi
-<span class="fc" id="L190">    				statement2.executeQuery(String.format(&quot;SELECT COUNT(%s) from %s;&quot;, columnName, tableName));</span>
-<span class="pc bpc" id="L191" title="4 of 8 branches missed.">    			} catch (SQLException exc) {</span>
-<span class="nc" id="L192">    				Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_COLUMN, &quot;gpkg_extensions&quot;, columnName, tableName));</span>
-<span class="fc" id="L193">    			}</span>
-<span class="fc" id="L194">    		}</span>
-<span class="pc bpc" id="L195" title="8 of 16 branches missed.">    	}</span>
-<span class="fc" id="L196">    }</span>
+<span class="fc" id="L191">    				statement2.executeQuery(String.format(&quot;SELECT COUNT(%s) from %s;&quot;, columnName, tableName));</span>
+<span class="pc bpc" id="L192" title="4 of 8 branches missed.">    			} catch (SQLException exc) {</span>
+<span class="nc" id="L193">    				Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_COLUMN, &quot;gpkg_extensions&quot;, columnName, tableName));</span>
+<span class="fc" id="L194">    			}</span>
+<span class="fc" id="L195">    		}</span>
+<span class="pc bpc" id="L196" title="8 of 16 branches missed.">    	}</span>
+<span class="fc" id="L197">    }</span>
     
     /**
      * A GeoPackage MAY contain a table or updateable view named 
@@ -210,60 +211,60 @@ import org.testng.annotations.Test;
     @Test(description = &quot;See OGC 12-128r13: Requirement 107&quot;)
     public void dataColumnConstraintsTableDefinition() throws SQLException
     {
-<span class="pc" id="L213">    	try (</span>
+<span class="pc" id="L214">    	try (</span>
     			// 1
-<span class="fc" id="L215">    			final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L216">    			final Statement statement = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L217">    			final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkg_data_column_constraints');&quot;);</span>
+<span class="fc" id="L218">    			final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkg_data_column_constraints');&quot;);</span>
     			) {
     		// 2
-<span class="fc" id="L220">    		int passFlag = 0;</span>
-<span class="fc" id="L221">    		final int flagMask = 0b11111111;</span>
+<span class="fc" id="L221">    		int passFlag = 0;</span>
+<span class="fc" id="L222">    		final int flagMask = 0b11111111;</span>
     		
-<span class="fc bfc" id="L223" title="All 2 branches covered.">    		while (resultSet.next()) {</span>
+<span class="fc bfc" id="L224" title="All 2 branches covered.">    		while (resultSet.next()) {</span>
     			// 3
-<span class="fc" id="L225">    			final String name = resultSet.getString(&quot;name&quot;);</span>
-<span class="fc bfc" id="L226" title="All 2 branches covered.">    			if (&quot;constraint_name&quot;.equals(name)){</span>
-<span class="fc" id="L227">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;constraint_name type&quot;));</span>
-<span class="pc bpc" id="L228" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;constraint_name notnull&quot;));</span>
-<span class="fc" id="L229">    				passFlag |= 1;</span>
-<span class="fc bfc" id="L230" title="All 2 branches covered.">    			} else if (&quot;constraint_type&quot;.equals(name)){</span>
-<span class="fc" id="L231">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;constraint_type type&quot;));</span>
-<span class="pc bpc" id="L232" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;constraint_type notnull&quot;));</span>
-<span class="fc" id="L233">    				passFlag |= (1 &lt;&lt; 1);</span>
-<span class="fc bfc" id="L234" title="All 2 branches covered.">    			} else if (&quot;value&quot;.equals(name)){</span>
-<span class="fc" id="L235">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;value type&quot;));</span>
+<span class="fc" id="L226">    			final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L227" title="All 2 branches covered.">    			if (&quot;constraint_name&quot;.equals(name)){</span>
+<span class="fc" id="L228">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;constraint_name type&quot;));</span>
+<span class="pc bpc" id="L229" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;constraint_name notnull&quot;));</span>
+<span class="fc" id="L230">    				passFlag |= 1;</span>
+<span class="fc bfc" id="L231" title="All 2 branches covered.">    			} else if (&quot;constraint_type&quot;.equals(name)){</span>
+<span class="fc" id="L232">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;constraint_type type&quot;));</span>
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;constraint_type notnull&quot;));</span>
+<span class="fc" id="L234">    				passFlag |= (1 &lt;&lt; 1);</span>
+<span class="fc bfc" id="L235" title="All 2 branches covered.">    			} else if (&quot;value&quot;.equals(name)){</span>
+<span class="fc" id="L236">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;value type&quot;));</span>
 
     				// Huh? How can a unique value be allowed to be null?
-<span class="pc bpc" id="L238" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;value notnull&quot;));</span>
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;value notnull&quot;));</span>
     				
     				// unique constraint??
-<span class="fc" id="L241">    				passFlag |= (1 &lt;&lt; 2);</span>
-<span class="fc bfc" id="L242" title="All 2 branches covered.">    			} else if (&quot;min&quot;.equals(name)){</span>
-<span class="fc" id="L243">    				assertTrue(&quot;NUMERIC&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;min type&quot;));</span>
-<span class="pc bpc" id="L244" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;min notnull&quot;));</span>
-<span class="fc" id="L245">    				passFlag |= (1 &lt;&lt; 3);</span>
-<span class="fc bfc" id="L246" title="All 2 branches covered.">    			} else if (minIsInclusive.equalsIgnoreCase(name)){</span>
-<span class="fc" id="L247">    				assertTrue(&quot;BOOLEAN&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, minIsInclusive + &quot; type&quot;));</span>
-<span class="pc bpc" id="L248" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, minIsInclusive + &quot; notnull&quot;));</span>
-<span class="fc" id="L249">    				passFlag |= (1 &lt;&lt; 4);</span>
-<span class="fc bfc" id="L250" title="All 2 branches covered.">    			} else if (&quot;max&quot;.equals(name)){</span>
-<span class="fc" id="L251">    				assertTrue(&quot;NUMERIC&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;max type&quot;));</span>
-<span class="pc bpc" id="L252" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;max notnull&quot;));</span>
-<span class="fc" id="L253">    				passFlag |= (1 &lt;&lt; 5);</span>
-<span class="fc bfc" id="L254" title="All 2 branches covered.">    			} else if (maxIsInclusive.equalsIgnoreCase(name)){</span>
-<span class="fc" id="L255">    				assertTrue(&quot;BOOLEAN&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, maxIsInclusive + &quot; type&quot;));</span>
-<span class="pc bpc" id="L256" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, maxIsInclusive + &quot; notnull&quot;));</span>
-<span class="fc" id="L257">    				passFlag |= (1 &lt;&lt; 6);</span>
-<span class="pc bpc" id="L258" title="1 of 2 branches missed.">    			} else if (&quot;description&quot;.equals(name)){</span>
-<span class="fc" id="L259">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;description type&quot;));</span>
-<span class="pc bpc" id="L260" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;description notnull&quot;));</span>
-<span class="fc" id="L261">    				passFlag |= (1 &lt;&lt; 7);</span>
+<span class="fc" id="L242">    				passFlag |= (1 &lt;&lt; 2);</span>
+<span class="fc bfc" id="L243" title="All 2 branches covered.">    			} else if (&quot;min&quot;.equals(name)){</span>
+<span class="fc" id="L244">    				assertTrue(&quot;NUMERIC&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;min type&quot;));</span>
+<span class="pc bpc" id="L245" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;min notnull&quot;));</span>
+<span class="fc" id="L246">    				passFlag |= (1 &lt;&lt; 3);</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">    			} else if (minIsInclusive.equalsIgnoreCase(name)){</span>
+<span class="fc" id="L248">    				assertTrue(&quot;BOOLEAN&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, minIsInclusive + &quot; type&quot;));</span>
+<span class="pc bpc" id="L249" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, minIsInclusive + &quot; notnull&quot;));</span>
+<span class="fc" id="L250">    				passFlag |= (1 &lt;&lt; 4);</span>
+<span class="fc bfc" id="L251" title="All 2 branches covered.">    			} else if (&quot;max&quot;.equals(name)){</span>
+<span class="fc" id="L252">    				assertTrue(&quot;NUMERIC&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;max type&quot;));</span>
+<span class="pc bpc" id="L253" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;max notnull&quot;));</span>
+<span class="fc" id="L254">    				passFlag |= (1 &lt;&lt; 5);</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">    			} else if (maxIsInclusive.equalsIgnoreCase(name)){</span>
+<span class="fc" id="L256">    				assertTrue(&quot;BOOLEAN&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, maxIsInclusive + &quot; type&quot;));</span>
+<span class="pc bpc" id="L257" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, maxIsInclusive + &quot; notnull&quot;));</span>
+<span class="fc" id="L258">    				passFlag |= (1 &lt;&lt; 6);</span>
+<span class="pc bpc" id="L259" title="1 of 2 branches missed.">    			} else if (&quot;description&quot;.equals(name)){</span>
+<span class="fc" id="L260">    				assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;description type&quot;));</span>
+<span class="pc bpc" id="L261" title="1 of 2 branches missed.">    				assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;description notnull&quot;));</span>
+<span class="fc" id="L262">    				passFlag |= (1 &lt;&lt; 7);</span>
     			}
-<span class="fc" id="L263">    		} </span>
-<span class="pc bpc" id="L264" title="1 of 2 branches missed.">    		assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;missing column(s)&quot;));</span>
-<span class="pc bpc" id="L265" title="10 of 16 branches missed.">    	}</span>
-<span class="fc" id="L266">    }</span>
+<span class="fc" id="L264">    		} </span>
+<span class="pc bpc" id="L265" title="1 of 2 branches missed.">    		assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;missing column(s)&quot;));</span>
+<span class="pc bpc" id="L266" title="10 of 16 branches missed.">    	}</span>
+<span class="fc" id="L267">    }</span>
 
     /**
      * The gpkg_data_column_constraints table MAY be empty. If it contains 
@@ -279,22 +280,22 @@ import org.testng.annotations.Test;
     @Test(description = &quot;See OGC 12-128r13: Requirement 108&quot;)
     public void dataColumnConstraintsType() throws SQLException
     {
-<span class="pc" id="L282">    	try (</span>
+<span class="pc" id="L283">    	try (</span>
     	    	// 1
-<span class="fc" id="L284">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L285">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L286">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT DISTINCT constraint_type FROM gpkg_data_column_constraints&quot;);</span>
+<span class="fc" id="L287">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT DISTINCT constraint_type FROM gpkg_data_column_constraints&quot;);</span>
     			) {
     		// 2
-<span class="pc bpc" id="L289" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
+<span class="pc bpc" id="L290" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
     			// 3
-<span class="nc" id="L291">    			final String constraintType = resultSet1.getString(&quot;constraint_type&quot;);</span>
+<span class="nc" id="L292">    			final String constraintType = resultSet1.getString(&quot;constraint_type&quot;);</span>
 
-<span class="nc" id="L293">    			Assert.assertTrue(AllowedConstraintTypes.contains(constraintType), </span>
-<span class="nc" id="L294">    					ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_VALUE, constraintType, &quot;constraint_type&quot;, &quot;gpkg_data_column_constraints&quot;));</span>
-<span class="nc" id="L295">    		}    		</span>
-<span class="pc bpc" id="L296" title="10 of 16 branches missed.">    	}</span>
-<span class="fc" id="L297">    }</span>
+<span class="nc" id="L294">    			Assert.assertTrue(AllowedConstraintTypes.contains(constraintType), </span>
+<span class="nc" id="L295">    					ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_VALUE, constraintType, &quot;constraint_type&quot;, &quot;gpkg_data_column_constraints&quot;));</span>
+<span class="nc" id="L296">    		}    		</span>
+<span class="pc bpc" id="L297" title="10 of 16 branches missed.">    	}</span>
+<span class="fc" id="L298">    }</span>
 
     /**
      * gpkg_data_column_constraint constraint_name values for rows with 
@@ -309,28 +310,28 @@ import org.testng.annotations.Test;
     @Test(description = &quot;See OGC 12-128r13: Requirement 109&quot;)
     public void dataColumnConstraintsName() throws SQLException
     {
-<span class="pc" id="L312">    	try (</span>
+<span class="pc" id="L313">    	try (</span>
     	    	// 1
-<span class="fc" id="L314">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L315">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L316">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT DISTINCT constraint_name FROM gpkg_data_column_constraints WHERE constraint_type IN ('range', 'glob')&quot;);</span>
+<span class="fc" id="L317">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT DISTINCT constraint_name FROM gpkg_data_column_constraints WHERE constraint_type IN ('range', 'glob')&quot;);</span>
     			) {
     		// 2
-<span class="pc bpc" id="L319" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
+<span class="pc bpc" id="L320" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
     			// 3
-<span class="nc" id="L321">    			final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
+<span class="nc" id="L322">    			final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
 
-<span class="nc" id="L323">    			try (</span>
-<span class="nc" id="L324">    					final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="nc" id="L324">    			try (</span>
+<span class="nc" id="L325">    					final Statement statement2 = this.databaseConnection.createStatement();</span>
 
-<span class="nc" id="L326">    					final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;SELECT COUNT(*) FROM gpkg_data_column_constraints WHERE constraint_name = '%s'&quot;, constraintName));</span>
+<span class="nc" id="L327">    					final ResultSet resultSet2 = statement2.executeQuery(String.format(&quot;SELECT COUNT(*) FROM gpkg_data_column_constraints WHERE constraint_name = '%s'&quot;, constraintName));</span>
     					) {
-<span class="nc bnc" id="L328" title="All 2 branches missed.">    				Assert.assertTrue(resultSet2.getInt(1) &lt;= 1, </span>
-<span class="nc" id="L329">    						ErrorMessage.format(ErrorMessageKeys.NON_UNIQUE_VALUE, &quot;constraint_name&quot;, &quot;gpkg_data_column_constraints&quot;, constraintName));</span>
-<span class="nc bnc" id="L330" title="All 16 branches missed.">    			}</span>
-<span class="nc" id="L331">    		}</span>
-<span class="pc bpc" id="L332" title="10 of 16 branches missed.">    	}</span>
-<span class="fc" id="L333">    }</span>
+<span class="nc bnc" id="L329" title="All 2 branches missed.">    				Assert.assertTrue(resultSet2.getInt(1) &lt;= 1, </span>
+<span class="nc" id="L330">    						ErrorMessage.format(ErrorMessageKeys.NON_UNIQUE_VALUE, &quot;constraint_name&quot;, &quot;gpkg_data_column_constraints&quot;, constraintName));</span>
+<span class="nc bnc" id="L331" title="All 16 branches missed.">    			}</span>
+<span class="nc" id="L332">    		}</span>
+<span class="pc bpc" id="L333" title="10 of 16 branches missed.">    	}</span>
+<span class="fc" id="L334">    }</span>
 
     /**
      * The gpkg_data_column_constraints table MAY be empty. If it contains 
@@ -346,23 +347,23 @@ import org.testng.annotations.Test;
     @Test(description = &quot;See OGC 12-128r13: Requirement 110&quot;)
     public void dataColumnConstraintsValue() throws SQLException
     {
-<span class="pc" id="L349">    	try (</span>
+<span class="pc" id="L350">    	try (</span>
     	    	// 1
-<span class="fc" id="L351">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L352">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L353">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT constraint_name, value FROM gpkg_data_column_constraints WHERE constraint_type = 'range'&quot;);</span>
+<span class="fc" id="L354">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT constraint_name, value FROM gpkg_data_column_constraints WHERE constraint_type = 'range'&quot;);</span>
     			) {
     		// 2
-<span class="pc bpc" id="L356" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
+<span class="pc bpc" id="L357" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
     			// 3
-<span class="nc" id="L358">    			final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
-<span class="nc" id="L359">    			final String value = resultSet1.getString(&quot;value&quot;);</span>
+<span class="nc" id="L359">    			final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
+<span class="nc" id="L360">    			final String value = resultSet1.getString(&quot;value&quot;);</span>
 
-<span class="nc bnc" id="L361" title="All 2 branches missed.">    			Assert.assertTrue(value == null, </span>
-<span class="nc" id="L362">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName));</span>
-<span class="nc" id="L363">    		}</span>
-<span class="pc bpc" id="L364" title="10 of 16 branches missed.">    	}</span>
-<span class="fc" id="L365">    }</span>
+<span class="nc bnc" id="L362" title="All 2 branches missed.">    			Assert.assertTrue(value == null, </span>
+<span class="nc" id="L363">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName));</span>
+<span class="nc" id="L364">    		}</span>
+<span class="pc bpc" id="L365" title="10 of 16 branches missed.">    	}</span>
+<span class="fc" id="L366">    }</span>
 
     /**
      * If the `gpkg_data_column_constraints` table contains rows with 
@@ -379,26 +380,26 @@ import org.testng.annotations.Test;
     @Test(description = &quot;See OGC 12-128r13: Requirement 111&quot;)
     public void dataColumnConstraintsMinMax() throws SQLException
     {
-<span class="pc" id="L382">    	try (</span>
+<span class="pc" id="L383">    	try (</span>
     	    	// 1
-<span class="fc" id="L384">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L385">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L386">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT constraint_name, min, max FROM gpkg_data_column_constraints WHERE constraint_type = 'range'&quot;);</span>
+<span class="fc" id="L387">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT constraint_name, min, max FROM gpkg_data_column_constraints WHERE constraint_type = 'range'&quot;);</span>
     			) {
     		// 2
-<span class="pc bpc" id="L389" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
-<span class="nc" id="L390">    			final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
+<span class="pc bpc" id="L390" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
+<span class="nc" id="L391">    			final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
     			// 3a
-<span class="nc" id="L392">    			final double min = resultSet1.getDouble(&quot;min&quot;);</span>
-<span class="nc bnc" id="L393" title="All 2 branches missed.">    			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
+<span class="nc" id="L393">    			final double min = resultSet1.getDouble(&quot;min&quot;);</span>
+<span class="nc bnc" id="L394" title="All 2 branches missed.">    			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
     			// 3b
-<span class="nc" id="L395">    			final double max = resultSet1.getDouble(&quot;max&quot;);</span>
-<span class="nc bnc" id="L396" title="All 2 branches missed.">    			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
+<span class="nc" id="L396">    			final double max = resultSet1.getDouble(&quot;max&quot;);</span>
+<span class="nc bnc" id="L397" title="All 2 branches missed.">    			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
     			// 3c
-<span class="nc bnc" id="L398" title="All 2 branches missed.">    			Assert.assertTrue(min &lt;= max, ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
-<span class="nc" id="L399">    		}    		</span>
-<span class="pc bpc" id="L400" title="10 of 16 branches missed.">    	}</span>
-<span class="fc" id="L401">    }</span>
+<span class="nc bnc" id="L399" title="All 2 branches missed.">    			Assert.assertTrue(min &lt;= max, ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
+<span class="nc" id="L400">    		}    		</span>
+<span class="pc bpc" id="L401" title="10 of 16 branches missed.">    	}</span>
+<span class="fc" id="L402">    }</span>
 
     /**
      * If the `gpkg_data_column_constraints` table contains rows with 
@@ -414,23 +415,23 @@ import org.testng.annotations.Test;
     @Test(description = &quot;See OGC 12-128r13: Requirement 112&quot;)
     public void dataColumnConstraintsInclusive() throws SQLException
     {
-<span class="pc" id="L417">    	try (</span>
+<span class="pc" id="L418">    	try (</span>
     	    	// 1
-<span class="fc" id="L419">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L420">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L421">    			final ResultSet resultSet1 = statement1.executeQuery(String.format(&quot;SELECT constraint_name, %s, %s FROM gpkg_data_column_constraints WHERE constraint_type = 'range'&quot;, minIsInclusive, maxIsInclusive));</span>
+<span class="fc" id="L422">    			final ResultSet resultSet1 = statement1.executeQuery(String.format(&quot;SELECT constraint_name, %s, %s FROM gpkg_data_column_constraints WHERE constraint_type = 'range'&quot;, minIsInclusive, maxIsInclusive));</span>
     			) {
     		// 2
-<span class="pc bpc" id="L424" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
-<span class="nc" id="L425">    			final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
+<span class="pc bpc" id="L425" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
+<span class="nc" id="L426">    			final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
     			// 3
-<span class="nc" id="L427">    			resultSet1.getBoolean(minIsInclusive);</span>
-<span class="nc bnc" id="L428" title="All 2 branches missed.">    			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
-<span class="nc" id="L429">    			resultSet1.getBoolean(maxIsInclusive);</span>
-<span class="nc bnc" id="L430" title="All 2 branches missed.">    			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
-<span class="nc" id="L431">    		}</span>
-<span class="pc bpc" id="L432" title="10 of 16 branches missed.">    	}</span>
-<span class="fc" id="L433">    }</span>
+<span class="nc" id="L428">    			resultSet1.getBoolean(minIsInclusive);</span>
+<span class="nc bnc" id="L429" title="All 2 branches missed.">    			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
+<span class="nc" id="L430">    			resultSet1.getBoolean(maxIsInclusive);</span>
+<span class="nc bnc" id="L431" title="All 2 branches missed.">    			Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
+<span class="nc" id="L432">    		}</span>
+<span class="pc bpc" id="L433" title="10 of 16 branches missed.">    	}</span>
+<span class="fc" id="L434">    }</span>
 
     /**
      * If the `gpkg_data_column_constraints` table contains rows with 
@@ -446,34 +447,34 @@ import org.testng.annotations.Test;
      */
     @Test(description = &quot;See OGC 12-128r13: Requirement 113&quot;)
     public void dataColumnConstraintsGlobMinMax() throws SQLException {
-<span class="pc" id="L449">    	try (</span>
+<span class="pc" id="L450">    	try (</span>
     	    	// 1
-<span class="fc" id="L451">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L452">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L453">    			final ResultSet resultSet1 = statement1.executeQuery(String.format(&quot;SELECT constraint_name, min, max, %s, %s FROM gpkg_data_column_constraints WHERE constraint_type IN ('enum','glob')&quot;, minIsInclusive, maxIsInclusive));</span>
+<span class="fc" id="L454">    			final ResultSet resultSet1 = statement1.executeQuery(String.format(&quot;SELECT constraint_name, min, max, %s, %s FROM gpkg_data_column_constraints WHERE constraint_type IN ('enum','glob')&quot;, minIsInclusive, maxIsInclusive));</span>
     			) {
     		// 2
-<span class="pc bpc" id="L456" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
-<span class="nc" id="L457">    			final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
+<span class="pc bpc" id="L457" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
+<span class="nc" id="L458">    			final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
     			// 3a
-<span class="nc" id="L459">    			resultSet1.getDouble(&quot;min&quot;);</span>
-<span class="nc" id="L460">    			Assert.assertTrue(resultSet1.wasNull(), </span>
-<span class="nc" id="L461">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
+<span class="nc" id="L460">    			resultSet1.getDouble(&quot;min&quot;);</span>
+<span class="nc" id="L461">    			Assert.assertTrue(resultSet1.wasNull(), </span>
+<span class="nc" id="L462">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
     			// 3b
-<span class="nc" id="L463">    			resultSet1.getDouble(&quot;max&quot;);</span>
-<span class="nc" id="L464">    			Assert.assertTrue(resultSet1.wasNull(), </span>
-<span class="nc" id="L465">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
+<span class="nc" id="L464">    			resultSet1.getDouble(&quot;max&quot;);</span>
+<span class="nc" id="L465">    			Assert.assertTrue(resultSet1.wasNull(), </span>
+<span class="nc" id="L466">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
     			// 3c
-<span class="nc" id="L467">    			resultSet1.getDouble(minIsInclusive);</span>
-<span class="nc" id="L468">    			Assert.assertTrue(resultSet1.wasNull(), </span>
-<span class="nc" id="L469">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
+<span class="nc" id="L468">    			resultSet1.getDouble(minIsInclusive);</span>
+<span class="nc" id="L469">    			Assert.assertTrue(resultSet1.wasNull(), </span>
+<span class="nc" id="L470">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
     			// 3d
-<span class="nc" id="L471">    			resultSet1.getDouble(maxIsInclusive);</span>
-<span class="nc" id="L472">    			Assert.assertTrue(resultSet1.wasNull(), </span>
-<span class="nc" id="L473">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
-<span class="nc" id="L474">    		}    		</span>
-<span class="pc bpc" id="L475" title="10 of 16 branches missed.">    	}</span>
-<span class="fc" id="L476">    }</span>
+<span class="nc" id="L472">    			resultSet1.getDouble(maxIsInclusive);</span>
+<span class="nc" id="L473">    			Assert.assertTrue(resultSet1.wasNull(), </span>
+<span class="nc" id="L474">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
+<span class="nc" id="L475">    		}    		</span>
+<span class="pc bpc" id="L476" title="10 of 16 branches missed.">    	}</span>
+<span class="fc" id="L477">    }</span>
 
     /**
      * If the `gpkg_data_column_constraints` table contains rows with 
@@ -488,24 +489,24 @@ import org.testng.annotations.Test;
      */
     @Test(description = &quot;See OGC 12-128r13: Requirement 114&quot;)
     public void dataColumnConstraintsGlobValue() throws SQLException {
-<span class="pc" id="L491">    	try (</span>
+<span class="pc" id="L492">    	try (</span>
     	    	// 1
-<span class="fc" id="L493">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L494">    			final Statement statement1 = this.databaseConnection.createStatement();</span>
 
-<span class="fc" id="L495">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT constraint_name, value FROM gpkg_data_column_constraints WHERE constraint_type IN ('enum','glob')&quot;);</span>
+<span class="fc" id="L496">    			final ResultSet resultSet1 = statement1.executeQuery(&quot;SELECT constraint_name, value FROM gpkg_data_column_constraints WHERE constraint_type IN ('enum','glob')&quot;);</span>
     			) {
     		// 2
-<span class="pc bpc" id="L498" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
+<span class="pc bpc" id="L499" title="1 of 2 branches missed.">    		while (resultSet1.next()) {</span>
     			// 3
-<span class="nc" id="L500">    			final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
-<span class="nc" id="L501">    			resultSet1.getString(&quot;value&quot;);</span>
+<span class="nc" id="L501">    			final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
+<span class="nc" id="L502">    			resultSet1.getString(&quot;value&quot;);</span>
 
-<span class="nc bnc" id="L503" title="All 2 branches missed.">    			Assert.assertTrue(!resultSet1.wasNull(), </span>
-<span class="nc" id="L504">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName, &quot;not&quot;));</span>
-<span class="nc" id="L505">    		}    		</span>
-<span class="pc bpc" id="L506" title="10 of 16 branches missed.">    	} </span>
-<span class="fc" id="L507">    }</span>
-<span class="fc" id="L508">    static private List&lt;String&gt; AllowedConstraintTypes = Arrays.asList(&quot;range&quot;, &quot;enum&quot;, &quot;glob&quot;);</span>
+<span class="nc bnc" id="L504" title="All 2 branches missed.">    			Assert.assertTrue(!resultSet1.wasNull(), </span>
+<span class="nc" id="L505">    					ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName, &quot;not&quot;));</span>
+<span class="nc" id="L506">    		}    		</span>
+<span class="pc bpc" id="L507" title="10 of 16 branches missed.">    	} </span>
+<span class="fc" id="L508">    }</span>
+<span class="fc" id="L509">    static private List&lt;String&gt; AllowedConstraintTypes = Arrays.asList(&quot;range&quot;, &quot;enum&quot;, &quot;glob&quot;);</span>
     private String maxIsInclusive;
     private String minIsInclusive;
 }
