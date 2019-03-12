@@ -70,6 +70,7 @@ public class VerifyTestNGController {
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/elevation.gpkg"), 0); 
         runTests(ClassLoader.getSystemResource("gpkg/coastline-polyline-hydro-115mil-and-smaller.gpkg"), 0);
+        runTests(ClassLoader.getSystemResource("gpkg/uint16.gpkg"), 1); //R115 default definition_12_063 should be "undefined"
         runTests(ClassLoader.getSystemResource("gpkg/v12_bad_attributes.gpkg"), 1); // R119
         runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 1); // R77
         runTests(ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg"), 1); // This is an invalid 1.0 or 1.1 GPKG - it has an invalid metadata table (md_standard_URI instead of md_standard_uri) 
