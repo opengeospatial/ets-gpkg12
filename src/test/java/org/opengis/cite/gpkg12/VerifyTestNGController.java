@@ -70,14 +70,14 @@ public class VerifyTestNGController {
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/elevation.gpkg"), 0); 
         runTests(ClassLoader.getSystemResource("gpkg/coastline-polyline-hydro-115mil-and-smaller.gpkg"), 0);
-        runTests(ClassLoader.getSystemResource("gpkg/uint16.gpkg"), 1); //R115 default definition_12_063 should be "undefined"
+        runTests(ClassLoader.getSystemResource("gpkg/uint16.gpkg"), 0); //while R115 states default definition_12_063 should be "undefined", this stipulation is targeted for removal
         runTests(ClassLoader.getSystemResource("gpkg/v12_bad_attributes.gpkg"), 1); // R119
         runTests(ClassLoader.getSystemResource("gpkg/sample1_0.gpkg"), 1); // R77
         runTests(ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg"), 1); // This is an invalid 1.0 or 1.1 GPKG - it has an invalid metadata table (md_standard_URI instead of md_standard_uri) 
         runTests(ClassLoader.getSystemResource("gpkg/sample1_1.gpkg"), 1); // R77
         runTests(ClassLoader.getSystemResource("gpkg/sample1_2.gpkg"), 1); // R77
         runTests(ClassLoader.getSystemResource("gpkg/rivers-bad.gpkg"), 8); // R107 to R114 (Metadata extension)
-        runTests(ClassLoader.getSystemResource("gpkg/sample1_2F10.gpkg"), 2); // Default "undefined", R77
+        runTests(ClassLoader.getSystemResource("gpkg/sample1_2F10.gpkg"), 1); // R77 (Default "undefined" no longer needed see R115 above)
         runTests(ClassLoader.getSystemResource("gpkg/geonames_belgium.gpkg"), 5); // lower case data types R5, R77, R61, R105
 //        runTests(ClassLoader.getSystemResource("gpkg/haiti-vectors-split.gpkg"), 3); // lower case data types R5, R77 Dropping this one because it is big and doesn't offer anything new
         runTests(ClassLoader.getSystemResource("gpkg/bentiu_southsudan-osm-20170213.gpkg"), 2); //R5, R29
