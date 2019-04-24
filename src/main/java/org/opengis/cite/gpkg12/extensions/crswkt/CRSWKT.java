@@ -80,7 +80,8 @@ public class CRSWKT extends CommonFixture
     				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 type"));
     				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 notnull"));
     				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 pk"));
-    				assertTrue(Pattern.compile("\\A([\"']?)undefined(\\1)\\z").matcher(resultSet.getString("dflt_value")).find(), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 dflt_value"));
+    				// The stipulation requiring default values for this column was removed in https://github.com/opengeospatial/geopackage/pull/469
+    				//    				assertTrue(Pattern.compile("\\A([\"']?)undefined(\\1)\\z").matcher(resultSet.getString("dflt_value")).find(), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 dflt_value"));
     				passFlag |= 1;
     			}
     		} 
