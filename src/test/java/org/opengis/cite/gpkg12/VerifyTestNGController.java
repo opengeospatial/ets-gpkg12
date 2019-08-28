@@ -53,6 +53,8 @@ public class VerifyTestNGController {
     @Test
     public void cleanTestRun() throws Exception {
     	
+        runTests(ClassLoader.getSystemResource("gpkg/rte.gpkg"), 0);
+        runTests(ClassLoader.getSystemResource("gpkg/rte-bad.gpkg"), 2); // RTE R6, R10
         runTests(ClassLoader.getSystemResource("gpkg/emp ty.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_view.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/rivers.gpkg"), 0);
