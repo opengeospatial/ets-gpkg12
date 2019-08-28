@@ -75,8 +75,23 @@
     </packages>
   </test>
   <test name="Related Tables">
-    <packages>
-      <package name="org.opengis.cite.gpkg12.extensions.relatedtables" />
-    </packages>
+    <classes>
+      <class name="org.opengis.cite.gpkg12.extensions.relatedtables.RTETests" />
+    </classes>
+  </test>
+  <test name="Related Tables Media">
+    <classes>
+      <class name="org.opengis.cite.gpkg12.extensions.relatedtables.MediaTests" />
+    </classes>
+  </test>
+  <test name="Related Tables Simple Attributes">
+    <classes>
+      <class name="org.opengis.cite.gpkg12.extensions.relatedtables.SimpleAttributesTests" />
+    </classes>
+  </test>
+  <test name="Related Tables Features">
+    <classes>
+      <class name="org.opengis.cite.gpkg12.extensions.relatedtables.FeaturesTests" />
+    </classes>
   </test>
 </suite>

@@ -6,13 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
-import org.testng.ITestContext;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
@@ -24,31 +21,13 @@ import org.testng.annotations.Test;
  * </p>
  * <ul>
  * <li><a href="http://docs.opengeospatial.org/is/18-000/18-000.html" target= "_blank">
- * GeoPackage Encoding Standard - F.9. Schema</a> (OGC 18-000)</li>
+ * GeoPackage Related Tables Extension</a> (OGC 18-000)</li>
  * </ul>
  *
  * @author Jeff Yutzler
  */
-public class RTETests extends CommonFixture
+public class RTETests extends RTEBase
 {
-    @BeforeClass
-    public void activeExtension(ITestContext testContext) throws SQLException {
-		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
-				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Related Tables Extension"));
-		
-		try (
-				final Statement statement = this.databaseConnection.createStatement();
-				
-				final ResultSet resultSet = statement.executeQuery(
-						"SELECT count(*) from gpkg_extensions WHERE extension_name IN ('related_tables', 'gpkg_related_tables');");
-				) {
-			resultSet.next();
-			
-			Assert.assertTrue(resultSet.getInt(1) > 0, 
-					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Related Tables Extension"));				
-		}
-    }
-    
     /**
      * A GeoPackage that contains a row in the gpkg_extensions table for 
      * gpkgext_relations as described in Extensions Table Record SHALL comply 

@@ -76,7 +76,7 @@
               </xsl:otherwise>
             </xsl:choose>
           </entry>
-          <entry key="ics">Core,Tiles,Features,Attributes,Extension Mechanism,Non-Linear Geometry Types,RTree Spatial Indexes,Tiles Encoding WebP,Metadata,Schema,WKT for Coordinate Reference Systems,Tiled Gridded Coverage Data</entry>
+          <entry key="ics">Core,Tiles,Features,Attributes,Extension Mechanism,Non-Linear Geometry Types,RTree Spatial Indexes,Tiles Encoding WebP,Metadata,Schema,WKT for Coordinate Reference Systems,Tiled Gridded Coverage Data,Related Tables,Related Tables Simple Features,Related Tables Attributes</entry>
 		    </properties>
 		   </xsl:variable>
        <xsl:variable name="testRunDir">
