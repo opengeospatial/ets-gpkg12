@@ -17,3 +17,4 @@ testng/
 
 # MacOS
 .DS_Store
+/bin/

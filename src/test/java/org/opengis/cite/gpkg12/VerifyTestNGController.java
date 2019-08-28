@@ -82,6 +82,8 @@ public class VerifyTestNGController {
         runTests(ClassLoader.getSystemResource("gpkg/geonames_belgium.gpkg"), 5); // lower case data types R5, R77, R61, R105
 //        runTests(ClassLoader.getSystemResource("gpkg/haiti-vectors-split.gpkg"), 3); // lower case data types R5, R77 Dropping this one because it is big and doesn't offer anything new
         runTests(ClassLoader.getSystemResource("gpkg/bentiu_southsudan-osm-20170213.gpkg"), 2); //R5, R29
+        runTests(ClassLoader.getSystemResource("gpkg/rte.gpkg"), 0);
+        runTests(ClassLoader.getSystemResource("gpkg/rte-bad.gpkg"), 3); // RTE R6, R10, R12b
     }
     private void runTests(URL testSubject, int fails) throws Exception {
         this.testRunProps.setProperty(TestRunArg.IUT.toString(), testSubject.toURI().toString());
