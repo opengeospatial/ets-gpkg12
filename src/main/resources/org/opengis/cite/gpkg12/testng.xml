@@ -94,4 +94,14 @@
       <class name="org.opengis.cite.gpkg12.extensions.relatedtables.FeaturesTests" />
     </classes>
   </test>
+  <test name="Related Tables Attributes">
+    <classes>
+      <class name="org.opengis.cite.gpkg12.extensions.relatedtables.AttributesTests" />
+    </classes>
+  </test>
+  <test name="Related Tables Tiles">
+    <classes>
+      <class name="org.opengis.cite.gpkg12.extensions.relatedtables.TilesTests" />
+    </classes>
+  </test>
 </suite>

@@ -14,7 +14,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
- * Defines test methods that apply to the "media" requirements class of the 
+ * Defines test methods that apply to the "Media" requirements class of the 
  * Related Tables Extension.
  *
  * <p style="margin-bottom: 0.5em">
@@ -29,42 +29,42 @@ import org.testng.annotations.Test;
  */
 public class MediaTests extends RTEBase
 {
+	/**
+	 * A user-defined related data table or view SHALL be a user-defined 
+	 * media table or view if the row in gpkgext_relations with a 
+	 * corresponding related_table_name has a relation_name of "media".
+	 * 
+     * @see <a href="http://docs.opengeospatial.org/is/18-000/18-000.html#r12" target=
+     *      "_blank">OGC 18-000 Requirement 12</a> 
+	 */
 	@BeforeClass
 	public void activeExtension(ITestContext testContext) throws SQLException {
 		super.activeExtension(testContext);
-		try (
-				final Statement statement = this.databaseConnection.createStatement();
-				
-				final ResultSet resultSet = statement.executeQuery(
-						"SELECT COUNT(*) FROM gpkgext_relations WHERE relation_name = 'media'");
-				) {
-			resultSet.next();
-			
-			Assert.assertTrue(resultSet.getInt(1) > 0, 
-					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Related Tables Extension, Media Requirements Class"));				
-		}
+		testRequirementsClassActive("media", "Media");
 	}
 	
     /**
+     * A user-defined media table or view SHALL meet all 
+     * requirements of a GPKG attributes table type.
+     * 
      * A user-defined media table or view SHALL contain all of the columns 
      * described in User-Defined Media Table Definition.
      * 
-     * @see <a href="http://docs.opengeospatial.org/is/18-000/18-000.html#r13" target=
-     *      "_blank">OGC 18-000 Requirement 13</a> 
+     * @see <a href="http://docs.opengeospatial.org/is/18-000/18-000.html#r12" target=
+     *      "_blank">OGC 18-000 Requirement 12b, 13</a> 
      */
-    @Test(description = "See OGC 18-000: Requirement 13")
+    @Test(description = "See OGC 18-000: Requirement 12b, 13")
     public void mediaTableDefinition() throws SQLException {
-    	
+    	testRelatedType("media", "attributes");
+
 		try (
 				final Statement statement = this.databaseConnection.createStatement();
 				
 				final ResultSet resultSet = statement.executeQuery(
 						"SELECT related_table_name FROM gpkgext_relations WHERE relation_name = 'media';");
 				) {
-			boolean hasResults = false;
 			
 			while (resultSet.next()) {
-				hasResults = true;
 				int passFlag = 0;
 	    		final int flagMask = 0b00000011;
 	    		
@@ -94,8 +94,6 @@ public class MediaTests extends RTEBase
 		    		assertTrue((passFlag & flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, relatedTableName, String.format("missing column(s): code(%s)", passFlag)));
 	    		}
 			}
-			Assert.assertTrue(hasResults, 
-					ErrorMessage.format(ErrorMessageKeys.MISSING_ROW, "gpkgext_relations"));				
 		}
     }
 }

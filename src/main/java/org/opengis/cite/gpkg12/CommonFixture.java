@@ -31,7 +31,7 @@ import org.testng.annotations.BeforeTest;
  */
 public class CommonFixture {
 	
-	private final String ICS = "Core,Tiles,Features,Attributes,Extension Mechanism,Non-Linear Geometry Types,RTree Spatial Indexes,Tiles Encoding WebP,Metadata,Schema,WKT for Coordinate Reference Systems,Tiled Gridded Coverage Data,Related Tables,Related Tables Media,Related Tables Simple Features,Related Tables Attributes";
+	private final String ICS = "Core,Tiles,Features,Attributes,Extension Mechanism,Non-Linear Geometry Types,RTree Spatial Indexes,Tiles Encoding WebP,Metadata,Schema,WKT for Coordinate Reference Systems,Tiled Gridded Coverage Data,Related Tables,Related Tables Media,Related Tables Features,Related Tables Simple Attributes,Related Tables Attributes,Related Tables Tiles";
 
 	/** Root test suite package (absolute path). */
     public static final String ROOT_PKG_PATH = "/org/opengis/cite/gpkg12/";
