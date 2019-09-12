@@ -45,7 +45,13 @@
   <properties>
     <ets-code>gpkg12</ets-code>
     <spec-version>1.2</spec-version>
-    <docker.teamengine.version>5.3</docker.teamengine.version>
+    <soapui.test.fail.ignore>false</soapui.test.fail.ignore>
+    <soapui.teamengine.endpoint>http://localhost:8081/teamengine</soapui.teamengine.endpoint>
+    <soapui.iut>http://cite.deegree.org/deegree-webservices-3.4.5/services/wms130?service=WMS&amp;request=GetCapabilities</soapui.iut>
+    <soapui.tests.passed>47</soapui.tests.passed>
+    <soapui.tests.skipped>50</soapui.tests.skipped>
+    <soapui.tests.failed>0</soapui.tests.failed>
+    <docker.teamengine.version>5.4</docker.teamengine.version>
   </properties>
 
   <dependencies>
@@ -183,9 +189,90 @@
         </configuration>
       </plugin>
     </plugins>
+   <pluginManagement>
+      <plugins>
+         <plugin>
+            <groupId>com.smartbear.soapui</groupId>
+            <artifactId>soapui-maven-plugin</artifactId>
+            <version>5.5.0</version>
+            <dependencies>
+               <dependency>
+                  <groupId>com.jgoodies</groupId>
+                  <artifactId>forms</artifactId>
+                  <version>1.0.7</version>
+               </dependency>
+            </dependencies>
+            <configuration>
+               <projectFile>src/test/resources/soapui/ets-gpkg12-soapui-project.xml</projectFile>
+               <settingsFile>src/test/resources/soapui/ets-gpkg12-soapui-settings.xml</settingsFile>
+               <outputFolder>${project.build.directory}/soapui</outputFolder>
+               <junitReport>true</junitReport>
+               <testFailIgnore>${soapui.test.fail.ignore}</testFailIgnore>
+               <projectProperties>
+                  <value>teamengine.endpoint=${soapui.teamengine.endpoint}</value>
+                  <value>iut=${soapui.iut}</value>
+                  <value>tests.passed=${soapui.tests.passed}</value>
+                  <value>tests.skipped=${soapui.tests.skipped}</value>
+                  <value>tests.failed=${soapui.tests.failed}</value>
+               </projectProperties>
+            </configuration>
+         </plugin>
+      </plugins>
+   </pluginManagement>
   </build>
 
   <profiles>
+    <profile>
+      <id>integration-tests</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.smartbear.soapui</groupId>
+            <artifactId>soapui-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>test</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>io.fabric8</groupId>
+            <artifactId>docker-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>start</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>build</goal>
+                  <goal>start</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>stop</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                  <goal>stop</goal>
+                  <goal>remove</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>copy</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <id>docker</id>
       <build>
@@ -323,6 +410,12 @@
     </profile>
   </profiles>
 
+  <pluginRepositories>
+    <pluginRepository>
+      <id>smartbear-sweden-plugin-repository</id>
+      <url>http://www.soapui.org/repository/maven2/</url>
+    </pluginRepository>
+  </pluginRepositories>
   <distributionManagement>
     <repository>
       <id>sonatype-nexus-staging</id>
