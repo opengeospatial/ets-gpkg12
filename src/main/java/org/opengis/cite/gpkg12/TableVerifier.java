@@ -51,7 +51,7 @@ public final class TableVerifier
 
     private static void verifyTableDefinition(final Connection connection, final String tableName) throws SQLException
     {
-        try(final PreparedStatement statement = connection.prepareStatement("SELECT sql FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND tbl_name = ?;"))
+        try(final PreparedStatement statement = connection.prepareStatement("SELECT sql FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND tbl_name = '?';"))
         {
             statement.setString(1, tableName);
 
