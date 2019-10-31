@@ -232,7 +232,7 @@ public class RTETests extends RTEBase
      */
     @Test(description = "See OGC 18-000: Requirement 8")
     public void relationName() throws SQLException {
-		final String query = "SELECT base_table_name, relation_name FROM gpkgext_relations WHERE (relation_name NOT IN ('features', 'simple_attributes', 'media') AND relation_name NOT LIKE 'x-%\\_%' ESCAPE '\\');";
+		final String query = "SELECT base_table_name, relation_name FROM gpkgext_relations WHERE (relation_name NOT IN ('features', 'simple_attributes', 'media', 'attributes', 'tiles') AND relation_name NOT LIKE 'x-%\\_%' ESCAPE '\\');";
 		try (
 				final Statement statement = this.databaseConnection.createStatement();
 				final ResultSet resultSet = statement.executeQuery(query);
