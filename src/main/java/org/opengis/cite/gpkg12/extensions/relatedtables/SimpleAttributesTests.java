@@ -73,12 +73,11 @@ public class SimpleAttributesTests extends RTEBase
 		    			final String type = resultSet2.getString("type");
 		    			final String name = resultSet2.getString("name");
 		    			switch (type) {
-			    			case "INTEGER":
-			    			case "REAL":
-			    			case "TEXT":
-			    				break;
-		    				default:
+			    			case "BLOB":
 		    					Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, type, name, simpleAttributesTableName));
+		    					break;
+	    					default:
+	    						break;
 		    			}
 		    			final int notNull = resultSet2.getInt("notnull");
 		    			Assert.assertEquals(notNull, 1, ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, 
