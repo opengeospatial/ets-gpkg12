@@ -988,9 +988,10 @@ public class FeaturesTests extends FeaturesFixture {
     				// Dependent on the feature instance min and max geometry values and whether we have envelope values
 
     				try {
-
+  
     					// If we have no envelope, we cannot perform this test
-    					if (!envelopeVals.isEmpty()) {
+    					//Commented as deprecated in  OGC 12-128r14 (Refer issue #99)
+    					/*if (!envelopeVals.isEmpty()) {
 
     						final String rtreeTable = String.format("rtree_%s_%s",thisTableName, thisColumnName);
 
@@ -1023,7 +1024,7 @@ public class FeaturesTests extends FeaturesFixture {
     								}
     							}
     						}
-    					}
+    					}*/
     				} catch(final Exception th)
     				{
 
