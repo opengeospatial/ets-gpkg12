@@ -48,7 +48,7 @@ public class AttributeTests extends CommonFixture {
             }
         }
 
-        Assert.assertTrue(!attributeTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));
+        Assert.assertTrue(!attributeTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, getTestName()));
     }
 
     /**
