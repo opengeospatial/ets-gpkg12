@@ -39,12 +39,12 @@ public class SchemaTests extends CommonFixture
     	// Starting with GPKG 1.1, this is a proper extension.
     	if (geopackageVersion == GeoPackageVersion.V102) {
 			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_data_columns"), 
-					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Schema Option"));
+					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "Schema Option"));
     		minIsInclusive = "minIsInclusive";
     		maxIsInclusive = "maxIsInclusive";
     	} else {
     		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
-    				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Schema Extension"));
+    				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "Schema Extension"));
 			
 			try (
 					final Statement statement = this.databaseConnection.createStatement();
@@ -53,7 +53,7 @@ public class SchemaTests extends CommonFixture
 					) {
 				resultSet.next();
 				
-				Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Schema Extension"));				
+				Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "Schema Extension"));				
 			}
     		minIsInclusive = "min_is_inclusive";
     		maxIsInclusive = "max_is_inclusive";
