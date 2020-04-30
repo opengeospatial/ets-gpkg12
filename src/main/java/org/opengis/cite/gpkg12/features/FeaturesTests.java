@@ -209,7 +209,8 @@ public class FeaturesTests extends FeaturesFixture {
             	// contents specification. This test is not specifically identified in the standard.
                 try
                 {
-                    final String tableName = resultSet.getString("tbl_name");
+                	// FORITY ISSUE within verifyTable
+                    final String tableName = ValidateSQLiteTableColumnStringInput(resultSet.getString("tbl_name"));
 
                     // If we think we have a feature table, make sure it has the expected columns.
                     // This throws if the table definition doesn't match, and won't be added to the collection
@@ -1224,10 +1225,11 @@ public class FeaturesTests extends FeaturesFixture {
 			            while(resultSet.next())
 			            {
 			            	Boolean testFailedForFKItem = true;
-			            	final String thisTableName = resultSet.getString("table");   // maybe not the right column?
+			            	final String thisTableName = ValidateSQLiteTableColumnStringInput(resultSet.getString("table"));   // maybe not the right column?
 			            	// final String thisColumnFrom = resultSet.getString("from");
-			            	final String thisColumnTo = resultSet.getString("to");
+			            	final String thisColumnTo = ValidateSQLiteTableColumnStringInput(resultSet.getString("to"));
 			            	countResults ++;
+			            	// FORTIFY CWE Corrected
 	                    	try(final Statement preparedStatement = this.databaseConnection.createStatement();
 	                                final ResultSet pragmaTableInfo   = preparedStatement.executeQuery(String.format("PRAGMA table_info(\'%s\');", thisTableName)))
 	                            {
@@ -1285,12 +1287,12 @@ public class FeaturesTests extends FeaturesFixture {
 				) {
 			// 2
 			while (resultSet.next()){
-				final String tableName = resultSet.getString("table_name");
-				final String columnName = resultSet.getString("column_name");
+				final String tableName = ValidateSQLiteTableColumnStringInput(resultSet.getString("table_name"));
+				final String columnName = ValidateSQLiteTableColumnStringInput(resultSet.getString("column_name"));
 
 				try (
 						final Statement statement2 = this.databaseConnection.createStatement();
-
+						// FORTIFY CWE Corrected
 						final ResultSet resultSet2 = statement2.executeQuery(String.format("PRAGMA table_info(\'%s\');", tableName));
 						) {
 					boolean foundMatch = false;
@@ -1470,10 +1472,10 @@ public class FeaturesTests extends FeaturesFixture {
 			// 2
 			while (resultSet.next()){
 				// 3
-				final String tableName = resultSet.getString("table_name");
+				final String tableName = ValidateSQLiteTableColumnStringInput(resultSet.getString("table_name"));
 				try (
 						final Statement statement2 = this.databaseConnection.createStatement();
-
+						// FORTIFY CWE Corrected
 						final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT count(*) FROM gpkg_geometry_columns WHERE table_name = \'%s\'", tableName));
 						) {
 					resultSet2.next();
@@ -1512,11 +1514,11 @@ public class FeaturesTests extends FeaturesFixture {
 					//				assertTrue(allowedGeometryTypes.contains(geometryTypeName), ErrorMessage.format(ErrorMessageKeys.FEATURES_GEOMETRY_COLUMNS_INVALID_GEOM, geometryTypeName));
 
 					//2b
-					final String tableName = resultSet.getString("table_name");
-					final String columnName = resultSet.getString("column_name");
+					final String tableName = ValidateSQLiteTableColumnStringInput(resultSet.getString("table_name"));
+					final String columnName = ValidateSQLiteTableColumnStringInput(resultSet.getString("column_name"));
 					try (
 							final Statement statement2 = this.databaseConnection.createStatement();
-
+							// FORTIFY CWE Corrected
 							final ResultSet resultSet2 = statement2.executeQuery(String.format("PRAGMA table_info(\'%s\')", tableName));
 							) {
 						while (resultSet2.next()){
