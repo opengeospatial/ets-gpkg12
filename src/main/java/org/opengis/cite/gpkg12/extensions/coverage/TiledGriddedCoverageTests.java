@@ -262,10 +262,9 @@ public class TiledGriddedCoverageTests extends TileFixture {
 					final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT srs_id FROM gpkg_tile_matrix_set WHERE table_name = '%s'", tableName));
 					) {
 				resultSet1.next();				
-				final String srsID = ValidateSQLiteTableColumnStringInput(resultSet1.getString(1));
+				final String srsID = resultSet1.getString(1);
 				try (
 						final Statement statement2 = this.databaseConnection.createStatement();
-						// FORTIFY CWE Corrected
 						final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_spatial_ref_sys WHERE srs_id = '%s'", srsID));
 						) {
 					assertTrue(resultSet2.getInt(1) == 1, ErrorMessage.format(ErrorMessageKeys.BAD_MATRIX_SET_SRS_REFERENCE, srsID));
@@ -375,10 +374,10 @@ public class TiledGriddedCoverageTests extends TileFixture {
 			// 2
 			while (resultSet.next()){
 				// 3
-				final String tileMatrixSetName = ValidateSQLiteTableColumnStringInput(resultSet.getString(1));
+				final String tileMatrixSetName = resultSet.getString(1);
 				try (
 						final Statement statement2 = this.databaseConnection.createStatement();
-						// FORTIFY CWE Corrected
+
 						final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT count(*) FROM gpkg_tile_matrix_set WHERE table_name = '%s';", tileMatrixSetName));
 						) {
 					assertTrue(resultSet2.getInt(1) == 1, ErrorMessageKeys.UNREFERENCED_COVERAGE_TILE_MATRIX_SET_TABLE);
@@ -496,11 +495,10 @@ public class TiledGriddedCoverageTests extends TileFixture {
 				) {
 			// 2
 			while (resultSet1.next()) {
-				final String tableName = ValidateSQLiteTableColumnStringInput(resultSet1.getString("tpudt_name"));
+				final String tableName = resultSet1.getString("tpudt_name");
 				try (
 						final Statement statement2 = this.databaseConnection.createStatement();
 						// 2a
-						// FORTIFY CWE Corrected
 						final ResultSet resultSet2 = statement2.executeQuery(String.format("PRAGMA table_info(%s)", tableName));
 						) {
 					// 2b
@@ -509,7 +507,6 @@ public class TiledGriddedCoverageTests extends TileFixture {
 				try (
 						// 2c
 						final Statement statement3 = this.databaseConnection.createStatement();
-						// FORTIFY CWE Corrected
 						final ResultSet resultSet3 = statement3.executeQuery(String.format("SELECT datatype from gpkg_2d_gridded_coverage_ancillary WHERE tile_matrix_set_name = '%s'", tableName));
 						) {
 					// 2d
