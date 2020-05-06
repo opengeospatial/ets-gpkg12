@@ -35,7 +35,7 @@ public final class TableVerifier
      * @return validated string
      * @throws IllegalArgumentException if the input is found to be invalid
      */
-    public static String ValidateSQLiteTableColumnStringInput( String inputString ) throws IllegalArgumentException {
+    public static String validateSQLiteTableColumnStringInput( String inputString ) throws IllegalArgumentException {
 
     	StringBuilder sb = new StringBuilder(50);  // initial size is 50. This is expected to be sufficient for most table and field names. This is NOT a limit.
     	for (int ii = 0; ii < inputString.length(); ++ii) {
@@ -228,7 +228,7 @@ public final class TableVerifier
             {
                 if(indices.getBoolean("unique"))
                 {
-                    final String indexName = ValidateSQLiteTableColumnStringInput(indices.getString("name"));
+                    final String indexName = validateSQLiteTableColumnStringInput(indices.getString("name"));
                     
                  // FORTIFY CWE
                     try(Statement nameStatement = connection.createStatement();

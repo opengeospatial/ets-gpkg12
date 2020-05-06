@@ -11,6 +11,7 @@ import java.util.Collection;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
 import org.opengis.cite.gpkg12.FeaturesFixture;
+import org.opengis.cite.gpkg12.TableVerifier;
 import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
@@ -152,8 +153,8 @@ public class NonlinearTests extends FeaturesFixture {
 
 				// 3a
 				if(extendedGeometryTypes.contains(geometryTypeName)) {
-					final String tableName = ValidateSQLiteTableColumnStringInput(resultSet1.getString("table_name"));
-					final String columnName = ValidateSQLiteTableColumnStringInput(resultSet1.getString("column_name"));
+					final String tableName = TableVerifier.validateSQLiteTableColumnStringInput(resultSet1.getString("table_name"));
+					final String columnName = TableVerifier.validateSQLiteTableColumnStringInput(resultSet1.getString("column_name"));
 
 					try (
 							// 3ai
