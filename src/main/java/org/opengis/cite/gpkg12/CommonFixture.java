@@ -173,8 +173,8 @@ public class CommonFixture {
     protected boolean isExtendedType(String tableName, String columnName) throws SQLException {
     	boolean result = false;
     	
-    	final String tname = ValidateSQLiteTableColumnStringInput(tableName);
-    	final String colname = ValidateSQLiteTableColumnStringInput(columnName);
+    	final String tname = TableVerifier.validateSQLiteTableColumnStringInput(tableName);
+    	final String colname = TableVerifier.validateSQLiteTableColumnStringInput(columnName);
     	// This accounts for the exception in Requirement 65
     	if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions")) {
     		try (
@@ -206,8 +206,8 @@ public class CommonFixture {
 		if (tableName == null) {
 			throw new IllegalArgumentException("tableName must not be null.");
 		}
-		final String tableNameV = ValidateSQLiteTableColumnStringInput(tableName);
-		final String pkNameV = ValidateSQLiteTableColumnStringInput(pkName);
+		final String tableNameV = TableVerifier.validateSQLiteTableColumnStringInput(tableName);
+		final String pkNameV = TableVerifier.validateSQLiteTableColumnStringInput(pkName);
 		boolean pass = false;
 		if (enforcePk) {
 			try (
@@ -284,31 +284,6 @@ public class CommonFixture {
     	}
     	return sb.toString();
     }
-
-    /**
-     * Validate a string value to ensure it contains no illegal characters or content and
-     * ensure the string is valid if used for a SQLite table or column name. Further, even though
-     * SQLite does accept some special characters, we will allow only the underbar special character
-     * to maintain consistency.
-     * 
-     * @param inputString The string to validate
-     * @return validated string
-     * @throws IllegalArgumentException if the input is found to be invalid
-     */
-    public static String ValidateSQLiteTableColumnStringInput( String inputString ) throws IllegalArgumentException {
-
-    	StringBuilder sb = new StringBuilder(50);  // initial size is 50. This is expected to be sufficient for most table and field names. This is NOT a limit.
-    	for (int ii = 0; ii < inputString.length(); ++ii) {
-    		final char cleanedchar = cleanCharSQLite(inputString.charAt(ii));
-    		if (cleanedchar == '^') {   // This is an illegal character indicator
-    			throw new IllegalArgumentException(String.format("Illegal SQLite column or table name string input %s at character %c",inputString, inputString.charAt(ii)));
-    		}
-    		else {
-    			sb.append(cleanedchar);
-    		}
-    	}
-    	return sb.toString();
-    }
     
     /**
      * Validate and clean a character of a string.
@@ -347,37 +322,6 @@ public class CommonFixture {
         }
         return '^';
     }
-
-    /**
-     * Validate and clean a character of a string expected to be part of an SQL table or column name
-     * 
-     * @param inputChar  A character of a string, for which we will check validity, replacing any illegal characters with ^
-     * @return a validated character
-     */
-    private static char cleanCharSQLite(char inputChar) {
-        // 0 - 9
-        for (int i = 48; i < 58; ++i) {
-            if (inputChar == i) return (char) i;
-        }
-
-        // 'A' - 'Z'
-        for (int i = 65; i < 91; ++i) {
-            if (inputChar == i) return (char) i;
-        }
-
-        // 'a' - 'z'
-        for (int i = 97; i < 123; ++i) {
-            if (inputChar == i) return (char) i;
-        }
-
-        // other valid characters
-        switch (inputChar) {
-            case '_':
-                return '_';
-        }
-        return '^';
-    }
-    
     
 	private String testName;
 }
