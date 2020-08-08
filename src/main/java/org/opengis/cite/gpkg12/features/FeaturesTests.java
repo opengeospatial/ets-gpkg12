@@ -480,9 +480,13 @@ public class FeaturesTests extends FeaturesFixture {
     			 */
 
     			// quick fix for https://github.com/opengeospatial/ets-gpkg12/issues/74
-				//while(resultSetInternal.next() )
-    			if(resultSetInternal.next() )
+    			// We may wish to replace this with something externally configurable
+    			final int MAX_COUNT = 100;
+    			int counter = 0;
+				while(resultSetInternal.next() && (counter < MAX_COUNT))
     			{
+					counter++;
+					
     				// The SQL should give us a numeric identifier and a geometry blob.  All of the tests in this series operate off
     				// of these two values and the parameters passed in by the iterator.
     				final long rowID = (long) resultSetInternal.getLong(1);
@@ -490,8 +494,7 @@ public class FeaturesTests extends FeaturesFixture {
 
     				// We must allow for null geometries.
     				if (bytes == null){
-    					//continue;
-						throw new SkipException( "No geom available." );
+    					continue;
     				}
     				// From the geometry blob, populate a few of the values that we can easily extract from the geometry
     				final byte envelopeCode = (byte) ((bytes[startOfFlags] & maskFlagEnvelope) >> shiftFlagEnvelope);
@@ -517,7 +520,6 @@ public class FeaturesTests extends FeaturesFixture {
     				 *    v. *Fail if the geometry is empty but the envelope is not empty (gc.flags.envelope != 0 and envelope values are not NaN)
     				 * 4. Pass if no fails
     				 */
-
 
     				// GeoPackageBinaryHeader {
     				//  byte[2] magic = 0x4750;      // "GP" in ASCII
@@ -545,8 +547,6 @@ public class FeaturesTests extends FeaturesFixture {
     				//
     				// The GeoPackageBinaryHeader is followed by WKB
 
-
-
     				try {
     					// i. Fail if the first two bytes of each gc are not "GP" 
     					final byte[] GP_HEADER = new String("GP")
@@ -558,7 +558,6 @@ public class FeaturesTests extends FeaturesFixture {
     									ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_INVALID_MAGIC_NUMBER, 
     											thisTableName, rowID, thisColumnName, String.format("0x%02x%02x",  bytes[0], bytes[1])));
     					}
-
 
     					// ii. Fail if gc.version_number is not 0
     					final byte version = (byte)bytes[startOfVersion];
@@ -579,7 +578,6 @@ public class FeaturesTests extends FeaturesFixture {
     											thisTableName, rowID, thisColumnName, binaryTypeFlag));
     					}
 
-
     					// iv. (Fail if cn.flags.E is 5-7)  
     					if ( envelopeCode > 4 || envelopeCode < 0 ) {
     						errorDetected19 ++;
@@ -597,7 +595,6 @@ public class FeaturesTests extends FeaturesFixture {
     									String.format("Failure testing requirement 19i-iv on feature {0}", thisTableName), th.getMessage()));
     				}  	
     				// ** END ************** 19 i-iv ************************ 19 ************************** 19 **************************
-
 
     				// ** START **************  33 ************************  ************
     				//{@code /opt/features/vector_features/data/data_value_geometry_srs_id}
