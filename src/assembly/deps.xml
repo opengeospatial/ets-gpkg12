@@ -25,6 +25,8 @@
         <exclude>org.opengis.cite.teamengine:teamengine-spi</exclude>
         <exclude>com.sun.jersey:jersey-client</exclude>
         <exclude>org.opengis.cite:schema-utils</exclude>
+        <exclude>org.testng:testng</exclude>
+        <exclude>com.beust:jcommander</exclude>
       </excludes>
       <outputDirectory>/</outputDirectory>
       <unpack>false</unpack>
