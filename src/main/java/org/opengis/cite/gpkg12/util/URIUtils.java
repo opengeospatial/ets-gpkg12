@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -70,14 +71,23 @@ public class URIUtils {
      * 
      * @param uriRef
      *            An absolute URI specifying the location of some resource.
+     *            If a relative URI is provided, 
+     *            it will be turned into a file URI
      * @return A File containing the content of the resource; it may be empty if
      *         resolution failed for any reason.
      * @throws IOException
      *             If an IO error occurred.
      */
     public static File dereferenceURI(URI uriRef) throws IOException {
-        if ((null == uriRef) || !uriRef.isAbsolute()) {
-            throw new IllegalArgumentException("Absolute URI is required, but received " + uriRef);
+    	if (null == uriRef) {
+            throw new IllegalArgumentException("Absolute URI is required, but received none");
+    	}
+        if (!uriRef.isAbsolute()) {
+        	try {
+				return dereferenceURI(new URI(String.format("file://%s", uriRef.toASCIIString())));
+			} catch (URISyntaxException e) {
+	            throw new IllegalArgumentException("Absolute URI is required, but received " + uriRef);
+			}
         }
         if (uriRef.getScheme().equalsIgnoreCase("file")) {
             return new File(uriRef);
