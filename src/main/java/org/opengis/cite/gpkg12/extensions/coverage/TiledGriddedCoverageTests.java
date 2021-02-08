@@ -51,14 +51,14 @@ public class TiledGriddedCoverageTests extends TileFixture {
 	@BeforeClass
 	public void a_ValidateExtensionPresent(ITestContext testContext) throws SQLException {
 		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
-				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Coverage Extension"));
+				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "Coverage Extension"));
     	
 		try (
 				final Statement statement1 = this.databaseConnection.createStatement();
 				ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = 'gpkg_2d_gridded_coverage_ancillary';");
 				) {
 			resultSet1.next();
-			Assert.assertTrue(resultSet1.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Coverage Extension"));
+			Assert.assertTrue(resultSet1.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "Coverage Extension"));
 		}
 	}
 

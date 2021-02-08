@@ -34,7 +34,7 @@ public class ExtensionsTests extends CommonFixture
 	@BeforeClass
 	public void validateTableExists(ITestContext testContext) throws SQLException {
 		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
-				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Extensions"));
+				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "Extensions"));
 	}
 
 

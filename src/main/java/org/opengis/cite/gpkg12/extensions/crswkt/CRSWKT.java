@@ -34,7 +34,7 @@ public class CRSWKT extends CommonFixture
     @BeforeClass
     public void activeExtension(ITestContext testContext) throws SQLException {
 		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
-				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "CRS WKT Extension"));
+				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "CRS WKT Extension"));
     	
 		try (
 				final Statement statement = this.databaseConnection.createStatement();
@@ -42,7 +42,7 @@ public class CRSWKT extends CommonFixture
 			) {
 			resultSet.next();
 			
-			Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "CRS WKT Extension"));			
+			Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "CRS WKT Extension"));			
 		}
 	
     }

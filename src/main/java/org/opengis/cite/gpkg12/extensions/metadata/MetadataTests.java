@@ -98,10 +98,10 @@ public class MetadataTests extends CommonFixture
 		// Starting with GPKG 1.1, this is a proper extension.
 		if (geopackageVersion == GeoPackageVersion.V102) {
 			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_metadata"), 
-					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Metadata Option"));
+					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "Metadata Option"));
 		} else {
 			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
-					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Metadata Extension"));
+					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "Metadata Extension"));
 	    	
 			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
 					ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, "gpkg_extensions"));
@@ -113,7 +113,7 @@ public class MetadataTests extends CommonFixture
 					) {
 				resultSet.next();
 
-				Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Metadata Extension"));
+				Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "Metadata Extension"));
 			}
 		}		
 	}
