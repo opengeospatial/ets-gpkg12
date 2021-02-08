@@ -307,7 +307,7 @@ public class TileTests extends TileFixture
 			// 1
 			final Statement statement = this.databaseConnection.createStatement();
 
-			final ResultSet resultSet = statement.executeQuery("SELECT a.srs_id srs_id, a.table_name tn FROM gpkg_tile_matrix_set a, gpkg_contents b WHERE a.table_name = b.table_name and a.srs_id != b.srs_id and b.data_type = 'tiles'");
+			final ResultSet resultSet = statement.executeQuery("SELECT a.srs_id srs_id, a.table_name tn FROM gpkg_tile_matrix_set a, gpkg_contents b WHERE a.table_name = b.table_name and a.srs_id != b.srs_id");
 		) {
 			// 2
 			if (resultSet.next()){
