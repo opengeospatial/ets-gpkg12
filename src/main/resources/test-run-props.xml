@@ -3,5 +3,5 @@
 <properties version="1.0">
     <comment>Test run arguments</comment>
     <entry key="iut">http://www.geopackage.org/data/simple_sewer_features.gpkg</entry>
-  <entry key="ics">Core,Tiles,Features,Attributes,Extension Mechanism,Non-Linear Geometry Types,RTree Spatial Indexes,Tiles Encoding WebP,Metadata,Schema,WKT for Coordinate Reference Systems,Tiled Gridded Coverage Data</entry>
+    <entry key="ics">Core,Tiles,Features,Attributes,Extension Mechanism,Non-Linear Geometry Types,RTree Spatial Indexes,Tiles Encoding WebP,Metadata,Schema,WKT for Coordinate Reference Systems,Tiled Gridded Coverage Data,Related Tables,Related Tables Media,Related Tables Features,Related Tables Simple Attributes,Related Tables Attributes,Related Tables Tiles</entry>
 </properties>

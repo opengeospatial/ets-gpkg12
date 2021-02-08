@@ -32,6 +32,7 @@ public class ErrorMessageKeys {
     public static final String UNEXPECTED_VALUE = "UnexpectedValue";
     public static final String ILLEGAL_VALUE = "IllegalValue";
     public static final String MISSING_REFERENCE = "MissingReference";
+    public static final String MISSING_ROW = "MissingRow";
     public static final String NON_UNIQUE_VALUE = "NonUniqueValue";
     public static final String PRAGMA_INTEGRITY_CHECK_NOT_OK = "PragmaIntegrityCheckNotOk";
     public static final String INVALID_FOREIGN_KEY = "InvalidForeignKey";

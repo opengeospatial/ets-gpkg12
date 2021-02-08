@@ -240,7 +240,7 @@ public class FeaturesTests extends FeaturesFixture {
 		}
 
 
-		Assert.assertTrue(!this.featureTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));
+		Assert.assertTrue(!this.featureTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, getTestName()));
 	}
 
 
@@ -293,67 +293,6 @@ public class FeaturesTests extends FeaturesFixture {
 
         return data.iterator();
     }
-
-
-	/**
-	 * Test case
-	 * /base/core/contents/data/table_def/srs_id
-	 *
-	 * @see <a href="http://www.geopackage.org/spec120/index.html" target=
-	 * "_blank">Contents - Requirement 13</a>
-	 *
-	 * @throws SQLException
-	 *             If an SQL query causes an error
-	 */
-    @Test(description = "See OGC 12-128r14: Requirement 13 srs_id")
-    public void featureSRSconsistency() throws SQLException {
-
-    	// This requirement is not currently called out under the TEST req area,
-    	// but it is defined within Requirement 13 and not currently tested under
-    	// the requirement 13 test code.
-    	//
-    	// Spatial Reference System ID:
-    	// gpkg_spatial_ref_sys.srs_id; when data_type is features, SHALL also match
-    	// gpkg_geometry_columns.srs_id; 
-
-
-		int gpkgGeomCount = 0;
-		int gpkgContentCount = 0;
-		int gpkgAndContentCount = 0;
-		try (
-				final Statement statement2 = this.databaseConnection.createStatement();
-				final ResultSet resultSet2 = statement2.executeQuery(
-						String.format("SELECT count(*) as ggcCount FROM \'gpkg_geometry_columns\';"));
-				) {
-			gpkgGeomCount = resultSet2.getInt("ggcCount");
-		}
-		try (
-				final Statement statement2 = this.databaseConnection.createStatement();
-				final ResultSet resultSet2 = statement2.executeQuery(
-						String.format("SELECT count(*) as ggcCount FROM \'gpkg_contents\' WHERE data_type = \'features\';"));
-				) {
-			gpkgContentCount = resultSet2.getInt("ggcCount");
-		}
-		try (
-				final Statement statement2 = this.databaseConnection.createStatement();
-				final ResultSet resultSet2 = statement2.executeQuery(
-						String.format(
-				"SELECT count(*) as ggcCount FROM \'gpkg_contents\' INNER JOIN \'gpkg_geometry_columns\' ON ((gpkg_contents.srs_id = gpkg_geometry_columns.srs_id) AND (gpkg_contents.table_name = gpkg_geometry_columns.table_name));"));
-				) {
-			gpkgAndContentCount = resultSet2.getInt("ggcCount");
-		}
-		// If the geopackage geometry columns count is not the same as the geopackage content count (for features), then we have a problem.
-		if (gpkgGeomCount != gpkgContentCount) {
-			Assert.assertTrue(false,
-					ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_COLUMNS_DOES_NOT_MATCH_CONTENTS_COUNT));
-		// If we got a different count when looking at common feature names and srs_id values, then the test for requirement 13 fails
-		} else if (gpkgGeomCount != gpkgAndContentCount || gpkgContentCount != gpkgAndContentCount) {
-			Assert.assertTrue(false,
-					ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_COLUMNS_SRS_ID_NOT_CONSISTENT_WITH_CONTENTS));
-		}	
-
-    }	
-	
 
     /**
      * Verify that the gpkg_contents table_name value table exists, and is apparently a feature table for every row with a data_type column value of 'features'
@@ -988,9 +927,10 @@ public class FeaturesTests extends FeaturesFixture {
     				// Dependent on the feature instance min and max geometry values and whether we have envelope values
 
     				try {
-
+  
     					// If we have no envelope, we cannot perform this test
-    					if (!envelopeVals.isEmpty()) {
+    					//Commented as deprecated in  OGC 12-128r14 (Refer issue #99)
+    					/*if (!envelopeVals.isEmpty()) {
 
     						final String rtreeTable = String.format("rtree_%s_%s",thisTableName, thisColumnName);
 
@@ -1023,7 +963,7 @@ public class FeaturesTests extends FeaturesFixture {
     								}
     							}
     						}
-    					}
+    					}*/
     				} catch(final Exception th)
     				{
 

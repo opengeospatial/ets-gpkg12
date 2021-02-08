@@ -5,7 +5,6 @@ import static org.testng.Assert.assertTrue;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.regex.Pattern;
 
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
@@ -35,7 +34,7 @@ public class CRSWKT extends CommonFixture
     @BeforeClass
     public void activeExtension(ITestContext testContext) throws SQLException {
 		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
-				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "CRS WKT Extension"));
+				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "CRS WKT Extension"));
     	
 		try (
 				final Statement statement = this.databaseConnection.createStatement();
@@ -43,7 +42,7 @@ public class CRSWKT extends CommonFixture
 			) {
 			resultSet.next();
 			
-			Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "CRS WKT Extension"));			
+			Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "CRS WKT Extension"));			
 		}
 	
     }
@@ -77,9 +76,9 @@ public class CRSWKT extends CommonFixture
     			// 3
     			final String name = resultSet.getString("name");
     			if ("definition_12_063".equals(name)){
-    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 type"));
-    				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 notnull"));
-    				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 pk"));
+    				assertTrue("TEXT".equals(resultSet.getString("type")), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_12_063 type"));
+    				assertTrue(resultSet.getInt("notnull") == 1, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_12_063 notnull"));
+    				assertTrue(resultSet.getInt("pk") == 0, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_12_063 pk"));
     				// The stipulation requiring default values for this column was removed in https://github.com/opengeospatial/geopackage/pull/469
     				//    				assertTrue(Pattern.compile("\\A([\"']?)undefined(\\1)\\z").matcher(resultSet.getString("dflt_value")).find(), ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, "gpkg_spatial_ref_sys", "definition_16_063 dflt_value"));
     				passFlag |= 1;
