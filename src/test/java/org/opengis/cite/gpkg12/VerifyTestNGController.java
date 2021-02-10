@@ -53,6 +53,7 @@ public class VerifyTestNGController {
     @Test
     public void cleanTestRun() throws Exception {
     	
+        runTests(ClassLoader.getSystemResource("gpkg/null_geometry.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/features-0_1.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/emp ty.gpkg"), 0);
         runTests(ClassLoader.getSystemResource("gpkg/gdal_sample_view.gpkg"), 0);
