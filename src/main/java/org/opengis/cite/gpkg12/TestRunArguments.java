@@ -5,8 +5,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FilenameUtils;
-
 import com.beust.jcommander.Parameter;
 
 /**
@@ -34,8 +32,6 @@ public class TestRunArguments {
     @Parameter(names = { "-o", "--outputDir" }, description = "Output directory")
     private String outputDir;
 
-
-    
     public TestRunArguments() {
         this.xmlProps = new ArrayList<>();
     }
@@ -43,8 +39,7 @@ public class TestRunArguments {
     public File getPropertiesFile() {
         File fileRef;
         if (xmlProps.isEmpty()) {
-        	// FORTIFY CWE Correction Applied
-            fileRef = new File( FilenameUtils.normalize(System.getProperty("user.home")), "test-run-props.xml");
+            fileRef = new File(System.getProperty("user.home"), "test-run-props.xml");
         } else {
             String propsFile = xmlProps.get(0);
             fileRef = (propsFile.startsWith("file:")) ? new File(URI.create(propsFile)) : new File(propsFile);

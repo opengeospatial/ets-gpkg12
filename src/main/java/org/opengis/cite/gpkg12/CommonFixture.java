@@ -173,13 +173,11 @@ public class CommonFixture {
     protected boolean isExtendedType(String tableName, String columnName) throws SQLException {
     	boolean result = false;
     	
-    	final String tname = ValidateSQLiteTableColumnStringInput(tableName);
-    	final String colname = ValidateSQLiteTableColumnStringInput(columnName);
     	// This accounts for the exception in Requirement 65
     	if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions")) {
     		try (
     				final Statement statement  = this.databaseConnection.createStatement();
-    				final ResultSet resultSet = statement.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = '%s' AND column_name = '%s' AND extension_name LIKE 'gpkg_geom_%%'",  tname, colname));
+    				final ResultSet resultSet = statement.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = '%s' AND column_name = '%s' AND extension_name LIKE 'gpkg_geom_%%'",  tableName, columnName));
     				) {    			
     			resultSet.next();
     			result |= (resultSet.getInt(1) > 0);
@@ -206,19 +204,18 @@ public class CommonFixture {
 		if (tableName == null) {
 			throw new IllegalArgumentException("tableName must not be null.");
 		}
-		final String tableNameV = ValidateSQLiteTableColumnStringInput(tableName);
-		final String pkNameV = ValidateSQLiteTableColumnStringInput(pkName);
+		
 		boolean pass = false;
 		if (enforcePk) {
 			try (
 				final Statement statement = this.databaseConnection.createStatement();
 				// 1
-				final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info('%s');", tableNameV));
+				final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info('%s');", tableName));
 			) {
 	
 				// 2
 				assertTrue(resultSet.next(),
-						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableNameV));
+						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
 	
 				pass = false;
 				// 3
@@ -228,18 +225,18 @@ public class CommonFixture {
 					final String type = resultSet.getString("type");
 					if (pk > 0) {
 						assertTrue(pk == 1, 
-								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableNameV, 
+								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, 
 										String.format("%s is a primary key of %d", name, pk)));
 						assertTrue("INTEGER".equals(type), 
-								ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableNameV));
-						assertTrue(pkNameV.equals(name),
-								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableNameV,
+								ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));
+						assertTrue(pkName.equals(name),
+								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName,
 										"pk " + name));
 						pass = true;
 					}
 				} while (resultSet.next());
 	
-				assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableNameV));
+				assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));
 			}
 		}
 
@@ -248,10 +245,10 @@ public class CommonFixture {
 				// 4
 				final Statement statement2 = this.databaseConnection.createStatement();
 
-				final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct %s) - COUNT(*) from '%s'", pkNameV, tableName));
+				final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct %s) - COUNT(*) from '%s'", pkName, tableName));
 				) {
 			// 5
-			assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.TABLE_PK_NOT_UNIQUE, tableNameV));
+			assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.TABLE_PK_NOT_UNIQUE, tableName));
 		}
     }
 
@@ -263,121 +260,5 @@ public class CommonFixture {
 		this.testName = testName;
 	}
 
-    /**
-     * Validate a string value to ensure it contains no illegal characters or content
-     * 
-     * @param inputString The string to validate
-     * @return validated string
-     * @throws IllegalArgumentException if the input is found to be invalid
-     */
-    public static String ValidateStringInput( String inputString ) throws IllegalArgumentException {
-
-    	StringBuilder sb = new StringBuilder(50);  // initial size is 50. This is expected to be sufficient for most table and field names. This is NOT a limit.
-    	for (int ii = 0; ii < inputString.length(); ++ii) {
-    		final char cleanedchar = cleanChar(inputString.charAt(ii));
-    		if (cleanedchar == '^') {   // This is an illegal character indicator
-    			throw new IllegalArgumentException(String.format("Illegal parameter provided within SQL statement. Error in %s at character %c",inputString,  inputString.charAt(ii)));
-    		}
-    		else {
-    			sb.append(cleanedchar);
-    		}
-    	}
-    	return sb.toString();
-    }
-
-    /**
-     * Validate a string value to ensure it contains no illegal characters or content and
-     * ensure the string is valid if used for a SQLite table or column name. Further, even though
-     * SQLite does accept some special characters, we will allow only the underbar special character
-     * to maintain consistency.
-     * 
-     * @param inputString The string to validate
-     * @return validated string
-     * @throws IllegalArgumentException if the input is found to be invalid
-     */
-    public static String ValidateSQLiteTableColumnStringInput( String inputString ) throws IllegalArgumentException {
-
-    	StringBuilder sb = new StringBuilder(50);  // initial size is 50. This is expected to be sufficient for most table and field names. This is NOT a limit.
-    	for (int ii = 0; ii < inputString.length(); ++ii) {
-    		final char cleanedchar = cleanCharSQLite(inputString.charAt(ii));
-    		if (cleanedchar == '^') {   // This is an illegal character indicator
-    			throw new IllegalArgumentException(String.format("Illegal SQLite column or table name string input %s at character %c",inputString, inputString.charAt(ii)));
-    		}
-    		else {
-    			sb.append(cleanedchar);
-    		}
-    	}
-    	return sb.toString();
-    }
-    
-    /**
-     * Validate and clean a character of a string.
-     * 
-     * @param inputChar  A character of a string, for which we will check validity, replacing any illegal characters with ^
-     * @return a validated character
-     */
-    private static char cleanChar(char inputChar) {
-        // 0 - 9
-        for (int i = 48; i < 58; ++i) {
-            if (inputChar == i) return (char) i;
-        }
-
-        // 'A' - 'Z'
-        for (int i = 65; i < 91; ++i) {
-            if (inputChar == i) return (char) i;
-        }
-
-        // 'a' - 'z'
-        for (int i = 97; i < 123; ++i) {
-            if (inputChar == i) return (char) i;
-        }
-
-        // other valid characters
-        switch (inputChar) {
-            case '.':
-                return '.';
-            case '-':
-                return '-';
-            case '_':
-                return '_';
-            case ' ':
-                return ' ';
-            case '%':
-                return '%';
-        }
-        return '^';
-    }
-
-    /**
-     * Validate and clean a character of a string expected to be part of an SQL table or column name
-     * 
-     * @param inputChar  A character of a string, for which we will check validity, replacing any illegal characters with ^
-     * @return a validated character
-     */
-    private static char cleanCharSQLite(char inputChar) {
-        // 0 - 9
-        for (int i = 48; i < 58; ++i) {
-            if (inputChar == i) return (char) i;
-        }
-
-        // 'A' - 'Z'
-        for (int i = 65; i < 91; ++i) {
-            if (inputChar == i) return (char) i;
-        }
-
-        // 'a' - 'z'
-        for (int i = 97; i < 123; ++i) {
-            if (inputChar == i) return (char) i;
-        }
-
-        // other valid characters
-        switch (inputChar) {
-            case '_':
-                return '_';
-        }
-        return '^';
-    }
-    
-    
 	private String testName;
 }

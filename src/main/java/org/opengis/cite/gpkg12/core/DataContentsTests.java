@@ -66,12 +66,11 @@ public class DataContentsTests extends CommonFixture
             while(resultSet.next())
             {
             	// 3
-                final String tableName = ValidateSQLiteTableColumnStringInput(resultSet.getString("table_name"));
+                final String tableName = resultSet.getString("table_name");
 
                 if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, tableName))
                 {
                 	// 3a
-                	// FORTIFY CWE Corrected
                     try(final Statement preparedStatement = this.databaseConnection.createStatement();
                         final ResultSet pragmaTableInfo   = preparedStatement.executeQuery(String.format("PRAGMA table_info('%s');", tableName)))
                     {
