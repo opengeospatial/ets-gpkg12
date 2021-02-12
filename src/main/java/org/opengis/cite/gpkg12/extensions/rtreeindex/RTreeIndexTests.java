@@ -47,14 +47,14 @@ public class RTreeIndexTests extends CommonFixture {
 	@BeforeClass
 	public void validateExtensionPresent(ITestContext testContext) throws SQLException {
 		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
-				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "RTree Spatial Index Extension"));
+				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "RTree Spatial Index Extension"));
     	
 		try (
 				final Statement statement1 = this.databaseConnection.createStatement();
 				ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions WHERE extension_name = 'gpkg_rtree_index';");
 				) {
 			resultSet1.next();
-			Assert.assertTrue(resultSet1.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "RTree Spatial Index Extension"));  			
+			Assert.assertTrue(resultSet1.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "RTree Spatial Index Extension"));  			
 		}
 	}
 
@@ -134,7 +134,6 @@ public class RTreeIndexTests extends CommonFixture {
 				try (
 						// 3a
 						final Statement statement3a = this.databaseConnection.createStatement();
-						// FORTIFY CWE Corrected
 						ResultSet resultSet3a = statement3a.executeQuery(String.format("SELECT sql FROM sqlite_master WHERE tbl_name = 'rtree_%s_%s'", tableName, columnName));
 						) {
 					String index = String.format("CREATE\\s+VIRTUAL\\s+TABLE\\s+\"?rtree_%s_%s\"?\\s+USING\\s+rtree\\s*\\(id,\\s*minx,\\s*maxx,\\s*miny,\\s*maxy\\)", tableName, columnName);
@@ -148,7 +147,6 @@ public class RTreeIndexTests extends CommonFixture {
 				try (
 						// 3d
 						final Statement statement3d = this.databaseConnection.createStatement();
-						// FORTIFY CWE Corrected
 						ResultSet resultSet3d = statement3d.executeQuery(String.format("SELECT sql FROM sqlite_master WHERE type='trigger' AND name = 'rtree_%s_%s_delete'", tableName, columnName));
 						) {
 					String trigger3d = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_delete\"?\\s+AFTER\\s+DELETE\\s+ON\\s+\"?<t>\"?\\s*WHEN\\s+OLD.\"?<c>\"?\\sNOT\\s*NULL\\s+BEGIN\\s+DELETE\\s+FROM\\s+\"?rtree_<t>_<c>\"?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\"?\\w*\"?;\\s*END";
@@ -163,7 +161,6 @@ public class RTreeIndexTests extends CommonFixture {
 				try (
 						// 3c
 						final Statement statement3c = this.databaseConnection.createStatement();
-						// FORTIFY CWE Corrected
 						ResultSet resultSet3c = statement3c.executeQuery(String.format("SELECT sql FROM sqlite_master WHERE type='trigger' AND name LIKE 'rtree_%s_%s_update%%' ORDER BY name ASC", tableName, columnName));
 						) {
 					// Update 1
@@ -214,7 +211,6 @@ public class RTreeIndexTests extends CommonFixture {
 				try (
 						// 3b
 						final Statement statement3b = this.databaseConnection.createStatement();
-						// FORTIFY CWE Corrected
 						ResultSet resultSet3b = statement3b.executeQuery(String.format("SELECT sql FROM sqlite_master WHERE type='trigger' AND name = 'rtree_%s_%s_insert'", tableName, columnName));
 						) {
 					String trigger3b = "CREATE\\s+TRIGGER\\s+\"?rtree_<t>_<c>_insert\"?\\s+AFTER\\s+INSERT\\s+ON\\s+\"?<t>\"?\\s+WHEN\\s*\\(new.\"?<c>\"?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\(NEW.\"?<c>\"?\\)\\)\\s+BEGIN\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\"?rtree_<t>_<c>\"?\\s+VALUES\\s+\\(\\s*NEW.\"?\\w+\"?,\\s*ST_MinX\\(NEW.\"?<c>\"?\\),\\s*ST_MaxX\\(NEW.\"?<c>\"?\\),\\s*ST_MinY\\(NEW.\"?<c>\"?\\),\\s*ST_MaxY\\(NEW.\"?<c>\"?\\)\\s*\\);\\s*END;?";

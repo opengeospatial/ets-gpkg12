@@ -71,7 +71,6 @@ public class DataContentsTests extends CommonFixture
                 if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, tableName))
                 {
                 	// 3a
-                	// FORTIFY CWE Corrected
                     try(final Statement preparedStatement = this.databaseConnection.createStatement();
                         final ResultSet pragmaTableInfo   = preparedStatement.executeQuery(String.format("PRAGMA table_info('%s');", tableName)))
                     {

@@ -63,7 +63,7 @@ public abstract class TileFixture extends CommonFixture {
 				this.tileTableNames.add(tableName);
 			}
 			this.tileTableNames.removeAll(extensionTableNames);
-			Assert.assertTrue(!this.tileTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));    		
+			Assert.assertTrue(!this.tileTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, getTestName()));    		
 		}
 	}
 

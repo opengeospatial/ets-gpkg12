@@ -241,7 +241,7 @@ public class FeaturesTests extends FeaturesFixture {
 		}
 
 
-		Assert.assertTrue(!this.featureTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, getTestName()));
+		Assert.assertTrue(!this.featureTableNames.isEmpty(), ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, getTestName()));
 	}
 
 
@@ -294,67 +294,6 @@ public class FeaturesTests extends FeaturesFixture {
 
         return data.iterator();
     }
-
-
-	/**
-	 * Test case
-	 * /base/core/contents/data/table_def/srs_id
-	 *
-	 * @see <a href="http://www.geopackage.org/spec120/index.html" target=
-	 * "_blank">Contents - Requirement 13</a>
-	 *
-	 * @throws SQLException
-	 *             If an SQL query causes an error
-	 */
-    @Test(description = "See OGC 12-128r14: Requirement 13 srs_id")
-    public void featureSRSconsistency() throws SQLException {
-
-    	// This requirement is not currently called out under the TEST req area,
-    	// but it is defined within Requirement 13 and not currently tested under
-    	// the requirement 13 test code.
-    	//
-    	// Spatial Reference System ID:
-    	// gpkg_spatial_ref_sys.srs_id; when data_type is features, SHALL also match
-    	// gpkg_geometry_columns.srs_id; 
-
-
-		int gpkgGeomCount = 0;
-		int gpkgContentCount = 0;
-		int gpkgAndContentCount = 0;
-		try (
-				final Statement statement2 = this.databaseConnection.createStatement();
-				final ResultSet resultSet2 = statement2.executeQuery(
-						String.format("SELECT count(*) as ggcCount FROM \'gpkg_geometry_columns\';"));
-				) {
-			gpkgGeomCount = resultSet2.getInt("ggcCount");
-		}
-		try (
-				final Statement statement2 = this.databaseConnection.createStatement();
-				final ResultSet resultSet2 = statement2.executeQuery(
-						String.format("SELECT count(*) as ggcCount FROM \'gpkg_contents\' WHERE data_type = \'features\';"));
-				) {
-			gpkgContentCount = resultSet2.getInt("ggcCount");
-		}
-		try (
-				final Statement statement2 = this.databaseConnection.createStatement();
-				final ResultSet resultSet2 = statement2.executeQuery(
-						String.format(
-				"SELECT count(*) as ggcCount FROM \'gpkg_contents\' INNER JOIN \'gpkg_geometry_columns\' ON ((gpkg_contents.srs_id = gpkg_geometry_columns.srs_id) AND (gpkg_contents.table_name = gpkg_geometry_columns.table_name));"));
-				) {
-			gpkgAndContentCount = resultSet2.getInt("ggcCount");
-		}
-		// If the geopackage geometry columns count is not the same as the geopackage content count (for features), then we have a problem.
-		if (gpkgGeomCount != gpkgContentCount) {
-			Assert.assertTrue(false,
-					ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_COLUMNS_DOES_NOT_MATCH_CONTENTS_COUNT));
-		// If we got a different count when looking at common feature names and srs_id values, then the test for requirement 13 fails
-		} else if (gpkgGeomCount != gpkgAndContentCount || gpkgContentCount != gpkgAndContentCount) {
-			Assert.assertTrue(false,
-					ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_COLUMNS_SRS_ID_NOT_CONSISTENT_WITH_CONTENTS));
-		}	
-
-    }	
-	
 
     /**
      * Verify that the gpkg_contents table_name value table exists, and is apparently a feature table for every row with a data_type column value of 'features'
@@ -480,9 +419,13 @@ public class FeaturesTests extends FeaturesFixture {
     			 */
 
     			// quick fix for https://github.com/opengeospatial/ets-gpkg12/issues/74
-				//while(resultSetInternal.next() )
-    			if(resultSetInternal.next() )
+    			// We may wish to replace this with something externally configurable
+    			final int MAX_COUNT = 100;
+    			int counter = 0;
+				while(resultSetInternal.next() && (counter < MAX_COUNT))
     			{
+					counter++;
+					
     				// The SQL should give us a numeric identifier and a geometry blob.  All of the tests in this series operate off
     				// of these two values and the parameters passed in by the iterator.
     				final long rowID = (long) resultSetInternal.getLong(1);
@@ -490,8 +433,7 @@ public class FeaturesTests extends FeaturesFixture {
 
     				// We must allow for null geometries.
     				if (bytes == null){
-    					//continue;
-						throw new SkipException( "No geom available." );
+    					continue;
     				}
     				// From the geometry blob, populate a few of the values that we can easily extract from the geometry
     				final byte envelopeCode = (byte) ((bytes[startOfFlags] & maskFlagEnvelope) >> shiftFlagEnvelope);
@@ -517,7 +459,6 @@ public class FeaturesTests extends FeaturesFixture {
     				 *    v. *Fail if the geometry is empty but the envelope is not empty (gc.flags.envelope != 0 and envelope values are not NaN)
     				 * 4. Pass if no fails
     				 */
-
 
     				// GeoPackageBinaryHeader {
     				//  byte[2] magic = 0x4750;      // "GP" in ASCII
@@ -545,8 +486,6 @@ public class FeaturesTests extends FeaturesFixture {
     				//
     				// The GeoPackageBinaryHeader is followed by WKB
 
-
-
     				try {
     					// i. Fail if the first two bytes of each gc are not "GP" 
     					final byte[] GP_HEADER = new String("GP")
@@ -558,7 +497,6 @@ public class FeaturesTests extends FeaturesFixture {
     									ErrorMessage.format(ErrorMessageKeys.FEATURE_GEOMETRY_INVALID_MAGIC_NUMBER, 
     											thisTableName, rowID, thisColumnName, String.format("0x%02x%02x",  bytes[0], bytes[1])));
     					}
-
 
     					// ii. Fail if gc.version_number is not 0
     					final byte version = (byte)bytes[startOfVersion];
@@ -579,7 +517,6 @@ public class FeaturesTests extends FeaturesFixture {
     											thisTableName, rowID, thisColumnName, binaryTypeFlag));
     					}
 
-
     					// iv. (Fail if cn.flags.E is 5-7)  
     					if ( envelopeCode > 4 || envelopeCode < 0 ) {
     						errorDetected19 ++;
@@ -597,7 +534,6 @@ public class FeaturesTests extends FeaturesFixture {
     									String.format("Failure testing requirement 19i-iv on feature {0}", thisTableName), th.getMessage()));
     				}  	
     				// ** END ************** 19 i-iv ************************ 19 ************************** 19 **************************
-
 
     				// ** START **************  33 ************************  ************
     				//{@code /opt/features/vector_features/data/data_value_geometry_srs_id}
@@ -989,9 +925,10 @@ public class FeaturesTests extends FeaturesFixture {
     				// Dependent on the feature instance min and max geometry values and whether we have envelope values
 
     				try {
-
+  
     					// If we have no envelope, we cannot perform this test
-    					if (!envelopeVals.isEmpty()) {
+    					//Commented as deprecated in  OGC 12-128r14 (Refer issue #99)
+    					/*if (!envelopeVals.isEmpty()) {
 
     						final String rtreeTable = String.format("rtree_%s_%s",thisTableName, thisColumnName);
 
@@ -1024,7 +961,7 @@ public class FeaturesTests extends FeaturesFixture {
     								}
     							}
     						}
-    					}
+    					}*/
     				} catch(final Exception th)
     				{
 
@@ -1229,7 +1166,6 @@ public class FeaturesTests extends FeaturesFixture {
 			            	// final String thisColumnFrom = resultSet.getString("from");
 			            	final String thisColumnTo = TableVerifier.validateSQLiteTableColumnStringInput(resultSet.getString("to"));
 			            	countResults ++;
-			            	// FORTIFY CWE Corrected
 	                    	try(final Statement preparedStatement = this.databaseConnection.createStatement();
 	                                final ResultSet pragmaTableInfo   = preparedStatement.executeQuery(String.format("PRAGMA table_info(\'%s\');", thisTableName)))
 	                            {
@@ -1292,7 +1228,7 @@ public class FeaturesTests extends FeaturesFixture {
 
 				try (
 						final Statement statement2 = this.databaseConnection.createStatement();
-						// FORTIFY CWE Corrected
+
 						final ResultSet resultSet2 = statement2.executeQuery(String.format("PRAGMA table_info(\'%s\');", tableName));
 						) {
 					boolean foundMatch = false;
@@ -1475,7 +1411,7 @@ public class FeaturesTests extends FeaturesFixture {
 				final String tableName = TableVerifier.validateSQLiteTableColumnStringInput(resultSet.getString("table_name"));
 				try (
 						final Statement statement2 = this.databaseConnection.createStatement();
-						// FORTIFY CWE Corrected
+
 						final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT count(*) FROM gpkg_geometry_columns WHERE table_name = \'%s\'", tableName));
 						) {
 					resultSet2.next();
@@ -1518,7 +1454,7 @@ public class FeaturesTests extends FeaturesFixture {
 					final String columnName = TableVerifier.validateSQLiteTableColumnStringInput(resultSet.getString("column_name"));
 					try (
 							final Statement statement2 = this.databaseConnection.createStatement();
-							// FORTIFY CWE Corrected
+
 							final ResultSet resultSet2 = statement2.executeQuery(String.format("PRAGMA table_info(\'%s\')", tableName));
 							) {
 						while (resultSet2.next()){

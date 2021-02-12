@@ -40,12 +40,12 @@ public class SchemaTests extends CommonFixture
     	// Starting with GPKG 1.1, this is a proper extension.
     	if (geopackageVersion == GeoPackageVersion.V102) {
 			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_data_columns"), 
-					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Schema Option"));
+					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "Schema Option"));
     		minIsInclusive = "minIsInclusive";
     		maxIsInclusive = "maxIsInclusive";
     	} else {
     		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions"), 
-    				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Schema Extension"));
+    				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "Schema Extension"));
 			
 			try (
 					final Statement statement = this.databaseConnection.createStatement();
@@ -54,7 +54,7 @@ public class SchemaTests extends CommonFixture
 					) {
 				resultSet.next();
 				
-				Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_NOT_USED, "Schema Extension"));				
+				Assert.assertTrue(resultSet.getInt(1) > 0, ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, "Schema Extension"));				
 			}
     		minIsInclusive = "min_is_inclusive";
     		maxIsInclusive = "max_is_inclusive";
@@ -189,7 +189,6 @@ public class SchemaTests extends CommonFixture
     			// 3
     			try (final Statement statement2 = this.databaseConnection.createStatement()){
     				// 3bi
-    				// FORTIFY CWE Corrected
     				statement2.executeQuery(String.format("SELECT COUNT(%s) from %s;", columnName, tableName));
     			} catch (SQLException exc) {
     				Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_COLUMN, "gpkg_extensions", columnName, tableName));
@@ -315,17 +314,17 @@ public class SchemaTests extends CommonFixture
     	try (
     	    	// 1
     			final Statement statement1 = this.databaseConnection.createStatement();
-    			
+
     			final ResultSet resultSet1 = statement1.executeQuery("SELECT DISTINCT constraint_name FROM gpkg_data_column_constraints WHERE constraint_type IN ('range', 'glob')");
     			) {
     		// 2
     		while (resultSet1.next()) {
     			// 3
-    			final String constraintName = ValidateStringInput(resultSet1.getString("constraint_name"));
+    			final String constraintName = resultSet1.getString("constraint_name");
 
     			try (
     					final Statement statement2 = this.databaseConnection.createStatement();
-    					// FORTIFY CWE Corrected
+
     					final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_data_column_constraints WHERE constraint_name = '%s'", constraintName));
     					) {
     				Assert.assertTrue(resultSet2.getInt(1) <= 1, 

@@ -31,7 +31,7 @@ import org.testng.annotations.BeforeTest;
  */
 public class CommonFixture {
 	
-	private final String ICS = "Core,Tiles,Features,Attributes,Extension Mechanism,Non-Linear Geometry Types,RTree Spatial Indexes,Tiles Encoding WebP,Metadata,Schema,WKT for Coordinate Reference Systems,Tiled Gridded Coverage Data";
+	private final String ICS = "Core,Tiles,Features,Attributes,Extension Mechanism,Non-Linear Geometry Types,RTree Spatial Indexes,Tiles Encoding WebP,Metadata,Schema,WKT for Coordinate Reference Systems,Tiled Gridded Coverage Data,Related Tables,Related Tables Media,Related Tables Features,Related Tables Simple Attributes,Related Tables Attributes,Related Tables Tiles";
 
 	/** Root test suite package (absolute path). */
     public static final String ROOT_PKG_PATH = "/org/opengis/cite/gpkg12/";
@@ -179,7 +179,7 @@ public class CommonFixture {
     	if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, "gpkg_extensions")) {
     		try (
     				final Statement statement  = this.databaseConnection.createStatement();
-    				final ResultSet resultSet = statement.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = '%s' AND column_name = '%s' AND extension_name LIKE 'gpkg_geom_%%'",  tname, colname));
+    				final ResultSet resultSet = statement.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_extensions WHERE table_name = '%s' AND column_name = '%s' AND extension_name LIKE 'gpkg_geom_%%'",  tableName, columnName));
     				) {    			
     			resultSet.next();
     			result |= (resultSet.getInt(1) > 0);
@@ -208,17 +208,18 @@ public class CommonFixture {
 		}
 		final String tableNameV = TableVerifier.validateSQLiteTableColumnStringInput(tableName);
 		final String pkNameV = TableVerifier.validateSQLiteTableColumnStringInput(pkName);
+		
 		boolean pass = false;
 		if (enforcePk) {
 			try (
 				final Statement statement = this.databaseConnection.createStatement();
 				// 1
-				final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info('%s');", tableNameV));
+				final ResultSet resultSet = statement.executeQuery(String.format("PRAGMA table_info('%s');", tableName));
 			) {
 	
 				// 2
 				assertTrue(resultSet.next(),
-						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableNameV));
+						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));
 	
 				pass = false;
 				// 3
@@ -228,18 +229,18 @@ public class CommonFixture {
 					final String type = resultSet.getString("type");
 					if (pk > 0) {
 						assertTrue(pk == 1, 
-								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableNameV, 
+								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName, 
 										String.format("%s is a primary key of %d", name, pk)));
 						assertTrue("INTEGER".equals(type), 
-								ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableNameV));
-						assertTrue(pkNameV.equals(name),
-								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableNameV,
+								ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, name, tableName));
+						assertTrue(pkName.equals(name),
+								ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, tableName,
 										"pk " + name));
 						pass = true;
 					}
 				} while (resultSet.next());
 	
-				assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableNameV));
+				assertTrue(pass, ErrorMessage.format(ErrorMessageKeys.TABLE_NO_PK, tableName));
 			}
 		}
 
@@ -248,10 +249,10 @@ public class CommonFixture {
 				// 4
 				final Statement statement2 = this.databaseConnection.createStatement();
 
-				final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct %s) - COUNT(*) from '%s'", pkNameV, tableName));
+				final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(distinct %s) - COUNT(*) from '%s'", pkName, tableName));
 				) {
 			// 5
-			assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.TABLE_PK_NOT_UNIQUE, tableNameV));
+			assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.TABLE_PK_NOT_UNIQUE, tableName));
 		}
     }
 

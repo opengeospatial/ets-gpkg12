@@ -14,7 +14,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 
-import org.apache.commons.io.FilenameUtils;
 import org.opengis.cite.gpkg12.util.TestSuiteLogger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -34,7 +33,6 @@ public class TestNGController implements TestSuiteController {
     private TestRunExecutor executor;
     private Properties etsProperties = new Properties();
 
-    
     /**
      * A convenience method for running the test suite using a command-line
      * interface. The default values of the test run arguments are as follows:
@@ -79,8 +77,7 @@ public class TestNGController implements TestSuiteController {
      * property as the root output directory.
      */
     public TestNGController() {
-    	// FORTIFY CWE Correction Applied
-        this(new File( FilenameUtils.normalize(System.getProperty("user.home"))).toURI().toString());
+        this(new File(System.getProperty("user.home")).toURI().toString());
     }
 
     /**
@@ -98,7 +95,12 @@ public class TestNGController implements TestSuiteController {
         	TestSuiteLogger.log(Level.WARNING, "Unable to load ets.properties. " + ex.getMessage());
         } 
         URL tngSuite = TestNGController.class.getResource("testng.xml");
-        File resultsDir = new File(URI.create(outputDir));
+        File resultsDir;
+		try {
+			resultsDir = new File(URI.create(outputDir));
+		} catch (IllegalArgumentException e) {
+			resultsDir = new File(URI.create(String.format("file://%s",  outputDir)));
+		}
         TestSuiteLogger.log(Level.CONFIG, "Using TestNG config: " + tngSuite);
         TestSuiteLogger.log(Level.CONFIG, "Using outputDirPath: " + resultsDir.getAbsolutePath());
         // NOTE: setting third argument to 'true' enables the default listeners

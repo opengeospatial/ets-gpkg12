@@ -185,7 +185,7 @@ public final class TableVerifier
     {
         verifyTableDefinition(connection, tableName);
 
-        final Set<UniqueDefinition> uniques = getUniques(connection, tableName);   // Assumption: This incoming tableName has been verified if it is user or SQL based input
+        final Set<UniqueDefinition> uniques = getUniques(connection, tableName);
 
         verifyColumns(connection,
                       tableName,
@@ -205,7 +205,7 @@ public final class TableVerifier
     {
         try(final PreparedStatement statement = connection.prepareStatement("SELECT sql FROM sqlite_master WHERE (type = 'table' OR type = 'view') AND tbl_name = ?;"))
         {
-            statement.setString(1, tableName);		// Assumption: This incoming tableName has been verified if it is user or SQL based input
+            statement.setString(1, tableName);
 
             try(ResultSet gpkgContents = statement.executeQuery())
             {
@@ -255,7 +255,6 @@ public final class TableVerifier
                                       final Map<String, ColumnDefinition> requiredColumns,
                                       final Collection<UniqueDefinition>  uniques) throws SQLException
     {
-    	// FORTIFY CWE - added verification of tableName upstream when required
         try(final Statement statement = connection.createStatement();
             final ResultSet tableInfo = statement.executeQuery(String.format("PRAGMA table_info(%s);", tableName)))
         {
@@ -329,20 +328,17 @@ public final class TableVerifier
         	}
         }
         
-        final String definitionV = ValidateDescriptiveStringInput(definition);
-        final String requiredV = ValidateDescriptiveStringInput(required);
         try(final Statement statement = connection.createStatement())
         {
             final String query = String.format("SELECT (%s) = (%s);",
-            		definitionV,
-            		requiredV);
-            // FORTIFY CWE
+                                               definition,
+                                               required);
+
             try(final ResultSet results = statement.executeQuery(query))
             {
                 return results.next() && results.getBoolean(1);
             }
         }
-        
     }
 
     private static void verifyForeignKeys(final Connection                connection,
@@ -351,8 +347,6 @@ public final class TableVerifier
     {
         try(final Statement statement = connection.createStatement())
         {
-        	
-        	// FORTIFY CWE - added check of tableName upstream if required
             try(final ResultSet fkInfo = statement.executeQuery(String.format("PRAGMA foreign_key_list(%s);", tableName)))
             {
                 final List<ForeignKeyDefinition> foundForeignKeys = new LinkedList<>();
