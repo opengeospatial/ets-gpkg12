@@ -47,7 +47,7 @@ public class VerifyTestNGController {
     @Before
     public void loadDefaultTestRunProperties() throws InvalidPropertiesFormatException, IOException {
         this.testRunProps = new Properties();
-        this.testRunProps.loadFromXML(getClass().getResourceAsStream("/test-run-props.xml"));
+        this.testRunProps.load(getClass().getResourceAsStream("/test-run-props.xml"));
     }
 
     @Test
