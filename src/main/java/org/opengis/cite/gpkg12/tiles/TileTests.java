@@ -302,7 +302,7 @@ public class TileTests extends TileFixture
 	 *             If an SQL query causes an error
 	 */
 	@Test(description = "See OGC 12-128r15: Requirement 147")
-	public void featureGeometryColumnsDataValuesSrsId() throws SQLException {
+	public void tileMatrixSetDataValuesSrsId() throws SQLException {
 		try (
 			// 1
 			final Statement statement = this.databaseConnection.createStatement();
