@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite>
+	<title>GeoPackage 1.2 Conformance Test Suite</title>
+	<description>
+	    This executable test suite (ETS) verifies the structure and content of a GeoPackage
+		1.2 data container. The GeoPackage specification describes how a platform-independent 
+		SQLite database file may contain various types of content: vector geospatial features,
+		tile matrix sets of imagery and raster maps at various scales, metadata. The test run 
+		arguments are summarized in the following table. The obligation descriptor can have the 
+		following values: M (mandatory), O (optional), or C (conditional).
+	</description>
+	<testrunarguments>
+		<testrunargument>
+			<name>iut</name>
+			<valuedomain>URI</valuedomain>
+			<obligation>M</obligation>
+			<description>A URI that refers to a GeoPackage file. Ampersand ('&amp;') characters must
+				be percent-encoded as '%26'.</description>
+		</testrunargument>
+		<testrunargument>
+			<name>ics</name>
+			<valuedomain>A comma-separated list of string values.</valuedomain>
+			<obligation>O</obligation>
+			<description>An implementation conformance statement that indicates which conformance classes 
+			    or options are supported. The following Conformance Classes are supported (spaces (' ') must 
+			    be percent-encoded as '%20'): Core, Tiles, Features, Attributes, Extension Mechanism, 
+			    Non-Linear Geometry Types, RTree Spatial Indexes, Tiles Encoding WebP, Metadata, Schema, 
+			    WKT for Coordinate Reference Systems, Tiled Gridded Coverage Data</description>
+		</testrunargument>
+	</testrunarguments>
+</testsuite>
