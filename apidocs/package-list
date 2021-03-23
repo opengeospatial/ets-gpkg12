@@ -6,6 +6,7 @@ org.opengis.cite.gpkg12.extensions.coverage
 org.opengis.cite.gpkg12.extensions.crswkt
 org.opengis.cite.gpkg12.extensions.metadata
 org.opengis.cite.gpkg12.extensions.nonlinear
+org.opengis.cite.gpkg12.extensions.relatedtables
 org.opengis.cite.gpkg12.extensions.rtreeindex
 org.opengis.cite.gpkg12.extensions.schema
 org.opengis.cite.gpkg12.extensions.webp
