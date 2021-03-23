@@ -1,5 +1,23 @@
 # Release Notes GeoPackage (gpkg) 1.2
 
+## 1.1 (2021-03-23)
+* Fix [#118](https://github.com/opengeospatial/ets-gpkg12/issues/118): Integration tests are failing
+* Fix [#79](https://github.com/opengeospatial/ets-gpkg12/pull/79): Requirement 147 test
+* Fix [#102](https://github.com/opengeospatial/ets-gpkg12/issues/102): Standalone jar requires net connection even for local GeoPackage
+* Fix [#120](https://github.com/opengeospatial/ets-gpkg12/pull/120): Bump xercesImpl from 2.11.0 to 2.12.1
+* Fix [#111](https://github.com/opengeospatial/ets-gpkg12/issues/111): Cleanup dependencies
+* Fix [#113](https://github.com/opengeospatial/ets-gpkg12/issues/113): Add template to get an XML/JSON response via rest endpoint
+* Fix [#117](https://github.com/opengeospatial/ets-gpkg12/pull/117): Set Docker TEAM Engine version to 5.4.1
+* Fix [#106](https://github.com/opengeospatial/ets-gpkg12/issues/106): Test method featureGeometryEncodingTesting fail on null geometries
+* Fix [#99](https://github.com/opengeospatial/ets-gpkg12/issues/99): Req. 78 is still being enforced
+* Fix [#98](https://github.com/opengeospatial/ets-gpkg12/issues/98): Failed tests with disabled conformance classes.
+* Fix [#95](https://github.com/opengeospatial/ets-gpkg12/issues/95): Typo in org.opengis.cite.gpkg12.extensions.crswkt.CRSWKT.tableDefinition()
+* Fix [#107](https://github.com/opengeospatial/ets-gpkg12/issues/107): Relocate "commons-io" in pom
+* Fix [#78](https://github.com/opengeospatial/ets-gpkg12/issues/78): No requirement can be found for test "feature S R Sconsistency"
+* Fix [#89](https://github.com/opengeospatial/ets-gpkg12/issues/89): Create SoapUI tests and integrate them into Maven and Jenkinsfile
+* Fix [#94](https://github.com/opengeospatial/ets-gpkg12/pull/94): Related Tables Extension test updates
+* Fix [#86](https://github.com/opengeospatial/ets-gpkg12/issues/86): NullPointerException on CRSWKT.tableDefinition test
+
 ## 1.0 (2018-12-21)
 * Fix [#75](https://github.com/opengeospatial/ets-gpkg12/issues/75): Test setupVersion is executed multiple times
 * Fix [#81](https://github.com/opengeospatial/ets-gpkg12/issues/81): Introduce Dockerfile and Maven Docker plugin
