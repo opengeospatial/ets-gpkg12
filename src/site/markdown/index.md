@@ -51,6 +51,10 @@ conforming implementation.
 4. [OGC GeoPackage Encoding Standard 1.0.0](https://portal.opengeospatial.org/files/?artifact_id=56357)
 5. [SQLite Database File Format](http://sqlite.org/fileformat2.html)
 
+Any tested instance must fulfill following preconditions.
+
+1. The executable test suite restricts identifiers to contain alphanumeric characters and underscores.
+
 If any of the following preconditions are not satisfied then all tests in the 
 suite will be marked as skipped.
 
