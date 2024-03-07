@@ -66,7 +66,7 @@ public class DataContentsTests extends CommonFixture
             while(resultSet.next())
             {
             	// 3
-                final String tableName = resultSet.getString("table_name");
+                final String tableName = TableVerifier.validateSQLiteTableColumnStringInput(resultSet.getString("table_name"));
 
                 if(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, tableName))
                 {

@@ -25,6 +25,158 @@ public final class TableVerifier
 
     }
 
+    
+    /**
+     * Validate a string value to ensure it contains no illegal characters or content and
+     * ensure the string is valid if used for a SQLite table or column name. Further, even though
+     * SQLite does accept some special characters, we will allow only the underbar special character.
+     * 
+     * @param inputString The string to validate
+     * @return validated string
+     * @throws IllegalArgumentException if the input is found to be invalid
+     */
+    public static String validateSQLiteTableColumnStringInput( String inputString ) throws IllegalArgumentException {
+
+    	StringBuilder sb = new StringBuilder(50);  // initial size is 50. This is expected to be sufficient for most table and field names. This is NOT a limit.
+    	for (int ii = 0; ii < inputString.length(); ++ii) {
+    		final char cleanedchar = cleanCharSQLite(inputString.charAt(ii));
+    		if (cleanedchar == '^') {   // This is an illegal character indicator
+    			throw new IllegalArgumentException(String.format("Illegal SQLite column or table name string input %s at character %c",inputString, inputString.charAt(ii)));
+    		}
+    		else {
+    			sb.append(cleanedchar);
+    		}
+    	}
+    	return sb.toString();
+    }
+
+    /**
+     * Validate a string value to ensure it contains no illegal characters or content and
+     * ensure the string is valid for descriptive purposes, including date values.
+     * i.e. filter minimal characters.
+     * 
+     * @param inputString The string to validate
+     * @return validated string
+     * @throws IllegalArgumentException if the input is found to be invalid
+     */
+    public static String ValidateDescriptiveStringInput( String inputString ) throws IllegalArgumentException {
+
+    	StringBuilder sb = new StringBuilder(50);  // initial size is 50. This is expected to be sufficient for most table and field names. This is NOT a limit.
+    	for (int ii = 0; ii < inputString.length(); ++ii) {
+    		final char cleanedchar = cleanDescriptiveChar(inputString.charAt(ii));
+    		if (cleanedchar == '`') {   // This is an illegal character indicator
+    			throw new IllegalArgumentException(String.format("Illegal descriptive string input %s at character %c",inputString, inputString.charAt(ii)));
+    		}
+    		else {
+    			sb.append(cleanedchar);
+    		}
+    	}
+    	return sb.toString();
+    }
+    
+    /**
+     * Validate and clean a character of a string expected to be part of an SQL table or column name
+     * 
+     * @param inputChar  A character of a string, for which we will check validity, replacing any illegal characters with ^
+     * @return a validated character
+     */
+    private static char cleanCharSQLite(char inputChar) {
+        // 0 - 9
+        for (int i = 48; i < 58; ++i) {
+            if (inputChar == i) return (char) i;
+        }
+
+        // 'A' - 'Z'
+        for (int i = 65; i < 91; ++i) {
+            if (inputChar == i) return (char) i;
+        }
+
+        // 'a' - 'z'
+        for (int i = 97; i < 123; ++i) {
+            if (inputChar == i) return (char) i;
+        }
+
+        // other valid characters
+        switch (inputChar) {
+            case '_':
+                return '_';
+        }
+        return '^';
+    }
+
+    /**
+     * Validate and clean a character of a string expected to be part of an SQL table or column name
+     * 
+     * @param inputChar  A character of a string, for which we will check validity, replacing any illegal characters with ^
+     * @return a validated character
+     */
+    private static char cleanDescriptiveChar(char inputChar) {
+        // 0 - 9
+        for (int i = 48; i < 58; ++i) {
+            if (inputChar == i) return (char) i;
+        }
+
+        // 'A' - 'Z'
+        for (int i = 65; i < 91; ++i) {
+            if (inputChar == i) return (char) i;
+        }
+
+        // 'a' - 'z'
+        for (int i = 97; i < 123; ++i) {
+            if (inputChar == i) return (char) i;
+        }
+
+        // other valid characters
+        switch (inputChar) {
+            case '_':
+                return '_';
+            case '%':
+                return '%';
+            case ' ':
+                return ' ';
+            case '-':
+                return '-';
+            case ':':
+                return ':';
+            case ',':
+                return ',';
+            case '.':
+                return '.';
+            case ';':
+                return ';';
+            case '(':
+                return '(';
+            case ')':
+                return ')';
+            case '+':
+                return '+';
+            case '=':
+                return '=';
+            case '*':
+                return '*';
+            case '&':
+                return '&';
+            case '$':
+                return '$';
+            case '#':
+                return '#';
+            case '@':
+                return '@';
+            case '^':
+                return '^';
+            case '\'':
+                return '\'';
+            case '\\':
+                return '\\';
+            case '/':
+                return '/';
+            case '?':
+                return '?';
+        }
+        return '`';
+    }
+
+    
     public static void verifyTable(final Connection                    connection,
                                    final String                        tableName,
                                    final Map<String, ColumnDefinition> expectedColumns,
@@ -76,8 +228,9 @@ public final class TableVerifier
             {
                 if(indices.getBoolean("unique"))
                 {
-                    final String indexName = indices.getString("name");
-
+                    final String indexName = validateSQLiteTableColumnStringInput(indices.getString("name"));
+                    
+                 // FORTIFY CWE
                     try(Statement nameStatement = connection.createStatement();
                         ResultSet namesSet      = nameStatement.executeQuery(String.format("PRAGMA index_info(%s);", indexName)))
                     {

@@ -21,6 +21,7 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.TableVerifier;
 import org.opengis.cite.gpkg12.TileFixture;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
@@ -262,7 +263,7 @@ public class TiledGriddedCoverageTests extends TileFixture {
 					final ResultSet resultSet1 = statement1.executeQuery(String.format("SELECT srs_id FROM gpkg_tile_matrix_set WHERE table_name = '%s'", tableName));
 					) {
 				resultSet1.next();				
-				final String srsID = resultSet1.getString(1);
+				final String srsID = TableVerifier.validateSQLiteTableColumnStringInput(resultSet1.getString(1));
 				try (
 						final Statement statement2 = this.databaseConnection.createStatement();
 						final ResultSet resultSet2 = statement2.executeQuery(String.format("SELECT COUNT(*) FROM gpkg_spatial_ref_sys WHERE srs_id = '%s'", srsID));
@@ -374,7 +375,7 @@ public class TiledGriddedCoverageTests extends TileFixture {
 			// 2
 			while (resultSet.next()){
 				// 3
-				final String tileMatrixSetName = resultSet.getString(1);
+				final String tileMatrixSetName = TableVerifier.validateSQLiteTableColumnStringInput(resultSet.getString(1));
 				try (
 						final Statement statement2 = this.databaseConnection.createStatement();
 
@@ -495,7 +496,7 @@ public class TiledGriddedCoverageTests extends TileFixture {
 				) {
 			// 2
 			while (resultSet1.next()) {
-				final String tableName = resultSet1.getString("tpudt_name");
+				final String tableName = TableVerifier.validateSQLiteTableColumnStringInput(resultSet1.getString("tpudt_name"));
 				try (
 						final Statement statement2 = this.databaseConnection.createStatement();
 						// 2a

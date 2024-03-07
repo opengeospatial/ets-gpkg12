@@ -9,6 +9,7 @@ import java.sql.Statement;
 import org.opengis.cite.gpkg12.CommonFixture;
 import org.opengis.cite.gpkg12.ErrorMessage;
 import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.TableVerifier;
 import org.opengis.cite.gpkg12.util.DatabaseUtility;
 import org.testng.Assert;
 import org.testng.ITestContext;
@@ -168,8 +169,8 @@ public class ExtensionsTests extends CommonFixture
 			// 2
 			while (resultSet.next()) {
 				// 3a
-				final String tableName = resultSet.getString("table_name");
-				final String columnName = resultSet.getString("column_name");
+				final String tableName = TableVerifier.validateSQLiteTableColumnStringInput(resultSet.getString("table_name"));
+				final String columnName = TableVerifier.validateSQLiteTableColumnStringInput(resultSet.getString("column_name"));
 
 				// 3b
 				try (final Statement statement1 = this.databaseConnection.createStatement()) {
