@@ -60,7 +60,11 @@
     <dependency>
       <groupId>org.xerial</groupId>
       <artifactId>sqlite-jdbc</artifactId>
-      <version>3.46.0.0</version>
+	  <!-- versions above this use SQLite 3.36.0, which causes unexpected
+		failures in the featureGeometryEncodingTesting test. 
+		Accessing the rowid of a VIEW is disallowed from this version on
+		see https://sqlite.org/releaselog/3_36_0.html -->
+	  <version>3.35.0</version>
     </dependency>
     <dependency>
       <groupId>org.opengis.cite.teamengine</groupId>
