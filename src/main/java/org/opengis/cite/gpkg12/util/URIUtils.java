@@ -16,9 +16,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Invocation.Builder;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
 
 /**
  * Provides a collection of utility methods for manipulating or resolving URI
@@ -92,24 +94,29 @@ public class URIUtils {
         if (uriRef.getScheme().equalsIgnoreCase("file")) {
             return new File(uriRef);
         }
-        Client client = Client.create();
-        WebResource webRes = client.resource(uriRef);
-        ClientResponse rsp = webRes.get(ClientResponse.class);
+        Client client = ClientBuilder.newClient();
+        WebTarget target = client.target(uriRef);
+        Builder builder = target.request();
+        Response rsp = builder.buildGet().invoke();
         int lastIndexOfDot = uriRef.getPath().lastIndexOf('.');
         // preserve suffix if possible
         String suffix = (lastIndexOfDot > 0) ? uriRef.getPath().substring(lastIndexOfDot) : ".db";
         File destFile = File.createTempFile("gpkg-", suffix);
         if (rsp.hasEntity()) {
-        	try (
-                    InputStream is = rsp.getEntityInputStream();
-                    OutputStream os = new FileOutputStream(destFile);
-        			) {
-                byte[] buffer = new byte[8 * 1024];
-                int bytesRead;
-                while ((bytesRead = is.read(buffer)) != -1) {
-                    os.write(buffer, 0, bytesRead);
-                }
-        	}
+            Object entity = rsp.getEntity();
+            if (!(entity instanceof InputStream)) {
+                return null;
+            }
+            InputStream is = (InputStream) entity;
+            OutputStream os = new FileOutputStream(destFile);
+            byte[] buffer = new byte[8 * 1024];
+            int bytesRead;
+            while ((bytesRead = is.read(buffer)) != -1) {
+                os.write(buffer, 0, bytesRead);
+            }
+            is.close();
+            os.flush();
+            os.close();
         }
         TestSuiteLogger.log(Level.CONFIG,
                 "Wrote " + destFile.length() + " bytes to file at " + destFile.getAbsolutePath());

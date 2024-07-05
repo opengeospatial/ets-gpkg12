@@ -99,7 +99,7 @@ public class TestNGController implements TestSuiteController {
 		try {
 			resultsDir = new File(URI.create(outputDir));
 		} catch (IllegalArgumentException e) {
-			resultsDir = new File(URI.create(String.format("file://%s",  outputDir)));
+			resultsDir = new File(outputDir);
 		}
         TestSuiteLogger.log(Level.CONFIG, "Using TestNG config: " + tngSuite);
         TestSuiteLogger.log(Level.CONFIG, "Using outputDirPath: " + resultsDir.getAbsolutePath());

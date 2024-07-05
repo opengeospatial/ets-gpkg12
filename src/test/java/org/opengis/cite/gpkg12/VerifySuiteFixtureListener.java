@@ -15,10 +15,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.Matchers;
-import org.opengis.cite.gpkg12.SuiteAttribute;
-import org.opengis.cite.gpkg12.SuiteFixtureListener;
-import org.opengis.cite.gpkg12.TestRunArg;
+import org.mockito.ArgumentMatchers;
 import org.testng.ISuite;
 import org.testng.xml.XmlSuite;
 
@@ -65,7 +62,7 @@ public class VerifySuiteFixtureListener {
         when(xmlSuite.getParameters()).thenReturn(params);
         SuiteFixtureListener iut = new SuiteFixtureListener();
         iut.onStart(suite);
-        verify(suite).setAttribute(Matchers.eq(SuiteAttribute.TEST_SUBJ_FILE.getName()), Matchers.isA(File.class));
+        verify(suite).setAttribute(ArgumentMatchers.eq(SuiteAttribute.TEST_SUBJ_FILE.getName()), ArgumentMatchers.isA(File.class));
     }
 
 }
