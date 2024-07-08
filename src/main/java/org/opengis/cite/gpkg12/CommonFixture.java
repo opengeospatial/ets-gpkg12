@@ -20,6 +20,7 @@ import org.sqlite.SQLiteConfig;
 import org.sqlite.SQLiteDataSource;
 import org.testng.Assert;
 import org.testng.ITestContext;
+import org.testng.Reporter;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeTest;
@@ -250,6 +251,13 @@ public class CommonFixture {
 			// 5
 			assertTrue(resultSet2.getInt(1) == 0, String.format(ErrorMessageKeys.TABLE_PK_NOT_UNIQUE, tableName));
 		}
+    }
+    
+    protected GeoPackageVersion getGeopackageVersion() {
+        if(geopackageVersion == null) {
+            geopackageVersion = (GeoPackageVersion) Reporter.getCurrentTestResult().getTestContext().getSuite().getAttribute( SuiteAttribute.GPKG_VERSION.getName() );
+        }
+        return geopackageVersion;
     }
 
     public String getTestName() {

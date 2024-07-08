@@ -90,11 +90,11 @@ public class SQLiteContainerTests extends CommonFixture {
 	 *      "http://www.sqlite.org/src/artifact?ci=trunk&filename=magic.txt"
 	 *      target= "_blank">Assigned application IDs</a>
 	 */
-	@Test(description = "See OGC 12-128r12: Requirement 2")
+	@Test(description = "See OGC 12-128r12: Requirement 2", dependsOnMethods = "geopackageVersion")
     public void applicationID()
 			throws SQLException, IOException {
         // This does steps 1-4
-        final GeoPackageVersion version = geopackageVersion;
+        final GeoPackageVersion version = getGeopackageVersion();
         // 5
         assertTrue( version != null, ErrorMessage.format( ErrorMessageKeys.UNKNOWN_APP_ID,
                                                           new String( getAppId( this.gpkgFile ), StandardCharsets.US_ASCII ) ) );
