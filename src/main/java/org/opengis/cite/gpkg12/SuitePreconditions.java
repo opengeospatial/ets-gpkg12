@@ -28,8 +28,6 @@ public class SuitePreconditions {
      * used in SQLITE_VERSION. The major version number, X, is always 3 for
      * SQLite3.
      *
-     * @param testContext
-     *            Information about the (pending) test run.
      * @throws IOException
      *             If an I/O error occurs while trying to read the data file.
      */
