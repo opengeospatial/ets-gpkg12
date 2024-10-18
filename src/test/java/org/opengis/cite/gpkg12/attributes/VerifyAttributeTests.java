@@ -19,41 +19,45 @@ import org.testng.ITestContext;
 
 public class VerifyAttributeTests {
 
-    private static ITestContext testContext;
-    private static ISuite suite;
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+	private static ITestContext testContext;
 
-    @BeforeClass
-    public static void initTestFixture() {
-        testContext = mock(ITestContext.class);
-        suite = mock(ISuite.class);
-        when(testContext.getSuite()).thenReturn(suite);
-    }
+	private static ISuite suite;
 
-    @Test
-    public void attributePrimarykey() throws IOException, SQLException, URISyntaxException {
-        URL gpkgUrl = ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_no_extensions.gpkg");
-        File dataFile = new File(gpkgUrl.toURI());
-        dataFile.setWritable(false);
-        when(suite.getAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName())).thenReturn(dataFile);
-        AttributeTests iut = new AttributeTests();
-        iut.initCommonFixture(testContext);
-        iut.setUp();
-        iut.attributeTableIntegerPrimaryKey();
-    }
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
-    @Test
-    public void attributePrimarykeyBad() throws IOException, SQLException, URISyntaxException {
-        URL gpkgUrl = ClassLoader.getSystemResource("gpkg/v12_bad_attributes.gpkg");
-        File dataFile = new File(gpkgUrl.toURI());
-        dataFile.setWritable(false);
-        when(suite.getAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName())).thenReturn(dataFile);
-        AttributeTests iut = new AttributeTests();
-        iut.initCommonFixture(testContext);
-        iut.setUp();
-        thrown.expect(AssertionError.class);
-        thrown.expectMessage("The features or attributes table attribute_table does not have a primary key. expected [true] but found [false]");
-        iut.attributeTableIntegerPrimaryKey();
-    }
+	@BeforeClass
+	public static void initTestFixture() {
+		testContext = mock(ITestContext.class);
+		suite = mock(ISuite.class);
+		when(testContext.getSuite()).thenReturn(suite);
+	}
+
+	@Test
+	public void attributePrimarykey() throws IOException, SQLException, URISyntaxException {
+		URL gpkgUrl = ClassLoader.getSystemResource("gpkg/gdal_sample_v1.2_no_extensions.gpkg");
+		File dataFile = new File(gpkgUrl.toURI());
+		dataFile.setWritable(false);
+		when(suite.getAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName())).thenReturn(dataFile);
+		AttributeTests iut = new AttributeTests();
+		iut.initCommonFixture(testContext);
+		iut.setUp();
+		iut.attributeTableIntegerPrimaryKey();
+	}
+
+	@Test
+	public void attributePrimarykeyBad() throws IOException, SQLException, URISyntaxException {
+		URL gpkgUrl = ClassLoader.getSystemResource("gpkg/v12_bad_attributes.gpkg");
+		File dataFile = new File(gpkgUrl.toURI());
+		dataFile.setWritable(false);
+		when(suite.getAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName())).thenReturn(dataFile);
+		AttributeTests iut = new AttributeTests();
+		iut.initCommonFixture(testContext);
+		iut.setUp();
+		thrown.expect(AssertionError.class);
+		thrown.expectMessage(
+				"The features or attributes table attribute_table does not have a primary key. expected [true] but found [false]");
+		iut.attributeTableIntegerPrimaryKey();
+	}
+
 }

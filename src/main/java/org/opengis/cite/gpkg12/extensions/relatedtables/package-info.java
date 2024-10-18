@@ -1,7 +1,7 @@
 /**
  * This package contains tests covering the <strong>Related Tables</strong> conformance
- * class. 
- * 
+ * class.
+ *
  * <p style="margin-bottom: 0.5em">
  * <strong>Sources</strong>
  * </p>

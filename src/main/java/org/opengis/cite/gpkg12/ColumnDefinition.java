@@ -28,110 +28,99 @@ package org.opengis.cite.gpkg12;
  *
  */
 @SuppressWarnings("NegativelyNamedBooleanVariable")
-public class ColumnDefinition
-{
-    /**
-     * @param sqlType
-     *             String representing the SQL type of the column, e.g.: TEXT, INTEGER, and so on
-     * @param notNull
-     *             Indicates that this column may not contain null values
-     * @param primaryKey
-     *             Indicates that this column is the table's primary key (implicitly unique)
-     * @param unique
-     *             Indicates that values for this column are unique. If primaryKey is true, this value is ignored
-     * @param defaultValue
-     *             String representation for the default value of this column
-     */
-    @SuppressWarnings("BooleanParameter")
-    public ColumnDefinition(final String  sqlType,
-                            final boolean notNull,
-                            final boolean primaryKey,
-                            final boolean unique,
-                            final String  defaultValue)
-    {
-        if(sqlType == null)
-        {
-            throw new IllegalArgumentException("SQL type may not be null");
-        }
+public class ColumnDefinition {
 
-        this.sqlType      = sqlType;
-        this.notNull      = notNull;
-        this.defaultValue = defaultValue;
-        this.primaryKey   = primaryKey;
-        this.unique       = primaryKey || unique;
-    }
+	/**
+	 * @param sqlType String representing the SQL type of the column, e.g.: TEXT, INTEGER,
+	 * and so on
+	 * @param notNull Indicates that this column may not contain null values
+	 * @param primaryKey Indicates that this column is the table's primary key (implicitly
+	 * unique)
+	 * @param unique Indicates that values for this column are unique. If primaryKey is
+	 * true, this value is ignored
+	 * @param defaultValue String representation for the default value of this column
+	 */
+	@SuppressWarnings("BooleanParameter")
+	public ColumnDefinition(final String sqlType, final boolean notNull, final boolean primaryKey, final boolean unique,
+			final String defaultValue) {
+		if (sqlType == null) {
+			throw new IllegalArgumentException("SQL type may not be null");
+		}
 
-    @Override
-    public boolean equals(final Object object)
-    {
-        if(!(object instanceof ColumnDefinition))
-        {
-            return false;
-        }
+		this.sqlType = sqlType;
+		this.notNull = notNull;
+		this.defaultValue = defaultValue;
+		this.primaryKey = primaryKey;
+		this.unique = primaryKey || unique;
+	}
 
-        if(this == object)
-        {
-            return true;
-        }
+	@Override
+	public boolean equals(final Object object) {
+		if (!(object instanceof ColumnDefinition)) {
+			return false;
+		}
 
-        final ColumnDefinition other = (ColumnDefinition)object;
+		if (this == object) {
+			return true;
+		}
 
-        // This was added on behalf of Richard Martell, based on the following
-        // justification:
-        //
-        // "According to the SQL standard, PRIMARY KEY should always imply NOT
-        // NULL. Unfortunately, due to a bug in some early versions, this is
-        // not the case in SQLite. Unless the column is an INTEGER PRIMARY KEY
-        // or the table is a WITHOUT ROWID table or the column is declared NOT
-        // NULL, SQLite allows NULL values in a PRIMARY KEY column. SQLite
-        // could be fixed to conform to the standard, but doing so might break
-        // legacy applications. Hence, it has been decided to merely document
-        // the fact that SQLite allowing NULLs in most PRIMARY KEY columns."
-        //
-        // ref: https://www.sqlite.org/lang_createtable.html#constraints
-        //
-        // This addition allows the column definition checks to be more
-        // permissive (i.e. allow implicit NOT NULL) for PK columns of type
-        // INTEGER.
-        final boolean implicitNotNull = this.primaryKey &&
-                                        this.sqlType.toUpperCase().equals("INTEGER");
+		final ColumnDefinition other = (ColumnDefinition) object;
 
-        return this.sqlType.equals(other.sqlType)                      &&
-               ((this.notNull    == other.notNull) || implicitNotNull) &&
-               this.primaryKey   == other.primaryKey  &&
-               this.unique       == other.unique     /*&&
-               (this.defaultValue == null ? other.defaultValue == null : this.defaultValue.equals(other.defaultValue))*/; // Skip the test for equality in favor of a functional equivalence test with a query
-    }
+		// This was added on behalf of Richard Martell, based on the following
+		// justification:
+		//
+		// "According to the SQL standard, PRIMARY KEY should always imply NOT
+		// NULL. Unfortunately, due to a bug in some early versions, this is
+		// not the case in SQLite. Unless the column is an INTEGER PRIMARY KEY
+		// or the table is a WITHOUT ROWID table or the column is declared NOT
+		// NULL, SQLite allows NULL values in a PRIMARY KEY column. SQLite
+		// could be fixed to conform to the standard, but doing so might break
+		// legacy applications. Hence, it has been decided to merely document
+		// the fact that SQLite allowing NULLs in most PRIMARY KEY columns."
+		//
+		// ref: https://www.sqlite.org/lang_createtable.html#constraints
+		//
+		// This addition allows the column definition checks to be more
+		// permissive (i.e. allow implicit NOT NULL) for PK columns of type
+		// INTEGER.
+		final boolean implicitNotNull = this.primaryKey && this.sqlType.toUpperCase().equals("INTEGER");
 
-    @Override
-    public int hashCode()
-    {
-        return this.sqlType.hashCode()   ^
-               (this.notNull    ? 1 : 0) ^
-               (this.primaryKey ? 1 : 0) ^
-               (this.unique     ? 1 : 0) ^
-               (this.defaultValue == null ? 0 : this.defaultValue.hashCode());
-    }
+		return this.sqlType.equals(other.sqlType) && ((this.notNull == other.notNull) || implicitNotNull)
+				&& this.primaryKey == other.primaryKey
+				&& this.unique == other.unique /*
+												 * && (this.defaultValue == null ?
+												 * other.defaultValue == null :
+												 * this.defaultValue.equals(other.
+												 * defaultValue))
+												 */; // Skip the test for equality in
+														// favor of a functional
+														// equivalence test with a query
+	}
 
-    @Override
-    public String toString()
-    {
-        return String.format("Type: %s, not null: %s, default value: %s, primary key: %s, unique: %s",
-                             this.sqlType,
-                             this.notNull,
-                             this.defaultValue,
-                             this.primaryKey,
-                             this.unique);
-    }
+	@Override
+	public int hashCode() {
+		return this.sqlType.hashCode() ^ (this.notNull ? 1 : 0) ^ (this.primaryKey ? 1 : 0) ^ (this.unique ? 1 : 0)
+				^ (this.defaultValue == null ? 0 : this.defaultValue.hashCode());
+	}
 
-    public String getDefaultValue()
-    {
-        return this.defaultValue;
-    }
+	@Override
+	public String toString() {
+		return String.format("Type: %s, not null: %s, default value: %s, primary key: %s, unique: %s", this.sqlType,
+				this.notNull, this.defaultValue, this.primaryKey, this.unique);
+	}
 
-    private final String  sqlType;
-    private final boolean notNull;
-    private final boolean primaryKey;
-    private final boolean unique;
-    private final String  defaultValue;
+	public String getDefaultValue() {
+		return this.defaultValue;
+	}
+
+	private final String sqlType;
+
+	private final boolean notNull;
+
+	private final boolean primaryKey;
+
+	private final boolean unique;
+
+	private final String defaultValue;
+
 }

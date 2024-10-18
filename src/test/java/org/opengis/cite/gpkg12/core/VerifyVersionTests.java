@@ -23,62 +23,58 @@ import org.testng.ITestContext;
  */
 public class VerifyVersionTests {
 
-    private static ITestContext testContext;
+	private static ITestContext testContext;
 
-    private static ISuite suite;
+	private static ISuite suite;
 
-    @BeforeClass
-    public static void initTestFixture() {
-        testContext = mock( ITestContext.class );
-        suite = mock( ISuite.class );
-        when( testContext.getSuite() ).thenReturn( suite );
-    }
+	@BeforeClass
+	public static void initTestFixture() {
+		testContext = mock(ITestContext.class);
+		suite = mock(ISuite.class);
+		when(testContext.getSuite()).thenReturn(suite);
+	}
 
-    @Test
-    public void testGeoPackage10()
-                            throws Exception {
-        mockSuite( "gpkg/sample1_0.gpkg" );
+	@Test
+	public void testGeoPackage10() throws Exception {
+		mockSuite("gpkg/sample1_0.gpkg");
 
-        VersionTests versionTests = new VersionTests();
-        versionTests.initGeoPackageFile( testContext );
-        versionTests.geopackageVersion();
-        versionTests.storeVersionInTestContext( testContext );
+		VersionTests versionTests = new VersionTests();
+		versionTests.initGeoPackageFile(testContext);
+		versionTests.geopackageVersion();
+		versionTests.storeVersionInTestContext(testContext);
 
-        verify( suite ).setAttribute( GPKG_VERSION.getName(), V102 );
-    }
+		verify(suite).setAttribute(GPKG_VERSION.getName(), V102);
+	}
 
-    @Test
-    public void testGeoPackage11()
-                            throws Exception {
-        mockSuite( "gpkg/sample1_1.gpkg" );
+	@Test
+	public void testGeoPackage11() throws Exception {
+		mockSuite("gpkg/sample1_1.gpkg");
 
-        VersionTests versionTests = new VersionTests();
-        versionTests.initGeoPackageFile( testContext );
-        versionTests.geopackageVersion();
-        versionTests.storeVersionInTestContext( testContext );
+		VersionTests versionTests = new VersionTests();
+		versionTests.initGeoPackageFile(testContext);
+		versionTests.geopackageVersion();
+		versionTests.storeVersionInTestContext(testContext);
 
-        verify( suite ).setAttribute( GPKG_VERSION.getName(), V110 );
-    }
+		verify(suite).setAttribute(GPKG_VERSION.getName(), V110);
+	}
 
-    @Test
-    public void testGeoPackage12()
-                            throws Exception {
-        mockSuite( "gpkg/sample1_2.gpkg" );
+	@Test
+	public void testGeoPackage12() throws Exception {
+		mockSuite("gpkg/sample1_2.gpkg");
 
-        VersionTests versionTests = new VersionTests();
-        versionTests.initGeoPackageFile( testContext );
-        versionTests.geopackageVersion();
-        versionTests.storeVersionInTestContext( testContext );
+		VersionTests versionTests = new VersionTests();
+		versionTests.initGeoPackageFile(testContext);
+		versionTests.geopackageVersion();
+		versionTests.storeVersionInTestContext(testContext);
 
-        verify( suite ).setAttribute( GPKG_VERSION.getName(), V120 );
-    }
+		verify(suite).setAttribute(GPKG_VERSION.getName(), V120);
+	}
 
-    private void mockSuite( String geopackage )
-                            throws URISyntaxException {
-        URL gpkgUrl = ClassLoader.getSystemResource( geopackage );
-        File dataFile = new File( gpkgUrl.toURI() );
-        dataFile.setWritable( false );
-        when( suite.getAttribute( TEST_SUBJ_FILE.getName() ) ).thenReturn( dataFile );
-    }
+	private void mockSuite(String geopackage) throws URISyntaxException {
+		URL gpkgUrl = ClassLoader.getSystemResource(geopackage);
+		File dataFile = new File(gpkgUrl.toURI());
+		dataFile.setWritable(false);
+		when(suite.getAttribute(TEST_SUBJ_FILE.getName())).thenReturn(dataFile);
+	}
 
 }
