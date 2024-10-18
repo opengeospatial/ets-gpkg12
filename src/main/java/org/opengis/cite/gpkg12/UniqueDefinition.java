@@ -33,69 +33,58 @@ import java.util.Set;
  * @author Luke Lambert
  *
  */
-public class UniqueDefinition
-{
-    /**
-     * @param columnNames
-     *            the names of the columns that have the SQLite property of Unique
-     */
-    public UniqueDefinition(final String... columnNames)
-    {
-        this(Arrays.asList(columnNames));
-    }
+public class UniqueDefinition {
 
-    /**
-     * @param columnNames
-     *            the names of the columns that have the SQLite property of
-     *            Unique
-     */
-    public UniqueDefinition(final Collection<String> columnNames)
-    {
-        this.columnNames = new HashSet<>(columnNames);
-    }
+	/**
+	 * @param columnNames the names of the columns that have the SQLite property of Unique
+	 */
+	public UniqueDefinition(final String... columnNames) {
+		this(Arrays.asList(columnNames));
+	}
 
-    /**
-     * @return the columnNames the names of the columns that have the SQLite
-     *         property of Unique
-     */
-    public Set<String> getColumnNames()
-    {
-        return Collections.unmodifiableSet(this.columnNames);
-    }
+	/**
+	 * @param columnNames the names of the columns that have the SQLite property of Unique
+	 */
+	public UniqueDefinition(final Collection<String> columnNames) {
+		this.columnNames = new HashSet<>(columnNames);
+	}
 
-    /**
-     * @param columnName the name of the column
-     * @return true if the column name given is in the set of this.columnNames; otherwise returns false.
-     */
-    public boolean equals(final String columnName)
-    {
-        return this.columnNames.size() == 1 &&
-               this.columnNames.contains(columnName);
-    }
+	/**
+	 * @return the columnNames the names of the columns that have the SQLite property of
+	 * Unique
+	 */
+	public Set<String> getColumnNames() {
+		return Collections.unmodifiableSet(this.columnNames);
+	}
 
-    @Override
-    public boolean equals(final Object object)
-    {
-        if(!(object instanceof UniqueDefinition))
-        {
-            return false;
-        }
-        if(this == object)
-        {
-            return true;
-        }
+	/**
+	 * @param columnName the name of the column
+	 * @return true if the column name given is in the set of this.columnNames; otherwise
+	 * returns false.
+	 */
+	public boolean equals(final String columnName) {
+		return this.columnNames.size() == 1 && this.columnNames.contains(columnName);
+	}
 
-        final UniqueDefinition other = (UniqueDefinition)object;
+	@Override
+	public boolean equals(final Object object) {
+		if (!(object instanceof UniqueDefinition)) {
+			return false;
+		}
+		if (this == object) {
+			return true;
+		}
 
-        return this.columnNames.containsAll(other.columnNames) &&
-               other.columnNames.containsAll( this.columnNames);
-    }
+		final UniqueDefinition other = (UniqueDefinition) object;
 
-    @Override
-    public int hashCode()
-    {
-        return this.columnNames.hashCode();
-    }
+		return this.columnNames.containsAll(other.columnNames) && other.columnNames.containsAll(this.columnNames);
+	}
 
-    private final Set<String> columnNames;
+	@Override
+	public int hashCode() {
+		return this.columnNames.hashCode();
+	}
+
+	private final Set<String> columnNames;
+
 }

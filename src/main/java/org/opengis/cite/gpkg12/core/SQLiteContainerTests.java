@@ -26,19 +26,17 @@ import org.opengis.cite.gpkg12.util.GeoPackageVersion;
 import org.testng.annotations.Test;
 
 /**
- * Defines test methods that apply to an SQLite database file. The GeoPackage
- * standard defines a SQL database schema designed for use with the SQLite
- * software library.
+ * Defines test methods that apply to an SQLite database file. The GeoPackage standard
+ * defines a SQL database schema designed for use with the SQLite software library.
  *
  * <p style="margin-bottom: 0.5em">
  * <strong>Sources</strong>
  * </p>
  * <ul>
  * <li><a href="http://www.geopackage.org/spec/#_sqlite_container" target=
- * "_blank">GeoPackage Encoding Standard - SQLite Container</a> (OGC 12-128r12)
- * </li>
- * <li><a href="http://www.sqlite.org/fileformat2.html" target= "_blank">SQLite
- * Database File Format</a></li>
+ * "_blank">GeoPackage Encoding Standard - SQLite Container</a> (OGC 12-128r12)</li>
+ * <li><a href="http://www.sqlite.org/fileformat2.html" target= "_blank">SQLite Database
+ * File Format</a></li>
  * </ul>
  *
  * @author Richard Martell
@@ -47,16 +45,13 @@ import org.testng.annotations.Test;
 public class SQLiteContainerTests extends CommonFixture {
 
 	/**
-	 * A GeoPackage shall be a SQLite database file using version 3 of the
-	 * SQLite file format. The first 16 bytes of a GeoPackage must contain the
-	 * (UTF-8/ASCII) string "SQLite format 3", including the terminating NULL
-	 * character.
+	 * A GeoPackage shall be a SQLite database file using version 3 of the SQLite file
+	 * format. The first 16 bytes of a GeoPackage must contain the (UTF-8/ASCII) string
+	 * "SQLite format 3", including the terminating NULL character.
+	 * @throws IOException If an I/O error occurs while trying to read the data file.
 	 *
-	 * @throws IOException
-	 *             If an I/O error occurs while trying to read the data file.
-	 *
-	 * @see <a href="http://www.geopackage.org/spec/#_requirement-1" target=
-	 *      "_blank">File Format - Requirement 1</a>
+	 * @see <a href="http://www.geopackage.org/spec/#_requirement-1" target= "_blank">File
+	 * Format - Requirement 1</a>
 	 */
 	@Test(description = "See OGC 12-128r12: Requirement 1")
 	public void fileHeaderString() throws IOException {
@@ -65,54 +60,45 @@ public class SQLiteContainerTests extends CommonFixture {
 			fileInputStream.read(headerString);
 		}
 		assertTrue(Arrays.equals(headerString, GPKG12.SQLITE_MAGIC_HEADER), ErrorMessage
-				.format(ErrorMessageKeys.INVALID_HEADER_STR, new String(headerString, StandardCharsets.US_ASCII)));
+			.format(ErrorMessageKeys.INVALID_HEADER_STR, new String(headerString, StandardCharsets.US_ASCII)));
 	}
 
 	/**
-	 * A GeoPackage SHALL contain a value of 0x47504B47 ("GPKG" in ASCII) in 
-	 * the "application_id" field of the SQLite database header to indicate 
-	 * that it is a GeoPackage. A GeoPackage SHALL contain an appropriate 
-	 * value in "user_version" field of the SQLite database header to 
-	 * indicate its version. The value SHALL be in integer with a major 
-	 * version, two-digit minor version, and two-digit bug-fix. For 
-	 * GeoPackage Version 1.2 this value is 0x000027D8 (the hexadecimal value 
-	 * for 10200). 
+	 * A GeoPackage SHALL contain a value of 0x47504B47 ("GPKG" in ASCII) in the
+	 * "application_id" field of the SQLite database header to indicate that it is a
+	 * GeoPackage. A GeoPackage SHALL contain an appropriate value in "user_version" field
+	 * of the SQLite database header to indicate its version. The value SHALL be in
+	 * integer with a major version, two-digit minor version, and two-digit bug-fix. For
+	 * GeoPackage Version 1.2 this value is 0x000027D8 (the hexadecimal value for 10200).
+	 * @throws IOException If an I/O error occurs while trying to read the data file.
+	 * @throws SQLException If an SQL query causes an error
 	 *
-	 * @throws IOException
-	 *             If an I/O error occurs while trying to read the data file.
-	 *             
-	 * @throws SQLException
-	 *             If an SQL query causes an error
-	 *
-	 * @see <a href="http://www.geopackage.org/spec/#_requirement-2" target=
-	 *      "_blank">File Format - Requirement 2</a>
-	 * @see <a href=
-	 *      "http://www.sqlite.org/src/artifact?ci=trunk&filename=magic.txt"
-	 *      target= "_blank">Assigned application IDs</a>
+	 * @see <a href="http://www.geopackage.org/spec/#_requirement-2" target= "_blank">File
+	 * Format - Requirement 2</a>
+	 * @see <a href= "http://www.sqlite.org/src/artifact?ci=trunk&filename=magic.txt"
+	 * target= "_blank">Assigned application IDs</a>
 	 */
 	@Test(description = "See OGC 12-128r12: Requirement 2", dependsOnMethods = "geopackageVersion")
-    public void applicationID()
-			throws SQLException, IOException {
-        // This does steps 1-4
-        final GeoPackageVersion version = getGeopackageVersion();
-        // 5
-        assertTrue( version != null, ErrorMessage.format( ErrorMessageKeys.UNKNOWN_APP_ID,
-                                                          new String( getAppId( this.gpkgFile ), StandardCharsets.US_ASCII ) ) );
+	public void applicationID() throws SQLException, IOException {
+		// This does steps 1-4
+		final GeoPackageVersion version = getGeopackageVersion();
+		// 5
+		assertTrue(version != null, ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID,
+				new String(getAppId(this.gpkgFile), StandardCharsets.US_ASCII)));
 
-        assertTrue( Arrays.asList( GeoPackageVersion.values() ).contains( version ),
-                    ErrorMessage.format( ErrorMessageKeys.UNKNOWN_APP_ID ) );
-		if (version.equals(GeoPackageVersion.V120)){
-			try (
-					final Statement statement = this.databaseConnection.createStatement();
+		assertTrue(Arrays.asList(GeoPackageVersion.values()).contains(version),
+				ErrorMessage.format(ErrorMessageKeys.UNKNOWN_APP_ID));
+		if (version.equals(GeoPackageVersion.V120)) {
+			try (final Statement statement = this.databaseConnection.createStatement();
 					// 4a
-					final ResultSet resultSet = statement.executeQuery("PRAGMA user_version");
-					) {
+					final ResultSet resultSet = statement.executeQuery("PRAGMA user_version");) {
 				final int versionNumber;
 				final String versionStr;
 				if (resultSet.next()) {
 					versionStr = resultSet.getString(1);
 					versionNumber = Integer.parseInt(versionStr);
-				} else {
+				}
+				else {
 					versionNumber = 0;
 					versionStr = "";
 				}
@@ -126,56 +112,51 @@ public class SQLiteContainerTests extends CommonFixture {
 	/**
 	 * A GeoPackage shall have the file extension name ".gpkg".
 	 *
-	 * @see <a href="http://www.geopackage.org/spec/#_requirement-3" target=
-	 *      "_blank">File Extension Name - Requirement 3</a>
+	 * @see <a href="http://www.geopackage.org/spec/#_requirement-3" target= "_blank">File
+	 * Extension Name - Requirement 3</a>
 	 */
 	@Test(description = "See OGC 12-128r12: Requirement 3")
 	public void filenameExtension() {
 		final String fileName = this.gpkgFile.getName();
 		final String suffix = fileName.substring(fileName.lastIndexOf('.'));
-		assertEquals(suffix, GPKG12.GPKG_FILENAME_SUFFIX,
-				ErrorMessage.format(ErrorMessageKeys.INVALID_SUFFIX, suffix));
+		assertEquals(suffix, GPKG12.GPKG_FILENAME_SUFFIX, ErrorMessage.format(ErrorMessageKeys.INVALID_SUFFIX, suffix));
 	}
 
 	/**
-	 * A GeoPackage shall only contain data elements, SQL constructs and
-	 * GeoPackage extensions with the "gpkg" author name specified in this
-	 * encoding standard.
-	 *
+	 * A GeoPackage shall only contain data elements, SQL constructs and GeoPackage
+	 * extensions with the "gpkg" author name specified in this encoding standard.
 	 * @throws SQLException on any error
-	 * @see <a href="http://www.geopackage.org/spec/#_requirement-4" target=
-	 *      "_blank">File Contents - Requirement 4</a>
+	 * @see <a href="http://www.geopackage.org/spec/#_requirement-4" target= "_blank">File
+	 * Contents - Requirement 4</a>
 	 */
 	@Test(description = "See OGC 12-128r12: Requirement 4")
-	public void fileContents() throws SQLException
-	{
+	public void fileContents() throws SQLException {
 		// 1
 
-		try (
-				final Statement statement1 = this.databaseConnection.createStatement();
-				final ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions;");
-				) {
-			if(resultSet1.getInt(1) > 0){
+		try (final Statement statement1 = this.databaseConnection.createStatement();
+				final ResultSet resultSet1 = statement1.executeQuery("SELECT COUNT(*) FROM gpkg_extensions;");) {
+			if (resultSet1.getInt(1) > 0) {
 				// NOOP: this is an Extended GeoPackage so the test does not apply
 				return;
 			}
-		} catch (SQLException e1) {
+		}
+		catch (SQLException e1) {
 			// NOOP: this is a GeoPackage with no extensions
 		}
 
 		final Iterator<String> iterator = SQLiteContainerTests.CoreTables.keySet().iterator();
 		while (iterator.hasNext()) {
 			final String tableName = iterator.next();
-			try (				
-					final Statement statement2 = this.databaseConnection.createStatement();
-					final ResultSet resultSet2 = statement2.executeQuery(String.format("PRAGMA table_info(%s)", tableName));
-					){
-				while (resultSet2.next()){
+			try (final Statement statement2 = this.databaseConnection.createStatement();
+					final ResultSet resultSet2 = statement2
+						.executeQuery(String.format("PRAGMA table_info(%s)", tableName));) {
+				while (resultSet2.next()) {
 					final String columnName = resultSet2.getString("name");
-					assertTrue(SQLiteContainerTests.CoreTables.get(tableName).contains(columnName), 
+					assertTrue(SQLiteContainerTests.CoreTables.get(tableName).contains(columnName),
 							ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_COLUMN, columnName, tableName));
 				}
-			} catch (SQLException e2) {
+			}
+			catch (SQLException e2) {
 				// NOOP: This table doesn't exist, which may be allowed.
 				// If it isn't, some other test will catch it.
 			}
@@ -185,10 +166,10 @@ public class SQLiteContainerTests extends CommonFixture {
 				// 1
 				final Statement statement3 = this.databaseConnection.createStatement();
 
-				final ResultSet resultSet3 = statement3.executeQuery("SELECT DISTINCT data_type FROM gpkg_contents;");
-				) {
+				final ResultSet resultSet3 = statement3
+					.executeQuery("SELECT DISTINCT data_type FROM gpkg_contents;");) {
 			// 2
-			while (resultSet3.next()){
+			while (resultSet3.next()) {
 				final String dataType = resultSet3.getString("data_type");
 				assertTrue(SQLiteContainerTests.CoreDataTypes.contains(dataType),
 						ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, dataType, "gpkg_contents"));
@@ -197,78 +178,65 @@ public class SQLiteContainerTests extends CommonFixture {
 	}
 
 	/**
-	 * The SQLite PRAGMA integrity_check SQL command SHALL return "ok" for a
-	 * GeoPackage file.
+	 * The SQLite PRAGMA integrity_check SQL command SHALL return "ok" for a GeoPackage
+	 * file.
 	 *
-	 * @see <a href="http://www.geopackage.org/spec/#_requirement-6" target=
-	 *      "_blank">File Integrity - Requirement 6</a>
-	 *
-	 * @throws SQLException
-	 *             If an SQL query causes an error
+	 * @see <a href="http://www.geopackage.org/spec/#_requirement-6" target= "_blank">File
+	 * Integrity - Requirement 6</a>
+	 * @throws SQLException If an SQL query causes an error
 	 */
 	@Test(description = "See OGC 12-128r12: Requirement 6")
-	public void pragmaIntegrityCheck() throws SQLException
-	{
-		try(final Statement statement = this.databaseConnection.createStatement();
-				final ResultSet resultSet = statement.executeQuery("PRAGMA integrity_check;"))
-		{
+	public void pragmaIntegrityCheck() throws SQLException {
+		try (final Statement statement = this.databaseConnection.createStatement();
+				final ResultSet resultSet = statement.executeQuery("PRAGMA integrity_check;")) {
 			resultSet.next();
 
-			assertEquals(resultSet.getString("integrity_check").toLowerCase(),
-					GPKG12.PRAGMA_INTEGRITY_CHECK,
+			assertEquals(resultSet.getString("integrity_check").toLowerCase(), GPKG12.PRAGMA_INTEGRITY_CHECK,
 					ErrorMessage.format(ErrorMessageKeys.PRAGMA_INTEGRITY_CHECK_NOT_OK));
 		}
 	}
 
 	/**
-	 * The SQLite PRAGMA foreign_key_check SQL with no parameter value SHALL
-	 * return an empty result set indicating no invalid foreign key values for
-	 * a GeoPackage file.
+	 * The SQLite PRAGMA foreign_key_check SQL with no parameter value SHALL return an
+	 * empty result set indicating no invalid foreign key values for a GeoPackage file.
 	 *
-	 * @see <a href="http://www.geopackage.org/spec/#_requirement-7" target=
-	 *      "_blank">File Integrity - Requirement 7</a>
-	 *
-	 * @throws SQLException
-	 *             If an SQL query causes an error
+	 * @see <a href="http://www.geopackage.org/spec/#_requirement-7" target= "_blank">File
+	 * Integrity - Requirement 7</a>
+	 * @throws SQLException If an SQL query causes an error
 	 */
 	@Test(description = "See OGC 12-128r12: Requirement 7")
-	public void foreignKeyCheck() throws SQLException
-	{
-		try(final Statement statement = this.databaseConnection.createStatement();
-				final ResultSet resultSet = statement.executeQuery("PRAGMA foreign_key_check;"))
-		{
-			assertTrue(!resultSet.next(),
-					ErrorMessage.format(ErrorMessageKeys.INVALID_FOREIGN_KEY));
+	public void foreignKeyCheck() throws SQLException {
+		try (final Statement statement = this.databaseConnection.createStatement();
+				final ResultSet resultSet = statement.executeQuery("PRAGMA foreign_key_check;")) {
+			assertTrue(!resultSet.next(), ErrorMessage.format(ErrorMessageKeys.INVALID_FOREIGN_KEY));
 		}
 	}
 
 	/**
-	 * A GeoPackage SQLite Configuration SHALL provide SQL access to
-	 * GeoPackage contents via software APIs.
+	 * A GeoPackage SQLite Configuration SHALL provide SQL access to GeoPackage contents
+	 * via software APIs.
 	 *
 	 * @see <a href="http://www.geopackage.org/spec/#_requirement-8" target=
-	 *      "_blank">Structured Query Language (SQL) - Requirement 8</a>
-	 *
-	 * @throws SQLException
-	 *             If an SQL query causes an error
+	 * "_blank">Structured Query Language (SQL) - Requirement 8</a>
+	 * @throws SQLException If an SQL query causes an error
 	 */
 	@Test(description = "See OGC 12-128r12: Requirement 8")
-	public void sqlCheck() throws SQLException
-	{
-		try(final Statement stmt   = this.databaseConnection.createStatement();
-				final ResultSet result = stmt.executeQuery("SELECT * FROM sqlite_master;"))
-		{
-			// If the statement can execute it has implemented the SQLite SQL API interface
+	public void sqlCheck() throws SQLException {
+		try (final Statement stmt = this.databaseConnection.createStatement();
+				final ResultSet result = stmt.executeQuery("SELECT * FROM sqlite_master;")) {
+			// If the statement can execute it has implemented the SQLite SQL API
+			// interface
 			return;
 		}
-		catch(final SQLException ignored)
-		{
+		catch (final SQLException ignored) {
 			// fall through to failure
 		}
 
 		fail(ErrorMessage.format(ErrorMessageKeys.NO_SQL_ACCESS));
 	}
+
 	private static final Set<String> CoreDataTypes = new HashSet<String>();
+
 	private static final Map<String, Set<String>> CoreTables = new HashMap<String, Set<String>>();
 	static {
 		final Set<String> contentsColumns = new HashSet<String>();
@@ -328,4 +296,5 @@ public class SQLiteContainerTests extends CommonFixture {
 		CoreDataTypes.add("features");
 		CoreDataTypes.add("attributes");
 	}
+
 }

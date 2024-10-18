@@ -7,12 +7,12 @@ package org.opengis.cite.gpkg12.util;
  */
 public enum GeoPackageVersion {
 
-    V102( 102 ), V110( 110 ), V120( 120 );
+	V102(102), V110(110), V120(120);
 
-    private int version;
+	private int version;
 
-    GeoPackageVersion( int version ) {
-        this.version = version;
-    }
+	GeoPackageVersion(int version) {
+		this.version = version;
+	}
 
 }
