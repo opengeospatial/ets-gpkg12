@@ -264,8 +264,8 @@ public class DataContentsTests extends CommonFixture
 //                       ErrorMessage.format(ErrorMessageKeys.OPTIONS_NO_FEATURES_OR_TILES));
 //        }
     }
-    private static final Pattern TEXT_TYPE = Pattern.compile("TEXT\\([0-9]+\\)");
-    private static final Pattern BLOB_TYPE = Pattern.compile("BLOB\\([0-9]+\\)");
+    private static final Pattern TEXT_TYPE = Pattern.compile("TEXT\\s*\\([0-9]+\\)");
+    private static final Pattern BLOB_TYPE = Pattern.compile("BLOB\\s*\\([0-9]+\\)");
 
     private static final Collection<String> ALLOWED_SQL_TYPES = Arrays.asList("BOOLEAN", "TINYINT", "SMALLINT", "MEDIUMINT",
                                                                         "INT", "FLOAT", "DOUBLE", "REAL",
