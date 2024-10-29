@@ -237,7 +237,19 @@
           <scmBranch>gh-pages</scmBranch>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.7.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>sonatype-nexus</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
     </plugins>
+
     <pluginManagement>
       <plugins>
         <plugin>
@@ -446,11 +458,10 @@
                   <goal>sign</goal>
                 </goals>
                 <configuration>
-                  <!-- Enable if GPG 2.1+ is used -->
-                  <!--<gpgArguments>
+                  <gpgArguments>
                     <arg>&#45;&#45;pinentry-mode</arg>
                     <arg>loopback</arg>
-                  </gpgArguments>-->
+                  </gpgArguments>
                 </configuration>
               </execution>
             </executions>
@@ -466,11 +477,8 @@
       <url>http://www.soapui.org/repository/maven2/</url>
     </pluginRepository>
   </pluginRepositories>
+
   <distributionManagement>
-    <repository>
-      <id>sonatype-nexus-staging</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
     <site>
       <id>site</id>
       <url>scm:git:git@github.com:opengeospatial/ets-gpkg12.git</url>
