@@ -1,5 +1,11 @@
 # Release Notes GeoPackage (gpkg) 1.2
 
+## 1.3 (2024-11-07)
+
+Attention: Java 17 and Tomcat 10.1 are required.
+
+* [#134](https://github.com/opengeospatial/ets-gpkg12/pull/134): Migration to Java 17 and Tomcat 10.1
+
 ## 1.2 (2024-10-29)
 * [#127](https://github.com/opengeospatial/ets-gpkg12/issues/127): Feature Geometry Encoding Testing returns java.lang.NullPointerException
 * [#128](https://github.com/opengeospatial/ets-gpkg12/issues/128): Column Data Types - Invalid data type for TEXT column
