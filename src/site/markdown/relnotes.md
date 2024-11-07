@@ -1,5 +1,14 @@
 # Release Notes GeoPackage (gpkg) 1.2
 
+## 1.2 (2024-10-29)
+* [#127](https://github.com/opengeospatial/ets-gpkg12/issues/127): Feature Geometry Encoding Testing returns java.lang.NullPointerException
+* [#128](https://github.com/opengeospatial/ets-gpkg12/issues/128): Column Data Types - Invalid data type for TEXT column
+* [#129](https://github.com/opengeospatial/ets-gpkg12/issues/129): Data Columns Column Name test has wrong table name in description
+* [#135](https://github.com/opengeospatial/ets-gpkg12/pull/135): Set TEAM Engine dependencies to version 5.7 and add exclusions
+* [#124](https://github.com/opengeospatial/ets-gpkg12/pull/124): Add credentials to SoapUI project
+* [#123](https://github.com/opengeospatial/ets-gpkg12/pull/123): Bump xercesImpl from 2.12.1 to 2.12.2
+* [#122](https://github.com/opengeospatial/ets-gpkg12/pull/122): Bump commons-io from 1.3.2 to 2.7
+
 ## 1.1 (2021-03-23)
 * Fix [#118](https://github.com/opengeospatial/ets-gpkg12/issues/118): Integration tests are failing
 * Fix [#79](https://github.com/opengeospatial/ets-gpkg12/pull/79): Requirement 147 test

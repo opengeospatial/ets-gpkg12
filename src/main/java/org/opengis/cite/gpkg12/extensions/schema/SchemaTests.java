@@ -204,8 +204,8 @@ public class SchemaTests extends CommonFixture {
 					statement2.executeQuery(String.format("SELECT COUNT(%s) from %s;", columnName, tableName));
 				}
 				catch (SQLException exc) {
-					Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_COLUMN, "gpkg_extensions", columnName,
-							tableName));
+					Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_COLUMN, "gpkg_data_columns",
+							columnName, tableName));
 				}
 			}
 		}
