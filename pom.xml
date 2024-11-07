@@ -1,9 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <parent>
     <groupId>org.opengis.cite</groupId>
     <artifactId>ets-common</artifactId>
-    <version>9</version>
+    <version>11</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>ets-gpkg12</artifactId>
@@ -12,17 +13,17 @@
 
   <name>GeoPackage 1.2 Conformance Test Suite</name>
   <description>This test suite checks GeoPackage 1.2 files for standards conformance.</description>
-  <url>http://opengeospatial.github.io/ets-gpkg12/</url>
+  <url>https://opengeospatial.github.io/ets-gpkg12/</url>
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
-      <url>http://opensource.org/licenses/Apache-2.0</url>
+      <url>https://opensource.org/licenses/Apache-2.0</url>
     </license>
   </licenses>
 
   <organization>
     <name>Open Geospatial Consortium</name>
-    <url>http://www.opengeospatial.org/</url>
+    <url>https://www.ogc.org/</url>
   </organization>
   <scm>
     <connection>scm:git:https://github.com/opengeospatial/ets-gpkg12.git</connection>
@@ -40,12 +41,16 @@
       <url>https://github.com/jyutzler</url>
       <timezone>UTC</timezone>
     </developer>
+    <developer>
+      <name>D. Stenger</name>
+      <url>https://github.com/dstenger</url>
+      <timezone>Europe/Berlin</timezone>
+    </developer>
   </developers>
 
   <properties>
     <ets-code>gpkg12</ets-code>
     <spec-version>1.2</spec-version>
-    <soapui.test.fail.ignore>false</soapui.test.fail.ignore>
     <soapui.teamengine.endpoint>http://localhost:8081/teamengine</soapui.teamengine.endpoint>
     <soapui.teamengine.user>ogctest</soapui.teamengine.user>
     <soapui.teamengine.password>ogctest</soapui.teamengine.password>
@@ -53,38 +58,23 @@
     <soapui.tests.passed>54</soapui.tests.passed>
     <soapui.tests.skipped>54</soapui.tests.skipped>
     <soapui.tests.failed>1</soapui.tests.failed>
-    <docker.teamengine.version>5.7</docker.teamengine.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.xerial</groupId>
       <artifactId>sqlite-jdbc</artifactId>
-      <version>3.35.0</version>
     </dependency>
     <dependency>
       <groupId>org.opengis.cite.teamengine</groupId>
       <artifactId>teamengine-spi</artifactId>
-      <version>5.7</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>xercesImpl</artifactId>
-          <groupId>xerces</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.opengis.cite</groupId>
       <artifactId>schema-utils</artifactId>
-      <exclusions>
-        <exclusion>
-          <artifactId>xercesImpl</artifactId>
-          <groupId>xerces</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.sun.jersey</groupId>
+      <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-client</artifactId>
     </dependency>
     <dependency>
@@ -98,57 +88,33 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.7</version>
     </dependency>
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
-      <version>6.9.10</version>
     </dependency>
     <dependency>
       <groupId>org.opengis.cite.saxon</groupId>
       <artifactId>saxon9</artifactId>
-      <version>9.0.0.8</version>
-    </dependency>
-    <dependency>
-      <groupId>xml-apis</groupId>
-      <artifactId>xml-apis</artifactId>
-      <version>1.4.01</version>
     </dependency>
     <dependency>
       <groupId>xerces</groupId>
       <artifactId>xercesImpl</artifactId>
-      <version>2.12.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>xml-apis</groupId>
+          <artifactId>xml-apis</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.beust</groupId>
       <artifactId>jcommander</artifactId>
-      <version>1.48</version>
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
-      <plugin>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.10.3</version>
-        <configuration>
-          <source>8</source>
-          <docfilessubdirs>true</docfilessubdirs>
-          <show>package</show>
-          <links>
-            <link>https://javadoc.jitpack.io/com/github/cbeust/testng/master/javadoc/</link>
-          </links>
-        </configuration>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
@@ -157,95 +123,14 @@
               <mainClass>org.opengis.cite.gpkg12.TestNGController</mainClass>
             </manifest>
           </archive>
-          <descriptors>
-            <descriptor>${basedir}/src/assembly/deps.xml</descriptor>
-            <descriptor>${basedir}/src/assembly/ctl-scripts.xml</descriptor>
-            <descriptor>${basedir}/src/assembly/aio.xml</descriptor>
-          </descriptors>
         </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.22.0</version>
-        <configuration>
-          <forkCount>3</forkCount>
-          <reuseForks>true</reuseForks>
-          <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-jar-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.5.3</version>
-        <configuration>
-          <autoVersionSubmodules>true</autoVersionSubmodules>
-          <tagNameFormat>@{project.version}</tagNameFormat>
-          <releaseProfiles>release</releaseProfiles>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <skipDeploy>true</skipDeploy>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>buildnumber-maven-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.7.5.201505241946</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>report</id>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <artifactId>maven-scm-publish-plugin</artifactId>
-        <version>1.1</version>
-        <configuration>
-          <scmBranch>gh-pages</scmBranch>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.7.0</version>
-        <extensions>true</extensions>
-        <configuration>
-          <serverId>sonatype-nexus</serverId>
-          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-          <autoReleaseAfterClose>true</autoReleaseAfterClose>
-        </configuration>
       </plugin>
     </plugins>
 
@@ -254,32 +139,9 @@
         <plugin>
           <groupId>io.fabric8</groupId>
           <artifactId>docker-maven-plugin</artifactId>
-          <version>0.28.0</version>
           <configuration>
             <images>
               <image>
-                <name>ogccite/${project.artifactId}</name>
-                <build>
-                  <dockerFileDir>${project.basedir}/src/docker</dockerFileDir>
-                  <tags>
-                    <tag>${project.version}-teamengine-${docker.teamengine.version}</tag>
-                  </tags>
-                  <assembly>
-                    <inline>
-                      <fileSets>
-                        <fileSet>
-                          <directory>${project.build.directory}</directory>
-                          <outputDirectory>.</outputDirectory>
-                          <includes>
-                            <include>dependency/*teamengine-*.war</include>
-                            <include>dependency/*teamengine-*.zip</include>
-                            <include>*ets-*.zip</include>
-                          </includes>
-                        </fileSet>
-                      </fileSets>
-                    </inline>
-                  </assembly>
-                </build>
                 <run>
                   <ports>
                     <port>8081:8080</port>
@@ -296,50 +158,11 @@
           </configuration>
         </plugin>
         <plugin>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <version>3.0.0</version>
-          <configuration>
-            <artifactItems>
-              <artifactItem>
-                <groupId>org.opengis.cite.teamengine</groupId>
-                <artifactId>teamengine-web</artifactId>
-                <version>${docker.teamengine.version}</version>
-                <type>war</type>
-              </artifactItem>
-              <artifactItem>
-                <groupId>org.opengis.cite.teamengine</groupId>
-                <artifactId>teamengine-web</artifactId>
-                <version>${docker.teamengine.version}</version>
-                <classifier>common-libs</classifier>
-                <type>zip</type>
-              </artifactItem>
-              <artifactItem>
-                <groupId>org.opengis.cite.teamengine</groupId>
-                <artifactId>teamengine-console</artifactId>
-                <version>${docker.teamengine.version}</version>
-                <classifier>base</classifier>
-                <type>zip</type>
-              </artifactItem>
-            </artifactItems>
-          </configuration>
-        </plugin>
-        <plugin>
           <groupId>com.smartbear.soapui</groupId>
           <artifactId>soapui-maven-plugin</artifactId>
-          <version>5.5.0</version>
-          <dependencies>
-            <dependency>
-              <groupId>com.jgoodies</groupId>
-              <artifactId>forms</artifactId>
-              <version>1.0.7</version>
-            </dependency>
-          </dependencies>
           <configuration>
             <projectFile>src/test/resources/soapui/ets-gpkg12-soapui-project.xml</projectFile>
             <settingsFile>src/test/resources/soapui/ets-gpkg12-soapui-settings.xml</settingsFile>
-            <outputFolder>${project.build.directory}/soapui</outputFolder>
-            <junitReport>true</junitReport>
-            <testFailIgnore>${soapui.test.fail.ignore}</testFailIgnore>
             <projectProperties>
               <value>teamengine.endpoint=${soapui.teamengine.endpoint}</value>
               <value>teamengine.user=${soapui.teamengine.user}</value>
@@ -442,38 +265,12 @@
         </plugins>
       </build>
     </profile>
-    <profile>
-      <id>release</id>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-gpg-plugin</artifactId>
-            <version>1.6</version>
-            <executions>
-              <execution>
-                <id>sign-artifacts</id>
-                <phase>verify</phase>
-                <goals>
-                  <goal>sign</goal>
-                </goals>
-                <configuration>
-                  <gpgArguments>
-                    <arg>--pinentry-mode</arg>
-                    <arg>loopback</arg>
-                  </gpgArguments>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
   </profiles>
 
   <pluginRepositories>
     <pluginRepository>
       <id>smartbear-sweden-plugin-repository</id>
-      <url>http://www.soapui.org/repository/maven2/</url>
+      <url>https://www.soapui.org/repository/maven2/</url>
     </pluginRepository>
   </pluginRepositories>
 

@@ -20,40 +20,42 @@ import org.testng.ITestContext;
 
 public class VerifySQLiteContainerTests {
 
-    private static ITestContext testContext;
-    private static ISuite suite;
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+	private static ITestContext testContext;
 
-    @BeforeClass
-    public static void initTestFixture() {
-        testContext = mock(ITestContext.class);
-        suite = mock(ISuite.class);
-        when(testContext.getSuite()).thenReturn(suite);
-    }
+	private static ISuite suite;
 
-    @Test
-    public void validHeaderString() throws IOException, SQLException, URISyntaxException {
-        mockSuite();
-        SQLiteContainerTests iut = new SQLiteContainerTests();
-        iut.initCommonFixture(testContext);
-        iut.fileHeaderString();
-    }
+	@Rule
+	public ExpectedException thrown = ExpectedException.none();
 
-    @Test
-    public void validApplicationId() throws IOException, SQLException, URISyntaxException {
-        mockSuite();
-        SQLiteContainerTests iut = new SQLiteContainerTests();
-        iut.initCommonFixture(testContext);
-        iut.applicationID();
-    }
+	@BeforeClass
+	public static void initTestFixture() {
+		testContext = mock(ITestContext.class);
+		suite = mock(ISuite.class);
+		when(testContext.getSuite()).thenReturn(suite);
+	}
 
-    private void mockSuite() throws URISyntaxException {
-        URL gpkgUrl = ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg");
-        File dataFile = new File(gpkgUrl.toURI());
-        dataFile.setWritable(false);
-        when(suite.getAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName())).thenReturn(dataFile);
-        when(suite.getAttribute(SuiteAttribute.GPKG_VERSION.getName())).thenReturn(GeoPackageVersion.V102);
-    }
+	@Test
+	public void validHeaderString() throws IOException, SQLException, URISyntaxException {
+		mockSuite();
+		SQLiteContainerTests iut = new SQLiteContainerTests();
+		iut.initCommonFixture(testContext);
+		iut.fileHeaderString();
+	}
+
+	@Test
+	public void validApplicationId() throws IOException, SQLException, URISyntaxException {
+		mockSuite();
+		SQLiteContainerTests iut = new SQLiteContainerTests();
+		iut.initCommonFixture(testContext);
+		iut.applicationID();
+	}
+
+	private void mockSuite() throws URISyntaxException {
+		URL gpkgUrl = ClassLoader.getSystemResource("gpkg/simple_sewer_features.gpkg");
+		File dataFile = new File(gpkgUrl.toURI());
+		dataFile.setWritable(false);
+		when(suite.getAttribute(SuiteAttribute.TEST_SUBJ_FILE.getName())).thenReturn(dataFile);
+		when(suite.getAttribute(SuiteAttribute.GPKG_VERSION.getName())).thenReturn(GeoPackageVersion.V102);
+	}
 
 }
