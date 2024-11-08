@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AttributeTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.attributes</a> &gt; <span class="el_source">AttributeTests.java</span></div><h1>AttributeTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.attributes;
+
+import static org.testng.Assert.assertTrue;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import org.opengis.cite.gpkg12.CommonFixture;
+import org.opengis.cite.gpkg12.ErrorMessage;
+import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that verify a GeoPackage's content relating to attributes.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://www.geopackage.org/spec/#attributes&quot; target= &quot;_blank&quot;&gt; GeoPackage
+ * Encoding Standard - 2.4 Attributes&lt;/a&gt; (OGC 12-128r13)&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Brad Hards
+ */
+<span class="fc" id="L31">public class AttributeTests extends CommonFixture {</span>
+
+<span class="fc" id="L33">	private final Collection&lt;String&gt; attributeTableNames = new ArrayList&lt;&gt;();</span>
+
+	/**
+	 * Shared setup.
+	 * @throws SQLException if connection could not be established
+	 */
+	@BeforeClass
+	public void setUp() throws SQLException {
+<span class="fc" id="L41">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L42">				final ResultSet resultSet = statement</span>
+<span class="fc" id="L43">					.executeQuery(&quot;SELECT table_name FROM gpkg_contents WHERE data_type = 'attributes'&quot;);) {</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc" id="L45">				attributeTableNames.add(resultSet.getString(1));</span>
+			}
+		}
+
+<span class="fc bfc" id="L49" title="All 2 branches covered.">		Assert.assertTrue(!attributeTableNames.isEmpty(),</span>
+<span class="fc" id="L50">				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, getTestName()));</span>
+<span class="fc" id="L51">	}</span>
+
+	/**
+	 * A GeoPackage MAY contain tables or updatable views containing attribute sets. Every
+	 * such Attribute table or view in a GeoPackage SHALL have a column with column type
+	 * INTEGER and PRIMARY KEY AUTOINCREMENT column constraints per GeoPackage Attributes
+	 * Example Table or View Definition and EXAMPLE: Attributes table Create Table SQL
+	 * (Informative).
+	 *
+	 * See Attribute User Data Tables - Requirement 119 and
+	 * /opt/attributes/contents/data/attributes_row
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r14: Requirement 119&quot;)
+	public void attributeTableIntegerPrimaryKey() throws SQLException {
+<span class="fc bfc" id="L66" title="All 2 branches covered.">		for (final String tableName : attributeTableNames) {</span>
+<span class="fc" id="L67">			try (final Statement statement = databaseConnection.createStatement();</span>
+<span class="fc" id="L68">					final ResultSet resultSet = statement</span>
+<span class="fc" id="L69">						.executeQuery(String.format(&quot;PRAGMA table_info(%s);&quot;, tableName));) {</span>
+<span class="fc" id="L70">				assertTrue(resultSet.next(), ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));</span>
+			}
+<span class="fc" id="L72">			checkPrimaryKey(tableName, getPrimaryKeyColumn(tableName, false), false);</span>
+<span class="fc" id="L73">		}</span>
+<span class="fc" id="L74">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

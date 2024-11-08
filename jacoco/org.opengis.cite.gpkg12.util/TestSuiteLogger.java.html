@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TestSuiteLogger.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.util</a> &gt; <span class="el_source">TestSuiteLogger.java</span></div><h1>TestSuiteLogger.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.util;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/**
+ * Logging utility class that provides simple access to the JDK Logging API. Set the
+ * &quot;java.util.logging.config.file&quot; system property to specify the location of the desired
+ * logging configuration file. A sample configuration file is available at
+ * {@code src/main/config/logging.properties}.
+ *
+ * @see java.util.logging.LogManager LogManager
+ */
+public class TestSuiteLogger {
+
+<span class="fc" id="L16">	private static final Logger LOGR = Logger.getLogger(TestSuiteLogger.class.getPackage().getName());</span>
+
+	/**
+	 * Logs a message at the specified logging level with the given message parameters.
+	 * @param level The logging {@link Level level}.
+	 * @param message A String representing the content of the log message.
+	 * @param params An array of message parameters.
+	 */
+	public static void log(Level level, String message, Object[] params) {
+<span class="nc bnc" id="L25" title="All 2 branches missed.">		if (LOGR.isLoggable(level)) {</span>
+<span class="nc" id="L26">			LOGR.log(level, message, params);</span>
+		}
+<span class="nc" id="L28">	}</span>
+
+	/**
+	 * Logs a message at the specified logging level with the given Exception object that
+	 * represents a noteworthy error condition.
+	 * @param level The logging {@link Level level}.
+	 * @param message A String representing the content of the log message.
+	 * @param except An object that indicates an exceptional situation.
+	 */
+	public static void log(Level level, String message, Exception except) {
+<span class="nc bnc" id="L38" title="All 2 branches missed.">		if (LOGR.isLoggable(level)) {</span>
+<span class="nc" id="L39">			LOGR.log(level, message, except);</span>
+		}
+<span class="nc" id="L41">	}</span>
+
+	/**
+	 * Logs a simple message at the specified logging level.
+	 * @param level The logging {@link Level level}.
+	 * @param message A String representing the content of the log message.
+	 */
+	public static void log(Level level, String message) {
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">		if (LOGR.isLoggable(level)) {</span>
+<span class="nc" id="L50">			LOGR.log(level, message);</span>
+		}
+<span class="fc" id="L52">	}</span>
+
+	/**
+	 * Indicates if the logger is enabled at a given logging level. Message levels lower
+	 * than this value will be discarded.
+	 * @param level The logging {@link Level level}.
+	 * @return true if the logger is currently enabled for this logging level; false
+	 * otherwise.
+	 */
+	public static boolean isLoggable(Level level) {
+<span class="fc" id="L62">		return LOGR.isLoggable(level);</span>
+	}
+
+	private TestSuiteLogger() {
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

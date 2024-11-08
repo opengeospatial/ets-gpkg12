@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MediaTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.extensions.relatedtables</a> &gt; <span class="el_source">MediaTests.java</span></div><h1>MediaTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.extensions.relatedtables;
+
+import static org.testng.Assert.assertTrue;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import org.opengis.cite.gpkg12.ErrorMessage;
+import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.testng.Assert;
+import org.testng.ITestContext;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that apply to the &quot;Media&quot; requirements class of the Related Tables
+ * Extension.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#media_rc&quot; target=
+ * &quot;_blank&quot;&gt; GeoPackage Related Tables Extention, Media Requirements Class&lt;/a&gt; (OGC
+ * 18-000)&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Jeff Yutzler
+ */
+<span class="fc" id="L31">public class MediaTests extends RTEBase {</span>
+
+	/**
+	 * A user-defined related data table or view SHALL be a user-defined media table or
+	 * view if the row in gpkgext_relations with a corresponding related_table_name has a
+	 * relation_name of &quot;media&quot;.
+	 * @param testContext a test context
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 * @see &lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#r12&quot; target=
+	 * &quot;_blank&quot;&gt;OGC 18-000 Requirement 12&lt;/a&gt;
+	 */
+	@BeforeClass
+	public void activeExtension(ITestContext testContext) throws SQLException {
+<span class="fc" id="L45">		super.activeExtension(testContext);</span>
+<span class="fc" id="L46">		testRequirementsClassActive(&quot;media&quot;, &quot;Media&quot;);</span>
+<span class="fc" id="L47">	}</span>
+
+	/**
+	 * A user-defined media table or view SHALL meet all requirements of a GPKG attributes
+	 * table type.
+	 *
+	 * A user-defined media table or view SHALL contain all of the columns described in
+	 * User-Defined Media Table Definition.
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 * @see &lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#r12&quot; target=
+	 * &quot;_blank&quot;&gt;OGC 18-000 Requirement 12b, 13&lt;/a&gt;
+	 */
+	@Test(description = &quot;See OGC 18-000: Requirement 12b, 13&quot;)
+	public void mediaTableDefinition() throws SQLException {
+<span class="fc" id="L62">		testRelatedType(&quot;media&quot;, &quot;attributes&quot;);</span>
+
+<span class="fc" id="L64">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L66">				final ResultSet resultSet = statement</span>
+<span class="fc" id="L67">					.executeQuery(&quot;SELECT related_table_name FROM gpkgext_relations WHERE relation_name = 'media';&quot;);) {</span>
+
+<span class="fc bfc" id="L69" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc" id="L70">				int passFlag = 0;</span>
+<span class="fc" id="L71">				final int flagMask = 0b00000011;</span>
+
+<span class="fc" id="L73">				final String relatedTableName = resultSet.getString(&quot;related_table_name&quot;);</span>
+<span class="fc" id="L74">				getPrimaryKeyColumn(relatedTableName, true);</span>
+<span class="fc" id="L75">				try (final Statement statement2 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L77">						final ResultSet resultSet2 = statement2</span>
+<span class="fc" id="L78">							.executeQuery(String.format(&quot;PRAGMA table_info(%s)&quot;, relatedTableName));) {</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">					while (resultSet2.next()) {</span>
+						// 3
+<span class="fc" id="L81">						final String name = resultSet2.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">						if (&quot;data&quot;.equals(name)) {</span>
+<span class="fc" id="L83">							Assert.assertEquals(resultSet2.getString(&quot;type&quot;), &quot;BLOB&quot;, ErrorMessage</span>
+<span class="fc" id="L84">								.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, relatedTableName, &quot;data type&quot;));</span>
+<span class="fc" id="L85">							Assert.assertEquals(resultSet2.getInt(&quot;notnull&quot;), 1, ErrorMessage</span>
+<span class="fc" id="L86">								.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, relatedTableName, &quot;data notnull&quot;));</span>
+<span class="fc" id="L87">							Assert.assertEquals(resultSet2.getInt(&quot;pk&quot;), 0, ErrorMessage</span>
+<span class="fc" id="L88">								.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, relatedTableName, &quot;data pk&quot;));</span>
+<span class="fc" id="L89">							passFlag |= 1;</span>
+						}
+<span class="fc bfc" id="L91" title="All 2 branches covered.">						else if (&quot;content_type&quot;.equals(name)) {</span>
+<span class="fc" id="L92">							Assert.assertEquals(resultSet2.getString(&quot;type&quot;), &quot;TEXT&quot;, ErrorMessage.format(</span>
+									ErrorMessageKeys.TABLE_DEFINITION_INVALID, relatedTableName, &quot;content_type type&quot;));
+<span class="fc" id="L94">							Assert.assertEquals(resultSet2.getInt(&quot;notnull&quot;), 1,</span>
+<span class="fc" id="L95">									ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, relatedTableName,</span>
+											&quot;content_type notnull&quot;));
+<span class="fc" id="L97">							Assert.assertEquals(resultSet2.getInt(&quot;pk&quot;), 0, ErrorMessage.format(</span>
+									ErrorMessageKeys.TABLE_DEFINITION_INVALID, relatedTableName, &quot;content_type pk&quot;));
+<span class="fc" id="L99">							passFlag |= (1 &lt;&lt; 1);</span>
+						}
+<span class="fc" id="L101">					}</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">					assertTrue((passFlag &amp; flagMask) == flagMask,</span>
+<span class="fc" id="L103">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, relatedTableName,</span>
+<span class="fc" id="L104">									String.format(&quot;missing column(s): code(%s)&quot;, passFlag)));</span>
+				}
+<span class="fc" id="L106">			}</span>
+		}
+<span class="fc" id="L108">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

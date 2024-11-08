@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SchemaTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.extensions.schema</a> &gt; <span class="el_source">SchemaTests.java</span></div><h1>SchemaTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.extensions.schema;
+
+import static org.testng.Assert.assertTrue;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.List;
+
+import org.opengis.cite.gpkg12.CommonFixture;
+import org.opengis.cite.gpkg12.ErrorMessage;
+import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
+import org.testng.Assert;
+import org.testng.ITestContext;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that apply to descriptive information about a GeoPackage's content
+ * as it pertains to the schema extension.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://www.geopackage.org/spec/#extension_schema&quot; target= &quot;_blank&quot;&gt;
+ * GeoPackage Encoding Standard - F.9. Schema&lt;/a&gt; (OGC 12-128r13)&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Jeff Yutzler
+ */
+<span class="fc" id="L35">public class SchemaTests extends CommonFixture {</span>
+
+	@BeforeClass
+	public void activeExtension(ITestContext testContext) throws SQLException {
+		// Starting with GPKG 1.1, this is a proper extension.
+<span class="fc bfc" id="L40" title="All 2 branches covered.">		if (geopackageVersion == GeoPackageVersion.V102) {</span>
+<span class="fc" id="L41">			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_data_columns&quot;),</span>
+<span class="fc" id="L42">					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, &quot;Schema Option&quot;));</span>
+<span class="fc" id="L43">			minIsInclusive = &quot;minIsInclusive&quot;;</span>
+<span class="fc" id="L44">			maxIsInclusive = &quot;maxIsInclusive&quot;;</span>
+		}
+		else {
+<span class="fc" id="L47">			Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;),</span>
+<span class="fc" id="L48">					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, &quot;Schema Extension&quot;));</span>
+
+<span class="fc" id="L50">			try (final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L52">					final ResultSet resultSet = statement</span>
+<span class="fc" id="L53">						.executeQuery(&quot;SELECT count(*) from gpkg_extensions WHERE extension_name = 'gpkg_schema';&quot;);) {</span>
+<span class="fc" id="L54">				resultSet.next();</span>
+
+<span class="fc bfc" id="L56" title="All 2 branches covered.">				Assert.assertTrue(resultSet.getInt(1) &gt; 0,</span>
+<span class="fc" id="L57">						ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, &quot;Schema Extension&quot;));</span>
+			}
+<span class="fc" id="L59">			minIsInclusive = &quot;min_is_inclusive&quot;;</span>
+<span class="fc" id="L60">			maxIsInclusive = &quot;max_is_inclusive&quot;;</span>
+		}
+<span class="fc" id="L62">	}</span>
+
+	/**
+	 * A GeoPackage MAY contain a table or updateable view named gpkg_data_columns. If
+	 * present it SHALL be defined per clause 2.3.2.1.1 Table Definition, Data Columns
+	 * Table or View Definition and gpkg_data_columns Table Definition SQL.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r103&quot; target= &quot;_blank&quot;&gt;F.9. Schema -
+	 * Requirement 103&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 103&quot;)
+	public void dataColumnsTableDefinition() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L77">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L79">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkg_data_columns');&quot;);) {</span>
+			// 2
+<span class="fc" id="L81">			int passFlag = 0;</span>
+<span class="fc" id="L82">			final int flagMask = 0b01111111;</span>
+
+<span class="fc bfc" id="L84" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+				// 3
+<span class="fc" id="L86">				final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">				if (&quot;table_name&quot;.equals(name)) {</span>
+<span class="fc" id="L88">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage</span>
+<span class="fc" id="L89">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;table_name type&quot;));</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage</span>
+<span class="fc" id="L91">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;table_name notnull&quot;));</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) &gt; 0, ErrorMessage</span>
+<span class="fc" id="L93">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;table_name pk&quot;));</span>
+<span class="fc" id="L94">					passFlag |= 1;</span>
+				}
+<span class="fc bfc" id="L96" title="All 2 branches covered.">				else if (&quot;column_name&quot;.equals(name)) {</span>
+<span class="fc" id="L97">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage</span>
+<span class="fc" id="L98">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;column_name type&quot;));</span>
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage</span>
+<span class="fc" id="L100">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;column_name notnull&quot;));</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;pk&quot;) &gt; 0, ErrorMessage</span>
+<span class="fc" id="L102">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;column_name pk&quot;));</span>
+<span class="fc" id="L103">					passFlag |= (1 &lt;&lt; 1);</span>
+				}
+<span class="fc bfc" id="L105" title="All 2 branches covered.">				else if (&quot;name&quot;.equals(name)) {</span>
+<span class="fc" id="L106">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage</span>
+<span class="fc" id="L107">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;name type&quot;));</span>
+
+					// Huh? How can a unique value be allowed to be null?
+<span class="pc bpc" id="L110" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage</span>
+<span class="fc" id="L111">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;name notnull&quot;));</span>
+
+					// unique constraint??
+<span class="fc" id="L114">					passFlag |= (1 &lt;&lt; 2);</span>
+				}
+<span class="fc bfc" id="L116" title="All 2 branches covered.">				else if (&quot;title&quot;.equals(name)) {</span>
+<span class="fc" id="L117">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage</span>
+<span class="fc" id="L118">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;title type&quot;));</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage</span>
+<span class="fc" id="L120">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;title notnull&quot;));</span>
+<span class="fc" id="L121">					passFlag |= (1 &lt;&lt; 3);</span>
+				}
+<span class="fc bfc" id="L123" title="All 2 branches covered.">				else if (&quot;description&quot;.equals(name)) {</span>
+<span class="fc" id="L124">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage</span>
+<span class="fc" id="L125">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;description type&quot;));</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage</span>
+<span class="fc" id="L127">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;description notnull&quot;));</span>
+<span class="fc" id="L128">					passFlag |= (1 &lt;&lt; 4);</span>
+				}
+<span class="fc bfc" id="L130" title="All 2 branches covered.">				else if (&quot;mime_type&quot;.equals(name)) {</span>
+<span class="fc" id="L131">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage</span>
+<span class="fc" id="L132">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;mime_type type&quot;));</span>
+<span class="pc bpc" id="L133" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage</span>
+<span class="fc" id="L134">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;mime_type notnull&quot;));</span>
+<span class="fc" id="L135">					passFlag |= (1 &lt;&lt; 5);</span>
+				}
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">				else if (&quot;constraint_name&quot;.equals(name)) {</span>
+<span class="fc" id="L138">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;constraint_name type&quot;));
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_columns&quot;, &quot;constraint_name notnull&quot;));
+<span class="fc" id="L142">					passFlag |= (1 &lt;&lt; 6);</span>
+				}
+<span class="fc" id="L144">			}</span>
+<span class="pc bpc" id="L145" title="1 of 2 branches missed.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+					&quot;gpkg_data_columns&quot;, &quot;missing column(s)&quot;));
+		}
+<span class="fc" id="L148">	}</span>
+
+	/**
+	 * Values of the gpkg_data_columns table table_name column value SHALL reference
+	 * values in the gpkg_contents table_name column.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r104&quot; target= &quot;_blank&quot;&gt;F.9. Schema -
+	 * Requirement 104&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 104&quot;)
+	public void dataColumnsTableName() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L162">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L164">				final ResultSet resultSet1 = statement1.executeQuery(</span>
+						&quot;SELECT DISTINCT gdc.table_name AS gdc_table, gc.table_name AS gc_table FROM gpkg_data_columns AS gdc LEFT OUTER JOIN gpkg_contents AS gc ON gdc.table_name = gc.table_name;&quot;);) {
+			// 2
+<span class="fc bfc" id="L167" title="All 2 branches covered.">			while (resultSet1.next()) {</span>
+				// 3
+<span class="fc" id="L169">				final String gcTable = resultSet1.getString(&quot;gc_table&quot;);</span>
+<span class="fc" id="L170">				final String gdcTable = resultSet1.getString(&quot;gdc_table&quot;);</span>
+
+				// 3a
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">				assertTrue(gcTable != null,</span>
+<span class="fc" id="L174">						ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TABLE, &quot;gpkg_data_columns&quot;, gdcTable));</span>
+<span class="fc" id="L175">			}</span>
+		}
+<span class="fc" id="L177">	}</span>
+
+	/**
+	 * The `column_name` column value in a `gpkg_data_columns` table row SHALL contain the
+	 * name of a column in the SQLite table or view identified by the `table_name` column
+	 * value.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r105&quot; target= &quot;_blank&quot;&gt;F.9. Schema -
+	 * Requirement 105&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 105&quot;)
+	public void dataColumnsColumnName() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L192">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L194">				final ResultSet resultSet1 = statement1</span>
+<span class="fc" id="L195">					.executeQuery(&quot;SELECT table_name, column_name FROM gpkg_data_columns;&quot;);) {</span>
+			// 2
+<span class="fc bfc" id="L197" title="All 2 branches covered.">			while (resultSet1.next()) {</span>
+<span class="fc" id="L198">				final String columnName = resultSet1.getString(&quot;column_name&quot;);</span>
+<span class="fc" id="L199">				final String tableName = resultSet1.getString(&quot;table_name&quot;);</span>
+
+				// 3
+<span class="fc" id="L202">				try (final Statement statement2 = this.databaseConnection.createStatement()) {</span>
+					// 3bi
+<span class="fc" id="L204">					statement2.executeQuery(String.format(&quot;SELECT COUNT(%s) from %s;&quot;, columnName, tableName));</span>
+				}
+<span class="fc" id="L206">				catch (SQLException exc) {</span>
+<span class="nc" id="L207">					Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_COLUMN, &quot;gpkg_data_columns&quot;,</span>
+							columnName, tableName));
+<span class="fc" id="L209">				}</span>
+<span class="fc" id="L210">			}</span>
+		}
+<span class="fc" id="L212">	}</span>
+
+	/**
+	 * A GeoPackage MAY contain a table or updateable view named
+	 * gpkg_data_column_constraints. If present it SHALL be defined per clause 2.3.3.1.1
+	 * Table Definition, Data Column Constraints Table or View Definition and
+	 * gpkg_data_columns Table Definition SQL.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r107&quot; target= &quot;_blank&quot;&gt;F.9. Schema -
+	 * Requirement 107&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 107&quot;)
+	public void dataColumnConstraintsTableDefinition() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L228">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L230">				final ResultSet resultSet = statement</span>
+<span class="fc" id="L231">					.executeQuery(&quot;PRAGMA table_info('gpkg_data_column_constraints');&quot;);) {</span>
+			// 2
+<span class="fc" id="L233">			int passFlag = 0;</span>
+<span class="fc" id="L234">			final int flagMask = 0b11111111;</span>
+
+<span class="fc bfc" id="L236" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+				// 3
+<span class="fc" id="L238">				final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L239" title="All 2 branches covered.">				if (&quot;constraint_name&quot;.equals(name)) {</span>
+<span class="fc" id="L240">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)),</span>
+<span class="fc" id="L241">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+									&quot;gpkg_data_column_constraints&quot;, &quot;constraint_name type&quot;));
+<span class="pc bpc" id="L243" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1,</span>
+<span class="fc" id="L244">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+									&quot;gpkg_data_column_constraints&quot;, &quot;constraint_name notnull&quot;));
+<span class="fc" id="L246">					passFlag |= 1;</span>
+				}
+<span class="fc bfc" id="L248" title="All 2 branches covered.">				else if (&quot;constraint_type&quot;.equals(name)) {</span>
+<span class="fc" id="L249">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)),</span>
+<span class="fc" id="L250">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+									&quot;gpkg_data_column_constraints&quot;, &quot;constraint_type type&quot;));
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1,</span>
+<span class="fc" id="L253">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+									&quot;gpkg_data_column_constraints&quot;, &quot;constraint_type notnull&quot;));
+<span class="fc" id="L255">					passFlag |= (1 &lt;&lt; 1);</span>
+				}
+<span class="fc bfc" id="L257" title="All 2 branches covered.">				else if (&quot;value&quot;.equals(name)) {</span>
+<span class="fc" id="L258">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;value type&quot;));
+
+					// Huh? How can a unique value be allowed to be null?
+<span class="pc bpc" id="L262" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0,</span>
+<span class="fc" id="L263">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+									&quot;gpkg_data_column_constraints&quot;, &quot;value notnull&quot;));
+
+					// unique constraint??
+<span class="fc" id="L267">					passFlag |= (1 &lt;&lt; 2);</span>
+				}
+<span class="fc bfc" id="L269" title="All 2 branches covered.">				else if (&quot;min&quot;.equals(name)) {</span>
+<span class="fc" id="L270">					assertTrue(&quot;NUMERIC&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage</span>
+<span class="fc" id="L271">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;min type&quot;));</span>
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;min notnull&quot;));
+<span class="fc" id="L274">					passFlag |= (1 &lt;&lt; 3);</span>
+				}
+<span class="fc bfc" id="L276" title="All 2 branches covered.">				else if (minIsInclusive.equalsIgnoreCase(name)) {</span>
+<span class="fc" id="L277">					assertTrue(&quot;BOOLEAN&quot;.equals(resultSet.getString(&quot;type&quot;)),</span>
+<span class="fc" id="L278">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+									&quot;gpkg_data_column_constraints&quot;, minIsInclusive + &quot; type&quot;));
+<span class="pc bpc" id="L280" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0,</span>
+<span class="fc" id="L281">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+									&quot;gpkg_data_column_constraints&quot;, minIsInclusive + &quot; notnull&quot;));
+<span class="fc" id="L283">					passFlag |= (1 &lt;&lt; 4);</span>
+				}
+<span class="fc bfc" id="L285" title="All 2 branches covered.">				else if (&quot;max&quot;.equals(name)) {</span>
+<span class="fc" id="L286">					assertTrue(&quot;NUMERIC&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage</span>
+<span class="fc" id="L287">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;max type&quot;));</span>
+<span class="pc bpc" id="L288" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_data_column_constraints&quot;, &quot;max notnull&quot;));
+<span class="fc" id="L290">					passFlag |= (1 &lt;&lt; 5);</span>
+				}
+<span class="fc bfc" id="L292" title="All 2 branches covered.">				else if (maxIsInclusive.equalsIgnoreCase(name)) {</span>
+<span class="fc" id="L293">					assertTrue(&quot;BOOLEAN&quot;.equals(resultSet.getString(&quot;type&quot;)),</span>
+<span class="fc" id="L294">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+									&quot;gpkg_data_column_constraints&quot;, maxIsInclusive + &quot; type&quot;));
+<span class="pc bpc" id="L296" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0,</span>
+<span class="fc" id="L297">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+									&quot;gpkg_data_column_constraints&quot;, maxIsInclusive + &quot; notnull&quot;));
+<span class="fc" id="L299">					passFlag |= (1 &lt;&lt; 6);</span>
+				}
+<span class="pc bpc" id="L301" title="1 of 2 branches missed.">				else if (&quot;description&quot;.equals(name)) {</span>
+<span class="fc" id="L302">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)),</span>
+<span class="fc" id="L303">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+									&quot;gpkg_data_column_constraints&quot;, &quot;description type&quot;));
+<span class="pc bpc" id="L305" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0,</span>
+<span class="fc" id="L306">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+									&quot;gpkg_data_column_constraints&quot;, &quot;description notnull&quot;));
+<span class="fc" id="L308">					passFlag |= (1 &lt;&lt; 7);</span>
+				}
+<span class="fc" id="L310">			}</span>
+<span class="fc bfc" id="L311" title="All 2 branches covered.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+					&quot;gpkg_data_column_constraints&quot;, &quot;missing column(s)&quot;));
+		}
+<span class="fc" id="L314">	}</span>
+
+	/**
+	 * The gpkg_data_column_constraints table MAY be empty. If it contains data, the
+	 * lowercase constraint_type column values SHALL be one of &quot;range&quot;, &quot;enum&quot;, or &quot;glob&quot;.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r108&quot; target= &quot;_blank&quot;&gt;F.9. Schema -
+	 * Requirement 108&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 108&quot;)
+	public void dataColumnConstraintsType() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L328">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L330">				final ResultSet resultSet1 = statement1</span>
+<span class="fc" id="L331">					.executeQuery(&quot;SELECT DISTINCT constraint_type FROM gpkg_data_column_constraints&quot;);) {</span>
+			// 2
+<span class="pc bpc" id="L333" title="1 of 2 branches missed.">			while (resultSet1.next()) {</span>
+				// 3
+<span class="nc" id="L335">				final String constraintType = resultSet1.getString(&quot;constraint_type&quot;);</span>
+
+<span class="nc" id="L337">				Assert.assertTrue(AllowedConstraintTypes.contains(constraintType),</span>
+<span class="nc" id="L338">						ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_VALUE, constraintType, &quot;constraint_type&quot;,</span>
+								&quot;gpkg_data_column_constraints&quot;));
+<span class="nc" id="L340">			}</span>
+		}
+<span class="fc" id="L342">	}</span>
+
+	/**
+	 * gpkg_data_column_constraint constraint_name values for rows with constraint_type
+	 * values of &quot;range&quot; and &quot;glob&quot; SHALL be unique.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r109&quot; target= &quot;_blank&quot;&gt;F.9. Schema -
+	 * Requirement 109&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 109&quot;)
+	public void dataColumnConstraintsName() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L356">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L358">				final ResultSet resultSet1 = statement1.executeQuery(</span>
+						&quot;SELECT DISTINCT constraint_name FROM gpkg_data_column_constraints WHERE constraint_type IN ('range', 'glob')&quot;);) {
+			// 2
+<span class="pc bpc" id="L361" title="1 of 2 branches missed.">			while (resultSet1.next()) {</span>
+				// 3
+<span class="nc" id="L363">				final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
+
+<span class="nc" id="L365">				try (final Statement statement2 = this.databaseConnection.createStatement();</span>
+
+<span class="nc" id="L367">						final ResultSet resultSet2 = statement2.executeQuery(String.format(</span>
+								&quot;SELECT COUNT(*) FROM gpkg_data_column_constraints WHERE constraint_name = '%s'&quot;,
+								constraintName));) {
+<span class="nc bnc" id="L370" title="All 2 branches missed.">					Assert.assertTrue(resultSet2.getInt(1) &lt;= 1, ErrorMessage.format(ErrorMessageKeys.NON_UNIQUE_VALUE,</span>
+							&quot;constraint_name&quot;, &quot;gpkg_data_column_constraints&quot;, constraintName));
+				}
+<span class="nc" id="L373">			}</span>
+		}
+<span class="fc" id="L375">	}</span>
+
+	/**
+	 * The gpkg_data_column_constraints table MAY be empty. If it contains rows with
+	 * constraint_type column values of &quot;range&quot;, the value column values for those rows
+	 * SHALL be NULL.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r110&quot; target= &quot;_blank&quot;&gt;F.9. Schema -
+	 * Requirement 110&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 110&quot;)
+	public void dataColumnConstraintsValue() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L390">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L392">				final ResultSet resultSet1 = statement1.executeQuery(</span>
+						&quot;SELECT constraint_name, value FROM gpkg_data_column_constraints WHERE constraint_type = 'range'&quot;);) {
+			// 2
+<span class="pc bpc" id="L395" title="1 of 2 branches missed.">			while (resultSet1.next()) {</span>
+				// 3
+<span class="nc" id="L397">				final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
+<span class="nc" id="L398">				final String value = resultSet1.getString(&quot;value&quot;);</span>
+
+<span class="nc bnc" id="L400" title="All 2 branches missed.">				Assert.assertTrue(value == null,</span>
+<span class="nc" id="L401">						ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName));</span>
+<span class="nc" id="L402">			}</span>
+		}
+<span class="fc" id="L404">	}</span>
+
+	/**
+	 * If the `gpkg_data_column_constraints` table contains rows with `constraint_type`
+	 * column values of &quot;range&quot;, the `min` column values for those rows SHALL be NOT NULL
+	 * and less than the `max` column value which shall be NOT NULL.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r111&quot; target= &quot;_blank&quot;&gt;F.9. Schema -
+	 * Requirement 111&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 111&quot;)
+	public void dataColumnConstraintsMinMax() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L419">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L421">				final ResultSet resultSet1 = statement1.executeQuery(</span>
+						&quot;SELECT constraint_name, min, max FROM gpkg_data_column_constraints WHERE constraint_type = 'range'&quot;);) {
+			// 2
+<span class="pc bpc" id="L424" title="1 of 2 branches missed.">			while (resultSet1.next()) {</span>
+<span class="nc" id="L425">				final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
+				// 3a
+<span class="nc" id="L427">				final double min = resultSet1.getDouble(&quot;min&quot;);</span>
+<span class="nc bnc" id="L428" title="All 2 branches missed.">				Assert.assertTrue(!resultSet1.wasNull(),</span>
+<span class="nc" id="L429">						ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
+				// 3b
+<span class="nc" id="L431">				final double max = resultSet1.getDouble(&quot;max&quot;);</span>
+<span class="nc bnc" id="L432" title="All 2 branches missed.">				Assert.assertTrue(!resultSet1.wasNull(),</span>
+<span class="nc" id="L433">						ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
+				// 3c
+<span class="nc bnc" id="L435" title="All 2 branches missed.">				Assert.assertTrue(min &lt;= max,</span>
+<span class="nc" id="L436">						ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
+<span class="nc" id="L437">			}</span>
+		}
+<span class="fc" id="L439">	}</span>
+
+	/**
+	 * If the `gpkg_data_column_constraints` table contains rows with `constraint_type`
+	 * column values of &quot;range&quot;, the `min_is_inclusive` and `max_is_inclusive` column
+	 * values for those rows SHALL be 0 or 1.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r112&quot; target= &quot;_blank&quot;&gt;F.9. Schema -
+	 * Requirement 112&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 112&quot;)
+	public void dataColumnConstraintsInclusive() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L454">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L456">				final ResultSet resultSet1 = statement1.executeQuery(String.format(</span>
+						&quot;SELECT constraint_name, %s, %s FROM gpkg_data_column_constraints WHERE constraint_type = 'range'&quot;,
+						minIsInclusive, maxIsInclusive));) {
+			// 2
+<span class="pc bpc" id="L460" title="1 of 2 branches missed.">			while (resultSet1.next()) {</span>
+<span class="nc" id="L461">				final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
+				// 3
+<span class="nc" id="L463">				resultSet1.getBoolean(minIsInclusive);</span>
+<span class="nc bnc" id="L464" title="All 2 branches missed.">				Assert.assertTrue(!resultSet1.wasNull(),</span>
+<span class="nc" id="L465">						ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
+<span class="nc" id="L466">				resultSet1.getBoolean(maxIsInclusive);</span>
+<span class="nc bnc" id="L467" title="All 2 branches missed.">				Assert.assertTrue(!resultSet1.wasNull(),</span>
+<span class="nc" id="L468">						ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
+<span class="nc" id="L469">			}</span>
+		}
+<span class="fc" id="L471">	}</span>
+
+	/**
+	 * If the `gpkg_data_column_constraints` table contains rows with `constraint_type`
+	 * column values of &quot;enum&quot; or &quot;glob&quot;, the `min`, `max`, `min_is_inclusive` and
+	 * `max_is_inclusive` column values for those rows SHALL be NULL.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r113&quot; target= &quot;_blank&quot;&gt;F.9. Schema -
+	 * Requirement 113&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 113&quot;)
+	public void dataColumnConstraintsGlobMinMax() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L486">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L488">				final ResultSet resultSet1 = statement1.executeQuery(String.format(</span>
+						&quot;SELECT constraint_name, min, max, %s, %s FROM gpkg_data_column_constraints WHERE constraint_type IN ('enum','glob')&quot;,
+						minIsInclusive, maxIsInclusive));) {
+			// 2
+<span class="pc bpc" id="L492" title="1 of 2 branches missed.">			while (resultSet1.next()) {</span>
+<span class="nc" id="L493">				final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
+				// 3a
+<span class="nc" id="L495">				resultSet1.getDouble(&quot;min&quot;);</span>
+<span class="nc" id="L496">				Assert.assertTrue(resultSet1.wasNull(),</span>
+<span class="nc" id="L497">						ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
+				// 3b
+<span class="nc" id="L499">				resultSet1.getDouble(&quot;max&quot;);</span>
+<span class="nc" id="L500">				Assert.assertTrue(resultSet1.wasNull(),</span>
+<span class="nc" id="L501">						ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_MINMAX_INVALID, constraintName));</span>
+				// 3c
+<span class="nc" id="L503">				resultSet1.getDouble(minIsInclusive);</span>
+<span class="nc" id="L504">				Assert.assertTrue(resultSet1.wasNull(),</span>
+<span class="nc" id="L505">						ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
+				// 3d
+<span class="nc" id="L507">				resultSet1.getDouble(maxIsInclusive);</span>
+<span class="nc" id="L508">				Assert.assertTrue(resultSet1.wasNull(),</span>
+<span class="nc" id="L509">						ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_INCLUSIVE_INVALID, constraintName));</span>
+<span class="nc" id="L510">			}</span>
+		}
+<span class="fc" id="L512">	}</span>
+
+	/**
+	 * If the `gpkg_data_column_constraints` table contains rows with `constraint_type`
+	 * column values of &quot;enum&quot; or &quot;glob&quot;, the `value` column SHALL NOT be NULL.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r114&quot; target= &quot;_blank&quot;&gt;F.9. Schema -
+	 * Requirement 114&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 114&quot;)
+	public void dataColumnConstraintsGlobValue() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L526">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L528">				final ResultSet resultSet1 = statement1.executeQuery(</span>
+						&quot;SELECT constraint_name, value FROM gpkg_data_column_constraints WHERE constraint_type IN ('enum','glob')&quot;);) {
+			// 2
+<span class="pc bpc" id="L531" title="1 of 2 branches missed.">			while (resultSet1.next()) {</span>
+				// 3
+<span class="nc" id="L533">				final String constraintName = resultSet1.getString(&quot;constraint_name&quot;);</span>
+<span class="nc" id="L534">				resultSet1.getString(&quot;value&quot;);</span>
+
+<span class="nc bnc" id="L536" title="All 2 branches missed.">				Assert.assertTrue(!resultSet1.wasNull(),</span>
+<span class="nc" id="L537">						ErrorMessage.format(ErrorMessageKeys.CONSTRAINT_NON_NULL_VALUE, constraintName, &quot;not&quot;));</span>
+<span class="nc" id="L538">			}</span>
+		}
+<span class="fc" id="L540">	}</span>
+
+<span class="fc" id="L542">	static private List&lt;String&gt; AllowedConstraintTypes = Arrays.asList(&quot;range&quot;, &quot;enum&quot;, &quot;glob&quot;);</span>
+
+	private String maxIsInclusive;
+
+	private String minIsInclusive;
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

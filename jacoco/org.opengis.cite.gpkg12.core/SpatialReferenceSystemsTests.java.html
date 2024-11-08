@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SpatialReferenceSystemsTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.core</a> &gt; <span class="el_source">SpatialReferenceSystemsTests.java</span></div><h1>SpatialReferenceSystemsTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.core;
+
+import static org.testng.Assert.assertTrue;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.stream.Collectors;
+
+import org.opengis.cite.gpkg12.CommonFixture;
+import org.opengis.cite.gpkg12.ErrorMessage;
+import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that apply to spatial reference systems defined in a GeoPackage.
+ * The coordinate reference systems relate feature geometries and tile images in user
+ * tables to locations on the Earth.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://www.geopackage.org/spec/#spatial_ref_sys&quot; target=
+ * &quot;_blank&quot;&gt;GeoPackage Encoding Standard - Spatial Reference Systems&lt;/a&gt; (OGC
+ * 12-128r12)&lt;/li&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://www.epsg.org/&quot; target= &quot;_blank&quot;&gt;EPSG Geodetic Parameter
+ * Dataset&lt;/a&gt;&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Luke Lambert
+ */
+<span class="fc" id="L35">public class SpatialReferenceSystemsTests extends CommonFixture {</span>
+
+	/**
+	 * A GeoPackage SHALL include a {@code gpkg_spatial_ref_sys} table per clause
+	 * 1.1.2.1.1
+	 * &lt;a href= &quot;http://www.geopackage.org/spec/#spatial_ref_sys_data_table_definition&quot;&gt;
+	 * Table Definition&lt;/a&gt;, Table
+	 * &lt;a href= &quot;http://www.geopackage.org/spec/#gpkg_spatial_ref_sys_cols&quot;&gt; Spatial Ref
+	 * Sys Table Definition&lt;/a&gt; and Table
+	 * &lt;a href= &quot;http://www.geopackage.org/spec/#gpkg_spatial_ref_sys_sql&quot;&gt;
+	 * gpkg_spatial_ref_sys Table Definition SQL&lt;/a&gt;.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-10&quot; target=
+	 * &quot;_blank&quot;&gt;Table Definition - Requirement 10&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 10&quot;)
+	public void srsTableDefinition() throws SQLException {
+<span class="fc" id="L53">		final String tableName = &quot;gpkg_spatial_ref_sys&quot;;</span>
+		try (
+				// 1
+<span class="fc" id="L56">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L58">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('&quot; + tableName + &quot;');&quot;);) {</span>
+			// 2
+<span class="fc" id="L60">			int passFlag = 0;</span>
+<span class="fc" id="L61">			final int flagMask = 0b00111111;</span>
+
+<span class="fc" id="L63">			checkPrimaryKey(tableName, &quot;srs_id&quot;, true);</span>
+
+			// Technically nonnull columns should have a default but this should not cause
+			// a test failure.
+<span class="fc bfc" id="L67" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+				// 3
+<span class="fc" id="L69">				final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">				if (&quot;srs_id&quot;.equals(name)) {</span>
+					// handled with checkPrimaryKey...
+<span class="fc" id="L72">					passFlag |= 1;</span>
+				}
+<span class="fc bfc" id="L74" title="All 2 branches covered.">				else if (&quot;srs_name&quot;.equals(name)) {</span>
+<span class="fc" id="L75">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)),</span>
+<span class="fc" id="L76">							ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;srs_name&quot;, tableName,</span>
+<span class="fc" id="L77">									&quot;type&quot;, &quot;TEXT&quot;, resultSet.getString(&quot;type&quot;)));</span>
+<span class="pc bpc" id="L78" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1,</span>
+<span class="fc" id="L79">							ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;srs_name&quot;, tableName,</span>
+<span class="fc" id="L80">									&quot;notnull&quot;, &quot;1&quot;, resultSet.getInt(&quot;notnull&quot;)));</span>
+<span class="fc" id="L81">					passFlag |= (1 &lt;&lt; 1);</span>
+				}
+<span class="fc bfc" id="L83" title="All 2 branches covered.">				else if (&quot;organization&quot;.equals(name)) {</span>
+<span class="fc" id="L84">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)),</span>
+<span class="fc" id="L85">							ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;organization&quot;, tableName,</span>
+<span class="fc" id="L86">									&quot;type&quot;, &quot;TEXT&quot;, resultSet.getString(&quot;type&quot;)));</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1,</span>
+<span class="fc" id="L88">							ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;organization&quot;, tableName,</span>
+<span class="fc" id="L89">									&quot;notnull&quot;, &quot;1&quot;, resultSet.getInt(&quot;notnull&quot;)));</span>
+<span class="fc" id="L90">					passFlag |= (1 &lt;&lt; 2);</span>
+				}
+<span class="fc bfc" id="L92" title="All 2 branches covered.">				else if (&quot;organization_coordsys_id&quot;.equals(name)) {</span>
+<span class="fc" id="L93">					assertTrue(&quot;INTEGER&quot;.equals(resultSet.getString(&quot;type&quot;)),</span>
+<span class="fc" id="L94">							ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;organization_coordsys_id&quot;,</span>
+<span class="fc" id="L95">									tableName, &quot;type&quot;, &quot;INTEGER&quot;, resultSet.getString(&quot;type&quot;)));</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1,</span>
+<span class="fc" id="L97">							ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;organization_coordsys_id&quot;,</span>
+<span class="fc" id="L98">									tableName, &quot;notnull&quot;, &quot;1&quot;, resultSet.getInt(&quot;notnull&quot;)));</span>
+<span class="fc" id="L99">					passFlag |= (1 &lt;&lt; 3);</span>
+				}
+<span class="fc bfc" id="L101" title="All 2 branches covered.">				else if (&quot;definition&quot;.equals(name)) {</span>
+<span class="fc" id="L102">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)),</span>
+<span class="fc" id="L103">							ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;definition&quot;, tableName,</span>
+<span class="fc" id="L104">									&quot;type&quot;, &quot;TEXT&quot;, resultSet.getString(&quot;type&quot;)));</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1,</span>
+<span class="fc" id="L106">							ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;definition&quot;, tableName,</span>
+<span class="fc" id="L107">									&quot;notnull&quot;, &quot;1&quot;, resultSet.getString(&quot;notnull&quot;)));</span>
+<span class="fc" id="L108">					passFlag |= (1 &lt;&lt; 4);</span>
+				}
+<span class="fc bfc" id="L110" title="All 2 branches covered.">				else if (&quot;description&quot;.equals(name)) {</span>
+<span class="fc" id="L111">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)),</span>
+<span class="fc" id="L112">							ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;description&quot;, tableName,</span>
+<span class="fc" id="L113">									&quot;type&quot;, &quot;TEXT&quot;, resultSet.getString(&quot;type&quot;)));</span>
+<span class="pc bpc" id="L114" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0,</span>
+<span class="fc" id="L115">							ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION, &quot;description&quot;, tableName,</span>
+<span class="fc" id="L116">									&quot;notnull&quot;, &quot;0&quot;, resultSet.getString(&quot;notnull&quot;)));</span>
+<span class="fc" id="L117">					passFlag |= (1 &lt;&lt; 5);</span>
+				}
+<span class="fc" id="L119">			}</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">			assertTrue((passFlag &amp; flagMask) == flagMask,</span>
+<span class="fc" id="L121">					ErrorMessage.format(ErrorMessageKeys.MISSING_COLUMN, tableName));</span>
+		}
+<span class="fc" id="L123">	}</span>
+
+	/**
+	 * The {@code gpkg_spatial_ref_sys} table in a GeoPackage SHALL contain a record for
+	 * organization &lt;a href=&quot;http://www.epsg.org/Geodetic.html&quot;&gt;EPSG or epsg&lt;/a&gt; and
+	 * {@code organization_coordsys_id} &lt;a href=
+	 * &quot;http://www.epsg-registry.org/report.htm?type=selection&amp;amp;entity=urn:ogc:def:crs:EPSG::4326&amp;amp;reportDetail=long&amp;amp;title=WGS%2084&amp;amp;style=urn:uuid:report-style:default-with-code&amp;amp;style_name=OGP%20Default%20With%20Code&quot;
+	 * &gt;4326&lt;/a&gt; for &lt;a href=&quot;http://www.google.com/search?as_q=WGS-84&quot;&gt;WGS-84&lt;/a&gt;, a
+	 * record with an {@code srs_id} of -1, an organization of &quot;NONE&quot;, an
+	 * {@code organization_coordsys_id} of -1, and definition &quot;undefined&quot; for undefined
+	 * Cartesian coordinate reference systems, and a record with an {@code srs_id} of 0,
+	 * an organization of &quot;NONE&quot;, an {@code
+	 * organization_coordsys_id} of 0, and definition &quot;undefined&quot; for undefined geographic
+	 * coordinate reference systems.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-11&quot; target=
+	 * &quot;_blank&quot;&gt;Table Data Values - Requirement 11&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 11&quot;)
+	public void requiredSrsEntries() throws SQLException {
+<span class="fc" id="L144">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L145">				final ResultSet srsDefaultValue = statement.executeQuery(</span>
+						&quot;SELECT srs_id FROM gpkg_spatial_ref_sys WHERE organization_coordsys_id = 4326 AND (organization = 'EPSG' OR organization = 'epsg');&quot;)) {
+<span class="fc" id="L147">			assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_GEOGRAPHIC_SRS));</span>
+		}
+
+<span class="fc" id="L150">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L151">				final ResultSet srsDefaultValue = statement.executeQuery(</span>
+						&quot;SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = -1 AND organization = 'NONE' AND organization_coordsys_id = -1 AND definition = 'undefined';&quot;)) {
+<span class="fc" id="L153">			assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_UNDEFINED_CARTESIAN_SRS));</span>
+		}
+
+<span class="fc" id="L156">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L157">				final ResultSet srsDefaultValue = statement.executeQuery(</span>
+						&quot;SELECT srs_id FROM gpkg_spatial_ref_sys WHERE srs_id = 0 AND organization = 'NONE' AND organization_coordsys_id =  0 AND definition = 'undefined';&quot;)) {
+<span class="fc" id="L159">			assertTrue(srsDefaultValue.next(), ErrorMessage.format(ErrorMessageKeys.NO_UNDEFINED_GEOGRAPHIC_SRS));</span>
+		}
+<span class="fc" id="L161">	}</span>
+
+	/**
+	 * The {@code gpkg_spatial_ref_sys} table in a GeoPackage SHALL contain records to
+	 * define all spatial reference systems used by features and tiles in a GeoPackage.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_requirement-12&quot; target=
+	 * &quot;_blank&quot;&gt;Table Data Values - Requirement 12&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r12: Requirement 12&quot;)
+	public void checkContentSrs() throws SQLException {
+<span class="fc" id="L173">		checkContentSrs(&quot;'tiles','features'&quot;);</span>
+<span class="fc" id="L174">	}</span>
+
+	// Tests for extensions can call this instead of checkContentSrs()
+	protected void checkContentSrs(String types) throws SQLException {
+		// 1
+<span class="fc" id="L179">		final String query = &quot;SELECT DISTINCT gc.srs_id, srs.srs_id FROM gpkg_contents AS gc LEFT OUTER JOIN gpkg_spatial_ref_sys AS srs ON srs.srs_id = gc.srs_id WHERE gc.data_type IN(&quot;</span>
+				+ types + &quot;)&quot;;
+<span class="fc" id="L181">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L182">				final ResultSet srsDefined = statement.executeQuery(query)) {</span>
+<span class="fc" id="L183">			final Collection&lt;String&gt; invalidSrsIds = new LinkedList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L185" title="All 2 branches covered.">			while (srsDefined.next()) {</span>
+				// 2
+<span class="pc bpc" id="L187" title="1 of 2 branches missed.">				if (srsDefined.getString(2) == null) {</span>
+<span class="nc" id="L188">					invalidSrsIds.add(srsDefined.getString(1));</span>
+				}
+			}
+
+<span class="fc" id="L192">			assertTrue(invalidSrsIds.isEmpty(), ErrorMessage.format(ErrorMessageKeys.UNDEFINED_SRS,</span>
+<span class="fc" id="L193">					invalidSrsIds.stream().map(Object::toString).collect(Collectors.joining(&quot;, &quot;))));</span>
+		}
+<span class="fc" id="L195">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

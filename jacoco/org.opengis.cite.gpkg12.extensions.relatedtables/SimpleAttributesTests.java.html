@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SimpleAttributesTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.extensions.relatedtables</a> &gt; <span class="el_source">SimpleAttributesTests.java</span></div><h1>SimpleAttributesTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.extensions.relatedtables;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import org.opengis.cite.gpkg12.ErrorMessage;
+import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.testng.Assert;
+import org.testng.ITestContext;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that apply to the &quot;Simple Attributes&quot; requirements class of the
+ * Related Tables Extension.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#sa_rc&quot; target=
+ * &quot;_blank&quot;&gt; GeoPackage Related Tables Extension, Simple Attributes Extension&lt;/a&gt; (OGC
+ * 18-000)&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Jeff Yutzler
+ */
+<span class="fc" id="L29">public class SimpleAttributesTests extends RTEBase {</span>
+
+	/**
+	 * A user-defined related data table or view SHALL be a user-defined simple attribute
+	 * table or view if the row in gpkgext_relations with a corresponding
+	 * related_table_name has a relation_name of &quot;simple_attributes&quot;.
+	 * @param testContext a test context
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 */
+	@BeforeClass
+	public void activeExtension(ITestContext testContext) throws SQLException {
+<span class="fc" id="L41">		super.activeExtension(testContext);</span>
+<span class="nc" id="L42">		testRequirementsClassActive(&quot;simple_attributes&quot;, &quot;Simple Attributes&quot;);</span>
+<span class="nc" id="L43">	}</span>
+
+	/**
+	 * A user-defined simple attribute table or view SHALL contain the primary key column
+	 * and at least one other column as defined in User-Defined Simple Attributes Table
+	 * Definition. A user-defined simple attribute table SHALL only contain data belonging
+	 * to the TEXT, INTEGER, or REAL storage classes and SHALL NOT contain NULL or BLOB
+	 * storage classes (e.g., GEOMETRY).
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 * @see &lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#r15&quot; target=
+	 * &quot;_blank&quot;&gt;OGC 18-000 Requirement 15&lt;/a&gt;
+	 */
+	@Test(description = &quot;See OGC 18-000: Requirement 15&quot;)
+	public void attributesTableDefinition() throws SQLException {
+
+<span class="nc" id="L59">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="nc" id="L61">				final ResultSet resultSet = statement.executeQuery(</span>
+						&quot;SELECT related_table_name FROM gpkgext_relations WHERE relation_name = 'simple_attributes';&quot;);) {
+
+<span class="nc bnc" id="L64" title="All 2 branches missed.">			while (resultSet.next()) {</span>
+<span class="nc" id="L65">				final String simpleAttributesTableName = resultSet.getString(&quot;related_table_name&quot;);</span>
+<span class="nc" id="L66">				getPrimaryKeyColumn(simpleAttributesTableName, true);</span>
+<span class="nc" id="L67">				try (final Statement statement2 = this.databaseConnection.createStatement();</span>
+
+<span class="nc" id="L69">						final ResultSet resultSet2 = statement2</span>
+<span class="nc" id="L70">							.executeQuery(String.format(&quot;PRAGMA table_info(%s)&quot;, simpleAttributesTableName));) {</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">					while (resultSet2.next()) {</span>
+<span class="nc" id="L72">						final String type = resultSet2.getString(&quot;type&quot;);</span>
+<span class="nc" id="L73">						final String name = resultSet2.getString(&quot;name&quot;);</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">						switch (type) {</span>
+							case &quot;BLOB&quot;:
+<span class="nc" id="L76">								Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TYPE, type, name,</span>
+										simpleAttributesTableName));
+<span class="nc" id="L78">								break;</span>
+							default:
+								break;
+						}
+<span class="nc" id="L82">						final int notNull = resultSet2.getInt(&quot;notnull&quot;);</span>
+<span class="nc" id="L83">						Assert.assertEquals(notNull, 1, ErrorMessage.format(ErrorMessageKeys.INVALID_COLUMN_DEFINITION,</span>
+<span class="nc" id="L84">								name, simpleAttributesTableName, &quot;notnull&quot;, 1, notNull));</span>
+<span class="nc" id="L85">					}</span>
+				}
+<span class="nc" id="L87">			}</span>
+		}
+<span class="nc" id="L89">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

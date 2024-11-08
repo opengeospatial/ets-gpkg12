@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RTreeIndexTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.extensions.rtreeindex</a> &gt; <span class="el_source">RTreeIndexTests.java</span></div><h1>RTreeIndexTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.extensions.rtreeindex;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.regex.Pattern;
+
+import org.opengis.cite.gpkg12.CommonFixture;
+import org.opengis.cite.gpkg12.ErrorMessage;
+import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.util.GeoPackageVersion;
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
+import org.testng.Assert;
+import org.testng.ITestContext;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that apply to descriptive information about a GeoPackage's RTree
+ * Index Extension.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://www.geopackage.org/spec/#extension_rtree&quot; target= &quot;_blank&quot;&gt;
+ * GeoPackage Encoding Standard - Annex F.3 RTree Spatial Index&lt;/a&gt; (OGC 12-128r14)&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Jeff Yutzler
+ */
+<span class="fc" id="L32">public class RTreeIndexTests extends CommonFixture {</span>
+
+	/**
+	 * The &quot;gpkg_rtree_index&quot; extension name SHALL be used as a gpkg_extensions table
+	 * extension_name column value to specify implementation of spatial indexes on a
+	 * geometry column.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r75&quot; target= &quot;_blank&quot;&gt;Requirement
+	 * 75&lt;/a&gt;
+	 * @param testContext the ITestContext to use
+	 * @throws SQLException on any error
+	 */
+	@BeforeClass
+	public void validateExtensionPresent(ITestContext testContext) throws SQLException {
+<span class="fc" id="L46">		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;),</span>
+<span class="fc" id="L47">				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, &quot;RTree Spatial Index Extension&quot;));</span>
+
+<span class="fc" id="L49">		try (final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L50">				ResultSet resultSet1 = statement1</span>
+<span class="fc" id="L51">					.executeQuery(&quot;SELECT COUNT(*) FROM gpkg_extensions WHERE extension_name = 'gpkg_rtree_index';&quot;);) {</span>
+<span class="fc" id="L52">			resultSet1.next();</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">			Assert.assertTrue(resultSet1.getInt(1) &gt; 0,</span>
+<span class="fc" id="L54">					ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, &quot;RTree Spatial Index Extension&quot;));</span>
+		}
+<span class="fc" id="L56">	}</span>
+
+	/**
+	 * Sets up variables used across methods
+	 * @throws SQLException if there is a database error
+	 */
+	@BeforeClass
+	public void setUp() throws SQLException {
+<span class="fc" id="L64">	}</span>
+
+	/**
+	 * A GeoPackage that implements spatial indexes SHALL have a `gpkg_extensions` table
+	 * that contains a row for each spatially indexed column with `extension_name`
+	 * &quot;gpkg_rtree_index&quot;, the `table_name` of the table with a spatially indexed column,
+	 * the `column_name` of the spatially indexed column, and a `scope` of &quot;write-only&quot;.
+	 * @throws SQLException on any error
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r76&quot; target= &quot;_blank&quot;&gt;Requirement
+	 * 76&lt;/a&gt;
+	 *
+	 */
+	@Test(description = &quot;See OGC 12-128r14: Requirement 76&quot;)
+	public void extensionsTableRows() throws SQLException {
+<span class="fc" id="L79">		try (final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L80">				ResultSet resultSet1 = statement1.executeQuery(</span>
+						&quot;SELECT table_name, column_name, scope FROM gpkg_extensions WHERE extension_name = 'gpkg_rtree_index'&quot;);) {
+<span class="fc bfc" id="L82" title="All 2 branches covered.">			while (resultSet1.next()) {</span>
+<span class="fc" id="L83">				resultSet1.getString(&quot;column_name&quot;);</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">				Assert.assertTrue(!resultSet1.wasNull(), ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_REFERENCE,</span>
+<span class="fc" id="L85">						resultSet1.getString(&quot;table_name&quot;), resultSet1.getString(&quot;column_name&quot;)));</span>
+<span class="fc" id="L86">				Assert.assertTrue(&quot;write-only&quot;.equals(resultSet1.getString(&quot;scope&quot;)), ErrorMessage</span>
+<span class="fc" id="L87">					.format(ErrorMessageKeys.ILLEGAL_EXTENSION_DATA_SCOPE, &quot;gpkg_rtree_index&quot;, &quot;write-only&quot;));</span>
+			}
+		}
+<span class="fc" id="L90">	}</span>
+
+	/**
+	 * A GeoPackage SHALL implement spatial indexes on feature table geometry columns
+	 * using the SQLite Virtual Table RTrees and triggers specified below. The tables
+	 * below contain SQL templates with variables. Replace the following template
+	 * variables with the specified values to create the required SQL statements:
+	 * &amp;lt;t&amp;gt;: The name of the feature table containing the geometry column &amp;lt;c&amp;gt;:
+	 * The name of the geometry column in &amp;lt;t&amp;gt; that is being indexed &amp;lt;i&amp;gt;: The
+	 * name of the integer primary key column in &amp;lt;t&amp;gt; as specified in [r29]
+	 * @throws SQLException on any error
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r77&quot; target= &quot;_blank&quot;&gt;Requirement
+	 * 77&lt;/a&gt;
+	 *
+	 */
+	@Test(description = &quot;See OGC 12-128r14: Requirement 77&quot;)
+	public void extensionIndexImplementation() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L110">				final Statement statement1 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L111">				ResultSet resultSet1 = statement1.executeQuery(</span>
+						&quot;SELECT table_name, column_name FROM gpkg_geometry_columns WHERE table_name IN (SELECT table_name FROM gpkg_extensions WHERE extension_name == 'gpkg_rtree_index')&quot;);) {
+			// 2
+<span class="fc bfc" id="L114" title="All 2 branches covered.">			while (resultSet1.next()) {</span>
+				// 3
+<span class="fc" id="L116">				final String tableName = resultSet1.getString(&quot;table_name&quot;);</span>
+<span class="fc" id="L117">				final String columnName = resultSet1.getString(&quot;column_name&quot;);</span>
+
+				try (
+						// 3a
+<span class="fc" id="L121">						final Statement statement3a = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L122">						ResultSet resultSet3a = statement3a</span>
+<span class="fc" id="L123">							.executeQuery(String.format(&quot;SELECT sql FROM sqlite_master WHERE tbl_name = 'rtree_%s_%s'&quot;,</span>
+									tableName, columnName));) {
+<span class="fc" id="L125">					String index = String.format(</span>
+							&quot;CREATE\\s+VIRTUAL\\s+TABLE\\s+\&quot;?rtree_%s_%s\&quot;?\\s+USING\\s+rtree\\s*\\(id,\\s*minx,\\s*maxx,\\s*miny,\\s*maxy\\)&quot;,
+							tableName, columnName);
+<span class="fc" id="L128">					final String sql3a = resultSet3a.getString(&quot;sql&quot;);</span>
+<span class="pc bpc" id="L129" title="1 of 2 branches missed.">					if (!Pattern.compile(index, Pattern.CASE_INSENSITIVE).matcher(sql3a).matches()) {</span>
+<span class="nc" id="L130">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;virtual table&quot;,</span>
+								tableName, index, sql3a));
+					}
+
+				}
+
+				try (
+						// 3d
+<span class="fc" id="L138">						final Statement statement3d = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L139">						ResultSet resultSet3d = statement3d.executeQuery(String.format(</span>
+								&quot;SELECT sql FROM sqlite_master WHERE type='trigger' AND name = 'rtree_%s_%s_delete'&quot;,
+								tableName, columnName));) {
+<span class="fc" id="L142">					String trigger3d = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_delete\&quot;?\\s+AFTER\\s+DELETE\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s*WHEN\\s+OLD.\&quot;?&lt;c&gt;\&quot;?\\sNOT\\s*NULL\\s+BEGIN\\s+DELETE\\s+FROM\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\&quot;?\\w*\&quot;?;\\s*END&quot;;</span>
+<span class="fc" id="L143">					trigger3d = trigger3d.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
+<span class="fc" id="L144">					final String sql3d = resultSet3d.getString(&quot;sql&quot;);</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">					if (!Pattern.compile(trigger3d, Pattern.CASE_INSENSITIVE).matcher(sql3d).matches()) {</span>
+<span class="nc" id="L146">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;delete trigger&quot;,</span>
+								tableName, trigger3d, sql3d));
+					}
+
+				}
+
+				try (
+						// 3c
+<span class="fc" id="L154">						final Statement statement3c = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L155">						ResultSet resultSet3c = statement3c.executeQuery(String.format(</span>
+								&quot;SELECT sql FROM sqlite_master WHERE type='trigger' AND name LIKE 'rtree_%s_%s_update%%' ORDER BY name ASC&quot;,
+								tableName, columnName));) {
+					// Update 1
+<span class="fc" id="L159">					resultSet3c.next();</span>
+<span class="fc" id="L160">					final String sql3c1 = resultSet3c.getString(&quot;sql&quot;);</span>
+<span class="fc" id="L161">					String trigger1 = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update1\&quot;?\\s+AFTER\\s+UPDATE\\s+OF\\s+\&quot;?&lt;c&gt;\&quot;?\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s+WHEN\\s+OLD.\&quot;?\\w*\&quot;?\\s*=\\s*NEW.\&quot;?\\w*\&quot;?\\s+AND\\s+\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s+BEGIN\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+VALUES\\s*\\(\\s*NEW.\&quot;?\\w*\&quot;?,\\s*ST_MinX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MinY\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxY\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\s*\\);\\s*END;?&quot;;</span>
+<span class="fc" id="L162">					trigger1 = trigger1.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
+<span class="pc bpc" id="L163" title="1 of 2 branches missed.">					if (!Pattern.compile(trigger1, Pattern.CASE_INSENSITIVE).matcher(sql3c1).matches()) {</span>
+<span class="nc" id="L164">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;update trigger 1&quot;,</span>
+								tableName, trigger1, sql3c1));
+					}
+
+					// Update 2
+<span class="fc" id="L169">					resultSet3c.next();</span>
+<span class="fc" id="L170">					final String sql3c2 = resultSet3c.getString(&quot;sql&quot;);</span>
+<span class="fc" id="L171">					String trigger2 = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update2\&quot;?\\s+AFTER\\s+UPDATE\\s+OF\\s+\&quot;?&lt;c&gt;\&quot;?\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s+WHEN\\s+OLD.\&quot;?\\w*\&quot;?\\s*=\\s*NEW.\&quot;?\\w*\&quot;?\\s+AND\\s+\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\s+IS\\s*NULL\\s+OR\\s+ST_IsEmpty\\s*\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s+BEGIN\\s+DELETE\\s+FROM\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\&quot;?\\w*\&quot;?;\\s*END&quot;;</span>
+<span class="fc" id="L172">					trigger2 = trigger2.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">					if (!Pattern.compile(trigger2, Pattern.CASE_INSENSITIVE).matcher(sql3c2).matches()) {</span>
+<span class="nc" id="L174">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;update trigger 2&quot;,</span>
+								tableName, trigger2, sql3c2));
+					}
+
+					// Update 3
+<span class="fc" id="L179">					resultSet3c.next();</span>
+<span class="fc" id="L180">					final String sql3c3 = resultSet3c.getString(&quot;sql&quot;);</span>
+<span class="fc" id="L181">					String trigger3 = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update3\&quot;?\\s+AFTER\\s+UPDATE\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s+WHEN\\s+OLD.\&quot;?\\w*\&quot;?\\s*!=\\s*NEW.\&quot;?\\w*\&quot;?\\s+AND\\s+\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\&quot;?\\w*\&quot;?;\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+VALUES\\s*\\(\\s*NEW.\&quot;?\\w*\&quot;?,\\s*ST_MinX\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MinY\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxY\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\s*\\);\\s*END&quot;;</span>
+<span class="fc" id="L182">					trigger3 = trigger3.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">					if (!Pattern.compile(trigger3, Pattern.CASE_INSENSITIVE).matcher(sql3c3).matches()) {</span>
+<span class="fc" id="L184">						String trigger3old = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update3\&quot;?\\s+AFTER\\s+UPDATE\\s+OF\\s+\&quot;?&lt;c&gt;\&quot;?\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s+WHEN\\s+OLD.\&quot;?\\w*\&quot;?\\s*!=\\s*NEW.\&quot;?\\w*\&quot;?\\s+AND\\s+\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\s*\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+WHERE\\s+\\w*\\s*=\\s*OLD.\&quot;?\\w*\&quot;?;\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+VALUES\\s*\\(\\s*NEW.\&quot;?\\w*\&quot;?,\\s*ST_MinX\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MinY\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxY\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\s*\\);\\s*END&quot;;</span>
+<span class="fc" id="L185">						trigger3old = trigger3old.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
+						// The old version of the trigger is still grandfathered in on
+						// older version versions
+<span class="pc bpc" id="L188" title="1 of 6 branches missed.">						if (((geopackageVersion == GeoPackageVersion.V102)</span>
+								|| (geopackageVersion == GeoPackageVersion.V110)
+								|| (geopackageVersion == GeoPackageVersion.V120))
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">								&amp;&amp; !Pattern.compile(trigger3old, Pattern.CASE_INSENSITIVE).matcher(sql3c3).matches()) {</span>
+<span class="nc" id="L192">							Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION,</span>
+									&quot;update trigger 3&quot;, tableName, trigger3, sql3c3));
+						}
+					}
+
+					// Update 4
+<span class="fc" id="L198">					resultSet3c.next();</span>
+<span class="fc" id="L199">					final String sql3c4 = resultSet3c.getString(&quot;sql&quot;);</span>
+<span class="fc" id="L200">					String trigger4 = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_update4\&quot;?\\s+AFTER\\s+UPDATE\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s+WHEN\\s+OLD.\&quot;?\\w*\&quot;?\\s*!=\\s*NEW.\&quot;?\\w*\&quot;?\\s+AND\\s+\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\s+IS\\s*NULL\\s+OR\\s+ST_IsEmpty\\s*\\(\\s*NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s*BEGIN\\s+DELETE\\s+FROM\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+WHERE\\s+\\w*\\sIN\\s*\\(\\s*OLD.\&quot;?\\w*\&quot;?\\s*,\\s*NEW.\&quot;?\\w*\&quot;?\\);\\s*END&quot;;</span>
+<span class="fc" id="L201">					trigger4 = trigger4.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
+<span class="fc bfc" id="L202" title="All 2 branches covered.">					if (!Pattern.compile(trigger4, Pattern.CASE_INSENSITIVE).matcher(sql3c4).matches()) {</span>
+<span class="nc" id="L203">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;update trigger 4&quot;,</span>
+								tableName, trigger4, sql3c4));
+					}
+				}
+
+				try (
+						// 3b
+<span class="fc" id="L210">						final Statement statement3b = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L211">						ResultSet resultSet3b = statement3b.executeQuery(String.format(</span>
+								&quot;SELECT sql FROM sqlite_master WHERE type='trigger' AND name = 'rtree_%s_%s_insert'&quot;,
+								tableName, columnName));) {
+<span class="fc" id="L214">					String trigger3b = &quot;CREATE\\s+TRIGGER\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;_insert\&quot;?\\s+AFTER\\s+INSERT\\s+ON\\s+\&quot;?&lt;t&gt;\&quot;?\\s+WHEN\\s*\\(new.\&quot;?&lt;c&gt;\&quot;?\\s+NOT\\s*NULL\\s+AND\\s+NOT\\s+ST_IsEmpty\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\)\\s+BEGIN\\s+INSERT\\s+OR\\s+REPLACE\\s+INTO\\s+\&quot;?rtree_&lt;t&gt;_&lt;c&gt;\&quot;?\\s+VALUES\\s+\\(\\s*NEW.\&quot;?\\w+\&quot;?,\\s*ST_MinX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxX\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MinY\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\),\\s*ST_MaxY\\(NEW.\&quot;?&lt;c&gt;\&quot;?\\)\\s*\\);\\s*END;?&quot;;</span>
+<span class="fc" id="L215">					trigger3b = trigger3b.replaceAll(&quot;&lt;t&gt;&quot;, tableName).replaceAll(&quot;&lt;c&gt;&quot;, columnName);</span>
+<span class="fc" id="L216">					final String sql3b = resultSet3b.getString(&quot;sql&quot;);</span>
+<span class="pc bpc" id="L217" title="1 of 2 branches missed.">					if (!Pattern.compile(trigger3b, Pattern.CASE_INSENSITIVE).matcher(sql3b).matches()) {</span>
+<span class="nc" id="L218">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_RTREE_DEFINITION, &quot;insert trigger&quot;,</span>
+								tableName, trigger3b, sql3b));
+					}
+				}
+<span class="fc" id="L222">			}</span>
+		}
+<span class="fc" id="L224">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

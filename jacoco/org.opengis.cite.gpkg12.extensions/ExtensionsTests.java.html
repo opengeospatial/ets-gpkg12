@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExtensionsTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.extensions</a> &gt; <span class="el_source">ExtensionsTests.java</span></div><h1>ExtensionsTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.extensions;
+
+import static org.testng.Assert.assertTrue;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import org.opengis.cite.gpkg12.CommonFixture;
+import org.opengis.cite.gpkg12.ErrorMessage;
+import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
+import org.testng.Assert;
+import org.testng.ITestContext;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that apply to descriptive information about a GeoPackage's content
+ * as it pertains to the metadata extension.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://www.geopackage.org/spec/#_extension_mechanism&quot; target= &quot;_blank&quot;&gt;
+ * GeoPackage Encoding Standard - 2.3 Extension Mechanism&lt;/a&gt; (OGC 12-128r13)&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Jeff Yutzler
+ */
+<span class="fc" id="L32">public class ExtensionsTests extends CommonFixture {</span>
+
+	@BeforeClass
+	public void validateTableExists(ITestContext testContext) throws SQLException {
+<span class="fc" id="L36">		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkg_extensions&quot;),</span>
+<span class="fc" id="L37">				ErrorMessage.format(ErrorMessageKeys.CONFORMANCE_CLASS_DISABLED, &quot;Extensions&quot;));</span>
+<span class="fc" id="L38">	}</span>
+
+	/**
+	 * A GeoPackage MAY contain a table or updateable view named gpkg_extensions. If
+	 * present this table SHALL be defined per clause 2.3.2.1.1 Table Definition,
+	 * GeoPackage Extensions Table or View Definition (Table or View Name:
+	 * gpkg_extensions) and gpkg_extensions Table Definition SQL. An extension SHALL NOT
+	 * modify the definition or semantics of existing columns. An extension MAY define
+	 * additional tables or columns. An extension MAY allow new values or encodings for
+	 * existing columns.
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#_r58&quot; target= &quot;_blank&quot;&gt;2.3.2.1.1.
+	 * Extensions Table Definition - Requirement 58&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 58&quot;)
+	public void extensionsTableDefinition() throws SQLException {
+		try ( // 1
+<span class="fc" id="L56">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L58">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkg_extensions');&quot;);) {</span>
+			// 2
+<span class="fc" id="L60">			int passFlag = 0;</span>
+<span class="fc" id="L61">			final int flagMask = 0b00011111;</span>
+
+<span class="fc bfc" id="L63" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+				// 3
+<span class="fc" id="L65">				final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">				if (&quot;table_name&quot;.equals(name)) {</span>
+<span class="fc" id="L67">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage</span>
+<span class="fc" id="L68">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_extensions&quot;, &quot;table_name type&quot;));</span>
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage</span>
+<span class="fc" id="L70">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_extensions&quot;, &quot;table_name notnull&quot;));</span>
+<span class="fc" id="L71">					passFlag |= 1;</span>
+				}
+<span class="fc bfc" id="L73" title="All 2 branches covered.">				else if (&quot;column_name&quot;.equals(name)) {</span>
+<span class="fc" id="L74">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage</span>
+<span class="fc" id="L75">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_extensions&quot;, &quot;column_name type&quot;));</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 0, ErrorMessage</span>
+<span class="fc" id="L77">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_extensions&quot;, &quot;column_name notnull&quot;));</span>
+<span class="fc" id="L78">					passFlag |= (1 &lt;&lt; 1);</span>
+				}
+<span class="fc bfc" id="L80" title="All 2 branches covered.">				else if (&quot;extension_name&quot;.equals(name)) {</span>
+<span class="fc" id="L81">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage</span>
+<span class="fc" id="L82">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_extensions&quot;, &quot;extension_name type&quot;));</span>
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_extensions&quot;, &quot;extension_name notnull&quot;));
+<span class="fc" id="L85">					passFlag |= (1 &lt;&lt; 2);</span>
+				}
+<span class="fc bfc" id="L87" title="All 2 branches covered.">				else if (&quot;definition&quot;.equals(name)) {</span>
+<span class="fc" id="L88">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), &quot;definition type&quot;);</span>
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, ErrorMessage</span>
+<span class="fc" id="L90">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_extensions&quot;, &quot;definition notnull&quot;));</span>
+<span class="fc" id="L91">					passFlag |= (1 &lt;&lt; 3);</span>
+				}
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">				else if (&quot;scope&quot;.equals(name)) {</span>
+<span class="fc" id="L94">					assertTrue(&quot;TEXT&quot;.equals(resultSet.getString(&quot;type&quot;)), ErrorMessage</span>
+<span class="fc" id="L95">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkg_extensions&quot;, &quot;scope type&quot;));</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">					assertTrue(resultSet.getInt(&quot;notnull&quot;) == 1, &quot;scope notnull&quot;);</span>
+<span class="fc" id="L97">					passFlag |= (1 &lt;&lt; 4);</span>
+				}
+<span class="fc" id="L99">			}</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+					&quot;gpkg_extensions&quot;, &quot;missing column(s)&quot;));
+		}
+
+<span class="fc" id="L104">	}</span>
+
+	/**
+	 * Values of the `gpkg_extensions` `table_name` column SHALL reference values in the
+	 * `gpkg_contents` `table_name` column or be NULL.They SHALL NOT be NULL for rows
+	 * where the `column_name` value is not NULL.
+	 *
+	 * /opt/extension_mechanism/extensions/data/data_values_table_name
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r60&quot; target= &quot;_blank&quot;&gt;2.3.2.1.2.
+	 * Extensions Table Data Values - Requirement 60&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 60&quot;)
+	public void extensionsTableValues() throws SQLException {
+		try ( // 1
+<span class="fc" id="L120">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L122">				final ResultSet resultSet = statement</span>
+<span class="fc" id="L123">					.executeQuery(&quot;SELECT lower(table_name) AS table_name, column_name FROM gpkg_extensions;&quot;);) {</span>
+			// 2
+<span class="fc bfc" id="L125" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+				// 3a
+<span class="fc" id="L127">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
+<span class="fc" id="L128">				final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
+
+				// 3b
+<span class="pc bpc" id="L131" title="1 of 4 branches missed.">				assertTrue(!((columnName != null) &amp;&amp; (tableName == null)), ErrorMessage</span>
+<span class="fc" id="L132">					.format(ErrorMessageKeys.INVALID_DATA_COLUMN, &quot;gpkg_extensions&quot;, tableName, columnName));</span>
+<span class="fc" id="L133">			}</span>
+		}
+
+		try (
+				// 4
+<span class="fc" id="L138">				final Statement statement2 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L140">				final ResultSet resultSet2 = statement2.executeQuery(</span>
+						&quot;SELECT DISTINCT lower(ge.table_name) AS ge_table, lower(sm.tbl_name) AS tbl_name FROM gpkg_extensions AS ge LEFT OUTER JOIN sqlite_master AS sm ON lower(ge.table_name) = lower(sm.tbl_name);&quot;);) {
+<span class="fc bfc" id="L142" title="All 2 branches covered.">			while (resultSet2.next()) {</span>
+				// 4a
+<span class="fc" id="L144">				final String geTable = resultSet2.getString(&quot;ge_table&quot;);</span>
+<span class="fc" id="L145">				final String tableName = resultSet2.getString(&quot;tbl_name&quot;);</span>
+<span class="pc bpc" id="L146" title="1 of 6 branches missed.">				assertTrue(</span>
+						((geTable == null) &amp;&amp; (tableName == null))
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">								|| ((tableName != null) &amp;&amp; tableName.equals(geTable)),</span>
+<span class="fc" id="L149">						ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_TABLE, &quot;gpkg_extensions&quot;, geTable));</span>
+<span class="fc" id="L150">			}</span>
+		}
+<span class="fc" id="L152">	}</span>
+
+	/**
+	 * The `column_name` column value in a `gpkg_extensions` row SHALL be the name of a
+	 * column in the table specified by the `table_name` column value for that row, or be
+	 * NULL.
+	 *
+	 * /opt/extension_mechanism/extensions/data/data_values_column_name
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r61&quot; target= &quot;_blank&quot;&gt;2.3.2.1.2.
+	 * Extensions Table Data Values - Requirement 61&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 61&quot;)
+	public void extensionsColumnValues() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L169">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L171">				final ResultSet resultSet = statement.executeQuery(</span>
+						&quot;SELECT lower(table_name) AS table_name, lower(column_name) AS column_name FROM gpkg_extensions WHERE column_name IS NOT NULL;&quot;);) {
+			// 2
+<span class="fc bfc" id="L174" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+				// 3a
+<span class="fc" id="L176">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
+<span class="fc" id="L177">				final String columnName = resultSet.getString(&quot;column_name&quot;);</span>
+
+				// 3b
+<span class="fc" id="L180">				try (final Statement statement1 = this.databaseConnection.createStatement()) {</span>
+					// 3bi
+<span class="fc" id="L182">					statement1.executeQuery(String.format(&quot;SELECT COUNT(%s) from %s;&quot;, columnName, tableName));</span>
+				}
+<span class="fc" id="L184">				catch (SQLException exc) {</span>
+<span class="nc" id="L185">					Assert.fail(ErrorMessage.format(ErrorMessageKeys.INVALID_DATA_COLUMN, &quot;gpkg_extensions&quot;, columnName,</span>
+							tableName));
+<span class="fc" id="L187">				}</span>
+<span class="fc" id="L188">			}</span>
+		}
+<span class="fc" id="L190">	}</span>
+
+	/**
+	 * The scope column value in a gpkg_extensions row SHALL be lowercase &quot;read-write&quot; for
+	 * an extension that affects both readers and writers, or &quot;write-only&quot; for an
+	 * extension that affects only writers.
+	 *
+	 * /opt/extension_mechanism/extensions/data/data_values_scope
+	 *
+	 * @see &lt;a href=&quot;http://www.geopackage.org/spec/#r64&quot; target= &quot;_blank&quot;&gt;2.3.2.1.2.
+	 * Extensions Table Data Values - Requirement 64&lt;/a&gt;
+	 * @throws SQLException If an SQL query causes an error
+	 */
+	@Test(description = &quot;See OGC 12-128r13: Requirement 64&quot;)
+	public void extensionsColumnScope() throws SQLException {
+		try (
+				// 1
+<span class="fc" id="L207">				final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L209">				final ResultSet resultSet = statement.executeQuery(&quot;SELECT scope FROM gpkg_extensions;&quot;);) {</span>
+			// 2
+<span class="fc bfc" id="L211" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+				// 3
+<span class="fc" id="L213">				final String scope = resultSet.getString(&quot;scope&quot;);</span>
+
+<span class="pc bpc" id="L215" title="1 of 4 branches missed.">				assertTrue(&quot;read-write&quot;.equals(scope) || &quot;write-only&quot;.equals(scope),</span>
+<span class="fc" id="L216">						ErrorMessage.format(ErrorMessageKeys.INVALID_EXTENSION_DATA_SCOPE, scope));</span>
+<span class="fc" id="L217">			}</span>
+		}
+<span class="fc" id="L219">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

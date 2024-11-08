@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RTETests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.extensions.relatedtables</a> &gt; <span class="el_source">RTETests.java</span></div><h1>RTETests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.extensions.relatedtables;
+
+import static org.testng.Assert.assertTrue;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import org.opengis.cite.gpkg12.ErrorMessage;
+import org.opengis.cite.gpkg12.ErrorMessageKeys;
+import org.opengis.cite.gpkg12.util.DatabaseUtility;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that apply to descriptive information about a GeoPackage's content
+ * as it pertains to the schema extension.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html&quot; target= &quot;_blank&quot;&gt;
+ * GeoPackage Related Tables Extension&lt;/a&gt; (OGC 18-000)&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Jeff Yutzler
+ */
+<span class="fc" id="L29">public class RTETests extends RTEBase {</span>
+
+	/**
+	 * A GeoPackage that contains a row in the gpkg_extensions table for gpkgext_relations
+	 * as described in Extensions Table Record SHALL comply with the Related Tables
+	 * Extension as described by this document.
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 * @see &lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#r1&quot; target=
+	 * &quot;_blank&quot;&gt;OGC 18-000 Requirement 1&lt;/a&gt;
+	 */
+	@Test(description = &quot;See OGC 18-000: Requirement 1&quot;)
+	public void extensionsTableEntries() throws SQLException {
+<span class="fc" id="L42">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L44">				final ResultSet resultSet = statement</span>
+<span class="fc" id="L45">					.executeQuery(&quot;SELECT * FROM gpkg_extensions WHERE table_name = 'gpkgext_relations';&quot;);) {</span>
+
+<span class="fc" id="L47">			Assert.assertTrue(resultSet.next(), ErrorMessage.format(ErrorMessageKeys.MISSING_REFERENCE,</span>
+					&quot;gpkg_extensions&quot;, &quot;table_name&quot;, &quot;gpkgext_relations&quot;));
+		}
+
+<span class="fc" id="L51">		Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, &quot;gpkgext_relations&quot;),</span>
+<span class="fc" id="L52">				ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, &quot;gpkgext_relations&quot;));</span>
+<span class="fc" id="L53">	}</span>
+
+	/**
+	 * A GeoPackage that contains a row in the gpkg_extensions table for gpkgext_relations
+	 * SHALL contain at least one related table relationship.
+	 *
+	 * A GeoPackage that complies with the Related Tables Extension SHALL contain rows in
+	 * the gpkg_extensions table for each User Defined Mapping Table as described in
+	 * Extensions Table Record.
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 * @see &lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#r2&quot; target=
+	 * &quot;_blank&quot;&gt;OGC 18-000 Requirement 2, 3&lt;/a&gt;
+	 */
+	@Test(description = &quot;See OGC 18-000: Requirement 2, 3&quot;)
+	public void relationsTableEntries() throws SQLException {
+<span class="fc" id="L69">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L71">				final ResultSet resultSet = statement.executeQuery(</span>
+						&quot;SELECT table_name, column_name, scope FROM gpkg_extensions WHERE (extension_name IN ('related_tables', 'gpkg_related_tables') AND table_name != 'gpkgext_relations');&quot;);) {
+<span class="fc" id="L73">			boolean hasResults = false;</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc" id="L75">				hasResults = true;</span>
+<span class="fc" id="L76">				final String tableName = resultSet.getString(&quot;table_name&quot;);</span>
+<span class="fc" id="L77">				Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, tableName),</span>
+<span class="fc" id="L78">						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, tableName));</span>
+<span class="fc" id="L79">				Assert.assertNull(resultSet.getObject(&quot;column_name&quot;), ErrorMessage</span>
+<span class="fc" id="L80">					.format(ErrorMessageKeys.UNEXPECTED_VALUE, &quot;(not null)&quot;, &quot;column_name&quot;, &quot;gpkg_extensions&quot;));</span>
+<span class="fc" id="L81">				final String scope = resultSet.getString(&quot;scope&quot;);</span>
+<span class="fc" id="L82">				Assert.assertEquals(scope, &quot;read-write&quot;,</span>
+<span class="fc" id="L83">						ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_VALUE, scope, &quot;scope&quot;, &quot;gpkg_extensions&quot;));</span>
+<span class="fc" id="L84">			}</span>
+
+<span class="fc" id="L86">			Assert.assertTrue(hasResults, ErrorMessage.format(ErrorMessageKeys.MISSING_REFERENCE, &quot;gpkg_extensions&quot;,</span>
+					&quot;table_name&quot;, &quot;a mapping table&quot;));
+		}
+<span class="fc" id="L89">	}</span>
+
+	/**
+	 * A GeoPackage that complies with this extension SHALL contain a gpkgext_relations
+	 * table as per Extended Relations Table Definition and Extended Relations Table
+	 * Definition SQL (Normative).
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 * @see &lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#r4&quot; target=
+	 * &quot;_blank&quot;&gt;OGC 18-000 Requirement 4&lt;/a&gt;
+	 */
+	@Test(description = &quot;See OGC 18-000: Requirement 4&quot;)
+	public void relationsTableStructure() throws SQLException {
+
+<span class="fc" id="L103">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L105">				final ResultSet resultSet = statement.executeQuery(&quot;PRAGMA table_info('gpkgext_relations');&quot;);) {</span>
+
+<span class="fc" id="L107">			int passFlag = 0;</span>
+<span class="fc" id="L108">			final int flagMask = 0b01111111;</span>
+
+<span class="fc bfc" id="L110" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+				// 3
+<span class="fc" id="L112">				final String name = resultSet.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">				if (&quot;id&quot;.equals(name)) {</span>
+<span class="fc" id="L114">					Assert.assertEquals(resultSet.getString(&quot;type&quot;), &quot;INTEGER&quot;, ErrorMessage</span>
+<span class="fc" id="L115">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;id type&quot;));</span>
+<span class="fc" id="L116">					Assert.assertEquals(resultSet.getInt(&quot;notnull&quot;), 0, ErrorMessage</span>
+<span class="fc" id="L117">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;id notnull&quot;));</span>
+<span class="fc" id="L118">					Assert.assertEquals(resultSet.getInt(&quot;pk&quot;), 1, ErrorMessage</span>
+<span class="fc" id="L119">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;id pk&quot;));</span>
+<span class="fc" id="L120">					passFlag |= 1;</span>
+				}
+<span class="fc bfc" id="L122" title="All 2 branches covered.">				else if (&quot;base_table_name&quot;.equals(name)) {</span>
+<span class="fc" id="L123">					Assert.assertEquals(resultSet.getString(&quot;type&quot;), &quot;TEXT&quot;, ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;base_table_name type&quot;));
+<span class="fc" id="L125">					Assert.assertEquals(resultSet.getInt(&quot;notnull&quot;), 1, ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;base_table_name notnull&quot;));
+<span class="fc" id="L127">					Assert.assertEquals(resultSet.getInt(&quot;pk&quot;), 0, ErrorMessage</span>
+<span class="fc" id="L128">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;base_table_name pk&quot;));</span>
+<span class="fc" id="L129">					passFlag |= (1 &lt;&lt; 1);</span>
+				}
+<span class="fc bfc" id="L131" title="All 2 branches covered.">				else if (&quot;base_primary_column&quot;.equals(name)) {</span>
+<span class="fc" id="L132">					Assert.assertEquals(resultSet.getString(&quot;type&quot;), &quot;TEXT&quot;,</span>
+<span class="fc" id="L133">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;,</span>
+									&quot;base_primary_column type&quot;));
+<span class="fc" id="L135">					Assert.assertEquals(resultSet.getInt(&quot;notnull&quot;), 1,</span>
+<span class="fc" id="L136">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;,</span>
+									&quot;base_primary_column notnull&quot;));
+<span class="fc" id="L138">					Assert.assertEquals(resultSet.getInt(&quot;pk&quot;), 0, ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;base_primary_column pk&quot;));
+<span class="fc" id="L140">					passFlag |= (1 &lt;&lt; 2);</span>
+				}
+<span class="fc bfc" id="L142" title="All 2 branches covered.">				else if (&quot;related_table_name&quot;.equals(name)) {</span>
+<span class="fc" id="L143">					Assert.assertEquals(resultSet.getString(&quot;type&quot;), &quot;TEXT&quot;, ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;related_table_name type&quot;));
+<span class="fc" id="L145">					Assert.assertEquals(resultSet.getInt(&quot;notnull&quot;), 1,</span>
+<span class="fc" id="L146">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;,</span>
+									&quot;related_table_name notnull&quot;));
+<span class="fc" id="L148">					Assert.assertEquals(resultSet.getInt(&quot;pk&quot;), 0, ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;related_table_name pk&quot;));
+<span class="fc" id="L150">					passFlag |= (1 &lt;&lt; 3);</span>
+				}
+<span class="fc bfc" id="L152" title="All 2 branches covered.">				else if (&quot;related_primary_column&quot;.equals(name)) {</span>
+<span class="fc" id="L153">					Assert.assertEquals(resultSet.getString(&quot;type&quot;), &quot;TEXT&quot;,</span>
+<span class="fc" id="L154">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;,</span>
+									&quot;related_primary_column type&quot;));
+<span class="fc" id="L156">					Assert.assertEquals(resultSet.getInt(&quot;notnull&quot;), 1,</span>
+<span class="fc" id="L157">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;,</span>
+									&quot;related_primary_column notnull&quot;));
+<span class="fc" id="L159">					Assert.assertEquals(resultSet.getInt(&quot;pk&quot;), 0,</span>
+<span class="fc" id="L160">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;,</span>
+									&quot;related_primary_column pk&quot;));
+<span class="fc" id="L162">					passFlag |= (1 &lt;&lt; 4);</span>
+				}
+<span class="fc bfc" id="L164" title="All 2 branches covered.">				else if (&quot;relation_name&quot;.equals(name)) {</span>
+<span class="fc" id="L165">					Assert.assertEquals(resultSet.getString(&quot;type&quot;), &quot;TEXT&quot;, ErrorMessage</span>
+<span class="fc" id="L166">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;relation_name type&quot;));</span>
+<span class="fc" id="L167">					Assert.assertEquals(resultSet.getInt(&quot;notnull&quot;), 1, ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;relation_name notnull&quot;));
+<span class="fc" id="L169">					Assert.assertEquals(resultSet.getInt(&quot;pk&quot;), 0, ErrorMessage</span>
+<span class="fc" id="L170">						.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;relation_name pk&quot;));</span>
+<span class="fc" id="L171">					passFlag |= (1 &lt;&lt; 5);</span>
+				}
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">				else if (&quot;mapping_table_name&quot;.equals(name)) {</span>
+<span class="fc" id="L174">					Assert.assertEquals(resultSet.getString(&quot;type&quot;), &quot;TEXT&quot;, ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;mapping_table_name type&quot;));
+<span class="fc" id="L176">					Assert.assertEquals(resultSet.getInt(&quot;notnull&quot;), 1,</span>
+<span class="fc" id="L177">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;,</span>
+									&quot;mapping_table_name notnull&quot;));
+<span class="fc" id="L179">					Assert.assertEquals(resultSet.getInt(&quot;pk&quot;), 0, ErrorMessage.format(</span>
+							ErrorMessageKeys.TABLE_DEFINITION_INVALID, &quot;gpkgext_relations&quot;, &quot;mapping_table_name pk&quot;));
+<span class="fc" id="L181">					passFlag |= (1 &lt;&lt; 6);</span>
+				}
+<span class="fc" id="L183">			}</span>
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">			assertTrue((passFlag &amp; flagMask) == flagMask, ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID,</span>
+<span class="fc" id="L185">					&quot;gpkgext_relations&quot;, String.format(&quot;missing column(s): code(%s)&quot;, passFlag)));</span>
+		}
+<span class="fc" id="L187">	}</span>
+
+	/**
+	 * For each row in gpkgext_relations, there SHALL be a table or view of the name
+	 * referenced in base_table_name and that table or view SHALL have an entry in
+	 * gpkg_contents.
+	 *
+	 * For each row in gpkgext_relations, there SHALL be a table or view of the name
+	 * referenced in related_table_name and that table or view SHALL have an entry in
+	 * gpkg_contents.
+	 *
+	 * For each row in gpkgext_relations, the mapping_table_name column SHALL contain the
+	 * name of a user-defined mapping table or view as described by User-Defined Mapping
+	 * Tables.
+	 *
+	 * Each relation_name column in a gpkgext_relations row SHALL either match a
+	 * relation_name from the Requirements Classes for User-Defined Related Data Tables in
+	 * this or other OGC standards (e.g. media for [Media Requirement Class]), or be of
+	 * the form x-{author}_{relation_name} where {author} indicates the person or
+	 * organization that developed and maintains this set of User-Defined Related Tables.
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 * @see &lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#r5&quot; target=
+	 * &quot;_blank&quot;&gt;OGC 18-000 Requirement 5, 6, 7&lt;/a&gt;
+	 */
+	@Test(description = &quot;See OGC 18-000: Requirement 5, 6, 7&quot;)
+	public void relationsTableValues() throws SQLException {
+<span class="fc" id="L214">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L216">				final ResultSet resultSet = statement.executeQuery(</span>
+						&quot;SELECT base_table_name, related_table_name, mapping_table_name FROM gpkgext_relations;&quot;);) {
+<span class="fc" id="L218">			boolean hasResults = false;</span>
+<span class="fc bfc" id="L219" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc" id="L220">				hasResults = true;</span>
+<span class="fc" id="L221">				final String baseTableName = resultSet.getString(&quot;base_table_name&quot;);</span>
+<span class="fc" id="L222">				Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, baseTableName),</span>
+<span class="fc" id="L223">						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, baseTableName));</span>
+<span class="fc" id="L224">				try (final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L225">						final ResultSet resultSet2 = statement2.executeQuery(String</span>
+<span class="fc" id="L226">							.format(&quot;SELECT table_name FROM gpkg_contents WHERE table_name = '%s'&quot;, baseTableName));</span>
+
+				) {
+<span class="fc" id="L229">					Assert.assertTrue(resultSet2.next(), ErrorMessage.format(ErrorMessageKeys.MISSING_REFERENCE,</span>
+							&quot;gpkg_contents&quot;, &quot;table_name&quot;, baseTableName));
+				}
+<span class="fc" id="L232">				final String relatedTableName = resultSet.getString(&quot;related_table_name&quot;);</span>
+<span class="fc" id="L233">				Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, relatedTableName),</span>
+<span class="fc" id="L234">						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, relatedTableName));</span>
+<span class="fc" id="L235">				try (final Statement statement2 = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L236">						final ResultSet resultSet3 = statement2.executeQuery(String.format(</span>
+								&quot;SELECT table_name FROM gpkg_contents WHERE table_name = '%s'&quot;, relatedTableName));) {
+<span class="fc" id="L238">					Assert.assertTrue(resultSet3.next(), ErrorMessage.format(ErrorMessageKeys.MISSING_REFERENCE,</span>
+							&quot;gpkg_contents&quot;, &quot;table_name&quot;, relatedTableName));
+				}
+<span class="fc" id="L241">				final String mappingTableName = resultSet.getString(&quot;mapping_table_name&quot;);</span>
+<span class="fc" id="L242">				Assert.assertTrue(DatabaseUtility.doesTableOrViewExist(this.databaseConnection, mappingTableName),</span>
+<span class="fc" id="L243">						ErrorMessage.format(ErrorMessageKeys.MISSING_TABLE, mappingTableName));</span>
+<span class="fc" id="L244">			}</span>
+<span class="fc" id="L245">			Assert.assertTrue(hasResults, ErrorMessage.format(ErrorMessageKeys.MISSING_ROW, &quot;gpkgext_relations&quot;));</span>
+		}
+<span class="fc" id="L247">	}</span>
+
+	/**
+	 * Each relation_name column in a gpkgext_relations row SHALL either match a
+	 * relation_name from the Requirements Classes for User-Defined Related Data Tables in
+	 * this or other OGC standards (e.g. media for [Media Requirement Class]), or be of
+	 * the form x-{author}_{relation_name} where {author} indicates the person or
+	 * organization that developed and maintains this set of User-Defined Related Tables.
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 * @see &lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#r8&quot; target=
+	 * &quot;_blank&quot;&gt;OGC 18-000 Requirement 8&lt;/a&gt;
+	 */
+	@Test(description = &quot;See OGC 18-000: Requirement 8&quot;)
+	public void relationName() throws SQLException {
+<span class="fc" id="L262">		final String query = &quot;SELECT base_table_name, relation_name FROM gpkgext_relations WHERE (relation_name NOT IN ('features', 'simple_attributes', 'media', 'attributes', 'tiles') AND relation_name NOT LIKE 'x-%\\_%' ESCAPE '\\');&quot;;</span>
+<span class="fc" id="L263">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+<span class="fc" id="L264">				final ResultSet resultSet = statement.executeQuery(query);) {</span>
+<span class="pc bpc" id="L265" title="1 of 2 branches missed.">			if (resultSet.next()) {</span>
+<span class="nc" id="L266">				Assert.fail(ErrorMessage.format(ErrorMessageKeys.UNEXPECTED_VALUE, resultSet.getString(&quot;relation_name&quot;),</span>
+						&quot;relation_name&quot;, &quot;gpkgext_relations&quot;));
+			}
+		}
+<span class="fc" id="L270">	}</span>
+
+	/**
+	 * A user-defined mapping table or view SHALL contain all of the columns described in
+	 * User-Defined Mapping Table Definition.
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 * @see &lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#r9&quot; target=
+	 * &quot;_blank&quot;&gt;OGC 18-000 Requirement 9&lt;/a&gt;
+	 */
+	@Test(description = &quot;See OGC 18-000: Requirement 9&quot;)
+	public void udmtTableStructure() throws SQLException {
+
+<span class="fc" id="L283">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L285">				final ResultSet resultSet = statement</span>
+<span class="fc" id="L286">					.executeQuery(&quot;SELECT mapping_table_name FROM gpkgext_relations;&quot;);) {</span>
+<span class="fc" id="L287">			boolean hasResults = false;</span>
+
+<span class="fc bfc" id="L289" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc" id="L290">				hasResults = true;</span>
+<span class="fc" id="L291">				int passFlag = 0;</span>
+<span class="fc" id="L292">				final int flagMask = 0b00000011;</span>
+
+<span class="fc" id="L294">				final String mappingTableName = resultSet.getString(&quot;mapping_table_name&quot;);</span>
+<span class="fc" id="L295">				try (final Statement statement2 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L297">						final ResultSet resultSet2 = statement2</span>
+<span class="fc" id="L298">							.executeQuery(String.format(&quot;PRAGMA table_info(%s)&quot;, mappingTableName));) {</span>
+<span class="fc bfc" id="L299" title="All 2 branches covered.">					while (resultSet2.next()) {</span>
+						// 3
+<span class="fc" id="L301">						final String name = resultSet2.getString(&quot;name&quot;);</span>
+<span class="fc bfc" id="L302" title="All 2 branches covered.">						if (&quot;base_id&quot;.equals(name)) {</span>
+<span class="fc" id="L303">							Assert.assertEquals(resultSet2.getString(&quot;type&quot;), &quot;INTEGER&quot;, ErrorMessage</span>
+<span class="fc" id="L304">								.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, mappingTableName, &quot;base_id type&quot;));</span>
+<span class="fc" id="L305">							Assert.assertEquals(resultSet2.getInt(&quot;notnull&quot;), 1, ErrorMessage.format(</span>
+									ErrorMessageKeys.TABLE_DEFINITION_INVALID, mappingTableName, &quot;base_id notnull&quot;));
+<span class="fc" id="L307">							Assert.assertEquals(resultSet2.getInt(&quot;pk&quot;), 0, ErrorMessage</span>
+<span class="fc" id="L308">								.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, mappingTableName, &quot;base_id pk&quot;));</span>
+<span class="fc" id="L309">							passFlag |= 1;</span>
+						}
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">						else if (&quot;related_id&quot;.equals(name)) {</span>
+<span class="fc" id="L312">							Assert.assertEquals(resultSet2.getString(&quot;type&quot;), &quot;INTEGER&quot;, ErrorMessage.format(</span>
+									ErrorMessageKeys.TABLE_DEFINITION_INVALID, mappingTableName, &quot;related_id type&quot;));
+<span class="fc" id="L314">							Assert.assertEquals(resultSet2.getInt(&quot;notnull&quot;), 1, ErrorMessage.format(</span>
+									ErrorMessageKeys.TABLE_DEFINITION_INVALID, mappingTableName, &quot;related_id notnull&quot;));
+<span class="fc" id="L316">							Assert.assertEquals(resultSet2.getInt(&quot;pk&quot;), 0, ErrorMessage</span>
+<span class="fc" id="L317">								.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, mappingTableName, &quot;related_id pk&quot;));</span>
+<span class="fc" id="L318">							passFlag |= (1 &lt;&lt; 1);</span>
+						}
+<span class="fc" id="L320">					}</span>
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">					assertTrue((passFlag &amp; flagMask) == flagMask,</span>
+<span class="fc" id="L322">							ErrorMessage.format(ErrorMessageKeys.TABLE_DEFINITION_INVALID, mappingTableName,</span>
+<span class="fc" id="L323">									String.format(&quot;missing column(s): code(%s)&quot;, passFlag)));</span>
+				}
+<span class="fc" id="L325">			}</span>
+<span class="fc" id="L326">			Assert.assertTrue(hasResults, ErrorMessage.format(ErrorMessageKeys.MISSING_ROW, &quot;gpkgext_relations&quot;));</span>
+		}
+<span class="fc" id="L328">	}</span>
+
+	/**
+	 * For each row of a user-defined mapping table, the base_id column SHALL correlate to
+	 * the primary key of the corresponding base table (as identified by the
+	 * base_primary_column of the associated row in gpkgext_relations).
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 * @see &lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#r10&quot; target=
+	 * &quot;_blank&quot;&gt;OGC 18-000 Requirement 10&lt;/a&gt;
+	 */
+	@Test(description = &quot;See OGC 18-000: Requirement 10&quot;)
+	public void udmtBaseIDs() throws SQLException {
+<span class="fc" id="L341">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L343">				final ResultSet resultSet = statement.executeQuery(</span>
+						&quot;SELECT base_table_name, base_primary_column, mapping_table_name FROM gpkgext_relations;&quot;);) {
+<span class="fc bfc" id="L345" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc" id="L346">				final String baseTableName = resultSet.getString(&quot;base_table_name&quot;);</span>
+<span class="fc" id="L347">				final String basePrimaryColumn = resultSet.getString(&quot;base_primary_column&quot;);</span>
+<span class="fc" id="L348">				final String mappingTableName = resultSet.getString(&quot;mapping_table_name&quot;);</span>
+
+<span class="fc" id="L350">				try (final Statement statement2 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L352">						final ResultSet resultSet2 = statement2.executeQuery(String.format(</span>
+								&quot;SELECT mapping_id FROM (SELECT a.base_id AS mapping_id, b.%s AS base_id FROM %s a LEFT OUTER JOIN %s b ON a.base_id = b.%s) WHERE base_id IS NULL;&quot;,
+								basePrimaryColumn, mappingTableName, baseTableName, basePrimaryColumn));) {
+<span class="fc bfc" id="L355" title="All 2 branches covered.">					if (resultSet2.next()) {</span>
+<span class="pc" id="L356">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.MISSING_REFERENCE, baseTableName,</span>
+<span class="fc" id="L357">								basePrimaryColumn, String.format(&quot;%s from the base_id column of %s&quot;,</span>
+<span class="fc" id="L358">										resultSet2.getInt(&quot;mapping_id&quot;), mappingTableName)));</span>
+					}
+				}
+<span class="fc" id="L361">			}</span>
+		}
+<span class="fc" id="L363">	}</span>
+
+	/**
+	 * For each row of a user-defined mapping table, the related_id column SHALL correlate
+	 * to the primary key of the corresponding related data table (as identified by the
+	 * related_primary_column of the associated row in gpkgext_relations).
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 * @see &lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#r11&quot; target=
+	 * &quot;_blank&quot;&gt;OGC 18-000 Requirement 11&lt;/a&gt;
+	 */
+	@Test(description = &quot;See OGC 18-000: Requirement 11&quot;)
+	public void udmtRelatedIDs() throws SQLException {
+<span class="fc" id="L376">		try (final Statement statement = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L378">				final ResultSet resultSet = statement.executeQuery(</span>
+						&quot;SELECT related_table_name, related_primary_column, mapping_table_name FROM gpkgext_relations;&quot;);) {
+<span class="fc bfc" id="L380" title="All 2 branches covered.">			while (resultSet.next()) {</span>
+<span class="fc" id="L381">				final String relatedTableName = resultSet.getString(&quot;related_table_name&quot;);</span>
+<span class="fc" id="L382">				final String relatedPrimaryColumn = resultSet.getString(&quot;related_primary_column&quot;);</span>
+<span class="fc" id="L383">				final String mappingTableName = resultSet.getString(&quot;mapping_table_name&quot;);</span>
+
+<span class="fc" id="L385">				try (final Statement statement2 = this.databaseConnection.createStatement();</span>
+
+<span class="fc" id="L387">						final ResultSet resultSet2 = statement2.executeQuery(String.format(</span>
+								&quot;SELECT mapping_id FROM (SELECT a.related_id AS mapping_id, b.%s AS related_id FROM %s a LEFT OUTER JOIN %s b ON a.related_id = b.%s) WHERE related_id IS NULL;&quot;,
+								relatedPrimaryColumn, mappingTableName, relatedTableName, relatedPrimaryColumn));) {
+<span class="pc bpc" id="L390" title="1 of 2 branches missed.">					if (resultSet2.next()) {</span>
+<span class="nc" id="L391">						Assert.fail(ErrorMessage.format(ErrorMessageKeys.MISSING_REFERENCE, relatedTableName,</span>
+<span class="nc" id="L392">								relatedPrimaryColumn, String.format(&quot;%s from the related_id column of %s&quot;,</span>
+<span class="nc" id="L393">										resultSet2.getInt(&quot;mapping_id&quot;), mappingTableName)));</span>
+					}
+				}
+<span class="fc" id="L396">			}</span>
+		}
+<span class="fc" id="L398">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

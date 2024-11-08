@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FeaturesTests.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">GeoPackage 1.2 Conformance Test Suite</a> &gt; <a href="index.source.html" class="el_package">org.opengis.cite.gpkg12.extensions.relatedtables</a> &gt; <span class="el_source">FeaturesTests.java</span></div><h1>FeaturesTests.java</h1><pre class="source lang-java linenums">package org.opengis.cite.gpkg12.extensions.relatedtables;
+
+import java.sql.SQLException;
+
+import org.testng.ITestContext;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+/**
+ * Defines test methods that apply to the &quot;Related Features&quot; requirements class of the
+ * Related Tables Extension.
+ *
+ * &lt;p style=&quot;margin-bottom: 0.5em&quot;&gt;
+ * &lt;strong&gt;Sources&lt;/strong&gt;
+ * &lt;/p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;&lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#f_rc&quot; target=
+ * &quot;_blank&quot;&gt; GeoPackage Related Tables Extension, Related Features Requirements Class&lt;/a&gt;
+ * (OGC 18-000)&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Jeff Yutzler
+ */
+<span class="fc" id="L24">public class FeaturesTests extends RTEBase {</span>
+
+	/**
+	 * A user-defined related data table or view SHALL be a user-defined features table or
+	 * view if the row in gpkgext_relations with a corresponding related_table_name has a
+	 * relation_name of &quot;features&quot;.
+	 * @param testContext a test context
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 * @see &lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#r16&quot; target=
+	 * &quot;_blank&quot;&gt;OGC 18-000 Requirement 16&lt;/a&gt;
+	 **/
+	@BeforeClass
+	public void activeExtension(ITestContext testContext) throws SQLException {
+<span class="fc" id="L38">		super.activeExtension(testContext);</span>
+<span class="nc" id="L39">		testRequirementsClassActive(&quot;features&quot;, &quot;Related Features&quot;);</span>
+<span class="nc" id="L40">	}</span>
+
+	/**
+	 * A user-defined related features table or view SHALL be a GPKG vector feature table
+	 * type.
+	 * @throws SQLException On any SQL query error or test failure
+	 *
+	 * @see &lt;a href=&quot;http://docs.opengeospatial.org/is/18-000/18-000.html#r17&quot; target=
+	 * &quot;_blank&quot;&gt;OGC 18-000 Requirement 17&lt;/a&gt;
+	 */
+	@Test(description = &quot;See OGC 18-000: Requirement 17&quot;)
+	public void featuresTableDefinition() throws SQLException {
+<span class="nc" id="L52">		testRelatedType(&quot;feature&quot;, &quot;features&quot;);</span>
+<span class="nc" id="L53">	}</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
