@@ -5,7 +5,7 @@
 Attention: Java 17 and Tomcat 10.1 are required.
 
 * [#134](https://github.com/opengeospatial/ets-gpkg12/pull/134): Migration to Java 17 and Tomcat 10.1
-* [#136](https://github.com/opengeospatial/ets-gpkg12/pull/136): Set ets-common to version 12
+* [#137](https://github.com/opengeospatial/ets-gpkg12/pull/137): Set ets-common version to 13
 
 ## 1.2 (2024-10-29)
 * [#127](https://github.com/opengeospatial/ets-gpkg12/issues/127): Feature Geometry Encoding Testing returns java.lang.NullPointerException
