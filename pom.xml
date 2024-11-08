@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.opengis.cite</groupId>
     <artifactId>ets-common</artifactId>
-    <version>12</version>
+    <version>13</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>ets-gpkg12</artifactId>
