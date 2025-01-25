@@ -90,9 +90,7 @@ public class URIUtils {
 		WebTarget target = client.target(uriRef);
 		Builder builder = target.request();
 		Response rsp = builder.buildGet().invoke();
-		int lastIndexOfDot = uriRef.getPath().lastIndexOf('.');
-		// preserve suffix if possible
-		String suffix = (lastIndexOfDot > 0) ? uriRef.getPath().substring(lastIndexOfDot) : ".db";
+		String suffix = getSuffix(uriRef, rsp);
 		File destFile = File.createTempFile("gpkg-", suffix);
 		if (rsp.hasEntity()) {
 			Object entity = rsp.getEntity();
@@ -113,6 +111,27 @@ public class URIUtils {
 		TestSuiteLogger.log(Level.CONFIG,
 				"Wrote " + destFile.length() + " bytes to file at " + destFile.getAbsolutePath());
 		return destFile;
+	}
+
+	private static String getSuffix(URI uriRef, Response rst) {
+		// HP1, the URI reference is a file URI, check the suffix from the path
+		int lastIndexOfDot = uriRef.getPath().lastIndexOf('.');
+		if (lastIndexOfDot > 0)
+			return uriRef.getPath().substring(lastIndexOfDot);
+		// HP2, the URI reference is a OGC service call, check the content disposition
+		String contentDisposition = rst.getHeaderString("Content-Disposition");
+		if (contentDisposition != null) {
+			int indexOf = contentDisposition.indexOf("filename=");
+			if (indexOf > 0) {
+				String filename = contentDisposition.substring(indexOf + 9);
+				int lastIndexOf = filename.lastIndexOf('.');
+				if (lastIndexOf > 0) {
+					return filename.substring(lastIndexOf);
+				}
+			}
+		}
+		// fallback to ".db", which will make the file extension check fail
+		return ".db";
 	}
 
 	/**
